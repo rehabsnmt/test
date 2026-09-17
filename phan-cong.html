@@ -56,7 +56,7 @@
         .btn-action-assign.delete:hover { background: #fee2e2; color: #b91c1c; }
 
         /* =========================================
-           THỐNG KÊ TÍN CHỈ (DẠNG THANH NGANG)
+           THỐNG KÊ TÍN CHỈ
         ========================================= */
         .summary-card { background: var(--surface); border: 1px solid var(--primary-light); border-radius: var(--radius-md); padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); display: none; }
         .hk-bar-container { display: flex; align-items: center; margin-bottom: 8px; }
@@ -101,32 +101,46 @@
                 </div>
             </div>
 
-            <!-- BẢNG THỐNG KÊ DẠNG THANH NGANG -->
+            <!-- BẢNG THỐNG KÊ -->
             <div id="summaryCard" class="summary-card">
-                <h3 style="margin-bottom: 0.2rem; font-size: 1rem;">Phân bổ Tín chỉ: <span id="summaryMajorName" style="color: var(--primary);"></span></h3>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">* Đã cộng gộp học phần nhóm <strong>"Chung"</strong>.</p>
+                <h3 style="margin-bottom: 0.8rem; font-size: 1rem;"><i class="fas fa-chart-pie" style="color:var(--primary); margin-right:5px;"></i> Tổng quan Tín chỉ</h3>
                 
-                <div id="hkBarsContainer">
-                    <div class="hk-bar-container">
-                        <div class="hk-bar-label">Học kỳ 1</div>
-                        <div class="hk-bar-track"><div id="bar-hk1" class="hk-bar-fill" style="width: 0%;"></div></div>
-                        <div class="hk-bar-value" id="val-hk1">0 TC</div>
+                <!-- BỘ ĐẾM TỔNG TÍN CHỈ CÁC CHUYÊN NGÀNH -->
+                <div id="specTotalsDiv" style="margin-bottom: 1rem; font-size: 0.8rem; display: flex; flex-wrap: wrap; gap: 8px;">
+                    <!-- Render by JS -->
+                </div>
+
+                <!-- PHÂN BỔ 4 HỌC KỲ (Ẩn/Hiện theo bộ lọc) -->
+                <div id="hkBreakdownDiv" style="display: none; border-top: 1px dashed var(--border); padding-top: 1rem;">
+                    <h4 style="margin-bottom: 0.2rem; font-size: 0.9rem;">Phân bổ 4 Học kỳ: <span id="summaryMajorName" style="color: var(--primary);"></span></h4>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">* Đã cộng gộp học phần nhóm <strong>"Chung"</strong>.</p>
+                    
+                    <div id="hkBarsContainer">
+                        <div class="hk-bar-container">
+                            <div class="hk-bar-label">Học kỳ 1</div>
+                            <div class="hk-bar-track"><div id="bar-hk1" class="hk-bar-fill" style="width: 0%;"></div></div>
+                            <div class="hk-bar-value" id="val-hk1">0 TC</div>
+                        </div>
+                        <div class="hk-bar-container">
+                            <div class="hk-bar-label">Học kỳ 2</div>
+                            <div class="hk-bar-track"><div id="bar-hk2" class="hk-bar-fill" style="width: 0%;"></div></div>
+                            <div class="hk-bar-value" id="val-hk2">0 TC</div>
+                        </div>
+                        <div class="hk-bar-container">
+                            <div class="hk-bar-label">Học kỳ 3</div>
+                            <div class="hk-bar-track"><div id="bar-hk3" class="hk-bar-fill" style="width: 0%;"></div></div>
+                            <div class="hk-bar-value" id="val-hk3">0 TC</div>
+                        </div>
+                        <div class="hk-bar-container">
+                            <div class="hk-bar-label">Học kỳ 4</div>
+                            <div class="hk-bar-track"><div id="bar-hk4" class="hk-bar-fill" style="width: 0%;"></div></div>
+                            <div class="hk-bar-value" id="val-hk4">0 TC</div>
+                        </div>
                     </div>
-                    <div class="hk-bar-container">
-                        <div class="hk-bar-label">Học kỳ 2</div>
-                        <div class="hk-bar-track"><div id="bar-hk2" class="hk-bar-fill" style="width: 0%;"></div></div>
-                        <div class="hk-bar-value" id="val-hk2">0 TC</div>
-                    </div>
-                    <div class="hk-bar-container">
-                        <div class="hk-bar-label">Học kỳ 3</div>
-                        <div class="hk-bar-track"><div id="bar-hk3" class="hk-bar-fill" style="width: 0%;"></div></div>
-                        <div class="hk-bar-value" id="val-hk3">0 TC</div>
-                    </div>
-                    <div class="hk-bar-container">
-                        <div class="hk-bar-label">Học kỳ 4</div>
-                        <div class="hk-bar-track"><div id="bar-hk4" class="hk-bar-fill" style="width: 0%;"></div></div>
-                        <div class="hk-bar-value" id="val-hk4">0 TC</div>
-                    </div>
+                </div>
+                <!-- Thông báo khi chưa chọn chuyên ngành -->
+                <div id="hkBreakdownEmpty" style="font-size: 0.8rem; color: var(--text-muted); font-style: italic; border-top: 1px dashed var(--border); padding-top: 0.8rem;">
+                    Vui lòng chọn 1 chuyên ngành ở bộ lọc để xem chi tiết phân bổ theo từng học kỳ.
                 </div>
             </div>
 
@@ -138,7 +152,7 @@
                                 <th style="width: 35px; text-align: center;">STT</th>
                                 <th style="width: 28%;">Học phần</th>
                                 <th style="width: 75px;">Học kỳ</th>
-                                <th style="width: 140px;">Tiến độ Phân công</th>
+                                <th style="width: 140px;">Tiến độ</th> <!-- ĐÃ ĐỔI TÊN Ở ĐÂY -->
                                 <th style="width: auto;">Chi tiết Phân công</th>
                                 <th style="width: 80px;">Thao tác</th>
                             </tr>
@@ -167,7 +181,6 @@
                     </select>
                 </div>
 
-                <!-- CHỌN ĐỐI TƯỢNG -->
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="targetTypeSelect">Đối tượng giảng dạy</label>
                     <select id="targetTypeSelect" style="border-color: var(--primary);">
@@ -177,7 +190,6 @@
                     </select>
                 </div>
 
-                <!-- KHUNG CHỌN NHÓM -->
                 <div id="groupTargetDiv" style="display: none; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
                     <div style="display: flex; gap: 1rem;">
                         <div class="form-group" style="flex: 1; margin: 0;">
@@ -189,16 +201,13 @@
                             <select id="groupNameSelect"><option value="">- Tên -</option></select>
                         </div>
                     </div>
-                    <!-- Khung hiển thị danh sách SV trong nhóm -->
                     <div id="groupMembersDiv" style="margin-top: 5px; font-size: 0.8rem; display: none;">
                         <strong style="color: var(--text-dark);">Danh sách học viên nhóm:</strong>
                         <ul id="groupMembersList" style="margin: 5px 0 0 0; padding-left: 20px; color: var(--text-muted); max-height: 100px; overflow-y: auto;">
-                            <!-- Li render dynamically -->
                         </ul>
                     </div>
                 </div>
 
-                <!-- KHUNG CHỌN CÁ NHÂN -->
                 <div id="studentTargetDiv" style="display: none; margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
                     <div class="form-group" style="margin: 0;">
                         <label for="studentSelect" style="font-size: 0.8rem;">Chọn Học viên <span class="text-danger">*</span></label>
@@ -206,14 +215,12 @@
                     </div>
                 </div>
 
-                <!-- NHẬP SỐ BUỔI -->
                 <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                     <div class="form-group" style="flex: 1;">
                         <label for="theorySessions">Lý thuyết (LT) <span class="text-danger">*</span></label>
                         <input type="number" id="theorySessions" min="0" value="0" required>
                         <small id="hintLT" class="text-muted" style="display: block; margin-top: 4px; font-weight: 600; color: var(--primary);">Còn lại: 0</small>
                     </div>
-
                     <div class="form-group" style="flex: 1;">
                         <label for="practiceSessions">Thực hành (TH) <span class="text-danger">*</span></label>
                         <input type="number" id="practiceSessions" min="0" value="0" required>
@@ -253,7 +260,7 @@
                 toast.innerHTML = `<i class="${iconClass}" style="color: ${iconColor};"></i><span>${message}</span>`;
                 container.appendChild(toast);
                 requestAnimationFrame(() => toast.classList.add("show"));
-                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 4000);
+                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
             };
 
             function escapeHtml(value) {
@@ -261,23 +268,25 @@
                 return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
             }
 
-            // DATA STATES
             let classesList = [], instructorsList = [], studentsList = [], groupsList = [];
             let currentSelectedClass = null, currentSelectedModule = null; 
             let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {}; 
             let editingAssignmentId = null;
 
-            // DOM ELEMENTS
             const classSelect = document.getElementById("classSelect"), specSelect = document.getElementById("specSelect");
             const curriculumInfo = document.getElementById("curriculumInfo"), curriculumNameText = document.getElementById("curriculumNameText");
             const modulesTableBody = document.getElementById("modulesTableBody");
-            const summaryCard = document.getElementById("summaryCard"), summaryMajorName = document.getElementById("summaryMajorName");
+            
+            const summaryCard = document.getElementById("summaryCard");
+            const summaryMajorName = document.getElementById("summaryMajorName");
+            const specTotalsDiv = document.getElementById("specTotalsDiv");
+            const hkBreakdownDiv = document.getElementById("hkBreakdownDiv");
+            const hkBreakdownEmpty = document.getElementById("hkBreakdownEmpty");
 
             const assignModal = document.getElementById("assignModal"), assignForm = document.getElementById("assignForm");
             const instructorSelect = document.getElementById("instructorSelect"), theorySessions = document.getElementById("theorySessions"), practiceSessions = document.getElementById("practiceSessions");
             const assignNote = document.getElementById("assignNote"), hintLT = document.getElementById("hintLT"), hintTH = document.getElementById("hintTH");
             
-            // DOM Đối tượng
             const targetTypeSelect = document.getElementById("targetTypeSelect");
             const groupTargetDiv = document.getElementById("groupTargetDiv"), groupTypeSelect = document.getElementById("groupTypeSelect"), groupNameSelect = document.getElementById("groupNameSelect");
             const groupMembersDiv = document.getElementById("groupMembersDiv"), groupMembersList = document.getElementById("groupMembersList");
@@ -285,9 +294,6 @@
 
             const btnCloseModal = document.getElementById("btnCloseModal"), btnCancelModal = document.getElementById("btnCancelModal"), btnSaveAssignment = document.getElementById("btnSaveAssignment");
 
-            /* =================================================
-               1. LẤY DỮ LIỆU BAN ĐẦU
-            ================================================= */
             async function loadInitialData() {
                 try {
                     const supabase = window.supabaseClient;
@@ -319,9 +325,6 @@
 
             classSelect.addEventListener("change", () => { specSelect.value = ""; summaryCard.style.display = "none"; loadClassData(false); });
 
-            /* =================================================
-               2. TẢI DỮ LIỆU CHƯƠNG TRÌNH & ĐỐI TƯỢNG
-            ================================================= */
             async function loadClassData(isSilentReload = false) {
                 const maLop = classSelect.value;
                 if (!maLop) {
@@ -329,7 +332,6 @@
                     modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center">Vui lòng chọn lớp học.</td></tr>`; return;
                 }
                 
-                // Kỹ thuật đối chiếu bằng Trim() an toàn
                 const maLopClean = String(maLop).trim();
                 currentSelectedClass = classesList.find(c => String(c["ma-lop"]).trim() === maLopClean);
                 const tableName = currentSelectedClass["chuong-trinh"];
@@ -341,7 +343,6 @@
                 try {
                     const supabase = window.supabaseClient;
 
-                    // Load chương trình & phân công
                     const { data: curriculumData, error: curError } = await supabase.from(tableName).select('*').order('stt', { ascending: true });
                     if (curError) throw curError;
                     currentCurriculumData = curriculumData || [];
@@ -352,7 +353,6 @@
 
                     const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('*');
                     if (semesterError && !semesterError.message.includes("does not exist")) throw semesterError;
-                    
                     currentModuleSemesters = {};
                     if (semesterData) { 
                         semesterData.filter(item => String(item['ma-lop']).trim() === maLopClean).forEach(item => { 
@@ -360,23 +360,18 @@
                         }); 
                     }
 
-                    // TẢI TOÀN BỘ RỒI LỌC CLIENT BẰNG TRIM() ĐỂ CHỐNG LỖI KHOẢNG TRẮNG 100%
-                    const { data: stdData, error: stdError } = await supabase.from('danh-sach-lop').select('*');
-                    if (stdError) console.error("Lỗi danh-sach-lop:", stdError);
+                    const { data: stdData } = await supabase.from('danh-sach-lop').select('*');
                     studentsList = (stdData || []).filter(s => String(s['ma-lop'] || '').trim() === maLopClean);
 
-                    const { data: grpData, error: grpError } = await supabase.from('danh-sach-nhom').select('*');
-                    if (grpError) console.error("Lỗi danh-sach-nhom:", grpError);
+                    const { data: grpData } = await supabase.from('danh-sach-nhom').select('*');
                     groupsList = (grpData || []).filter(g => String(g['ma-lop'] || '').trim() === maLopClean);
 
                     updateSpecializationFilter();
+                    updateSummary(); // Cập nhật bảng tổng quan tín chỉ
                     renderModulesTable();
                 } catch (error) { modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu. Bảng "${escapeHtml(tableName)}" có thể chưa tạo. Lỗi: ${escapeHtml(error.message || "")}</td></tr>`; }
             }
 
-            /* =================================================
-               3. BỘ LỌC CHUYÊN NGÀNH & TÍN CHỈ
-            ================================================= */
             function updateSpecializationFilter() {
                 const currentVal = specSelect.value;
                 const specs = new Set();
@@ -390,11 +385,48 @@
 
             specSelect.addEventListener("change", () => { updateSummary(); renderModulesTable(); });
 
+            // CẬP NHẬT GIAO DIỆN BẢNG TÍN CHỈ THEO YÊU CẦU MỚI
             function updateSummary() {
-                const filterVal = specSelect.value;
-                if (!filterVal) { summaryCard.style.display = "none"; return; }
+                if (currentCurriculumData.length === 0) {
+                    summaryCard.style.display = "none";
+                    return;
+                }
+                summaryCard.style.display = "block";
 
-                summaryCard.style.display = "block"; summaryMajorName.textContent = filterVal;
+                // 1. Tính toán Tổng TC các chuyên ngành
+                let chungCredits = 0;
+                const pureSpecTotals = {};
+                const specsList = new Set();
+
+                currentCurriculumData.forEach(mod => {
+                    const cn = String(mod["chuyen-nganh"] || "").trim();
+                    const tc = parseFloat(mod["tong-tin-chi"]) || 0;
+                    if (cn.toLowerCase() === "chung" || cn === "") {
+                        chungCredits += tc;
+                    } else {
+                        specsList.add(cn);
+                        if (!pureSpecTotals[cn]) pureSpecTotals[cn] = 0;
+                        pureSpecTotals[cn] += tc;
+                    }
+                });
+
+                specTotalsDiv.innerHTML = `<span style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; color: #334155;">Chung: <b>${chungCredits}</b> TC</span>`;
+                specsList.forEach(sp => {
+                    const total = (pureSpecTotals[sp] || 0) + chungCredits;
+                    specTotalsDiv.innerHTML += `<span style="background: var(--primary-light); color: var(--primary-hover); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--primary-light);">CN ${escapeHtml(sp)}: <b>${total}</b> TC</span>`;
+                });
+
+                // 2. Cập nhật thanh biểu đồ theo bộ lọc
+                const filterVal = specSelect.value;
+                if (!filterVal) { 
+                    hkBreakdownDiv.style.display = "none";
+                    hkBreakdownEmpty.style.display = "block";
+                    return; 
+                }
+
+                hkBreakdownDiv.style.display = "block";
+                hkBreakdownEmpty.style.display = "none";
+                summaryMajorName.textContent = filterVal;
                 let hkCredits = { 1: 0, 2: 0, 3: 0, 4: 0 };
 
                 currentCurriculumData.forEach(mod => {
@@ -433,9 +465,6 @@
                 } catch (err) { window.showToast("Lỗi cập nhật bảng lop-hoc-phan: " + err.message, true); loadClassData(true); }
             };
 
-            /* =================================================
-               4. RENDER BẢNG HỌC PHẦN
-            ================================================= */
             function renderModulesTable() {
                 modulesTableBody.innerHTML = ""; const filterVal = specSelect.value;
                 const filteredMods = currentCurriculumData.filter(mod => {
@@ -568,14 +597,10 @@
                 }
             }
 
-            /* =================================================
-               5. SỰ KIỆN CHỌN ĐỐI TƯỢNG TRONG MODAL
-            ================================================= */
             targetTypeSelect.addEventListener('change', () => {
                 const val = targetTypeSelect.value;
                 groupTargetDiv.style.display = 'none';
                 studentTargetDiv.style.display = 'none';
-                
                 groupMembersDiv.style.display = "none";
                 groupMembersList.innerHTML = "";
 
@@ -609,32 +634,20 @@
                 const uniqueNames = [...new Set(groupsList.filter(g => (g['loai-nhom'] ? String(g['loai-nhom']).trim() : "") === type).map(g => g['ten-nhom'] ? String(g['ten-nhom']).trim() : "").filter(Boolean))];
                 groupNameSelect.innerHTML = '<option value="">- Tên -</option>';
                 uniqueNames.forEach(n => groupNameSelect.innerHTML += `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`);
-                
                 groupMembersDiv.style.display = "none";
                 groupMembersList.innerHTML = "";
             });
 
-            // HIỂN THỊ DANH SÁCH HV TRONG NHÓM
             groupNameSelect.addEventListener('change', () => {
                 const type = groupTypeSelect.value;
                 const name = groupNameSelect.value;
+                if (!type || !name) { groupMembersDiv.style.display = "none"; groupMembersList.innerHTML = ""; return; }
                 
-                if (!type || !name) {
-                    groupMembersDiv.style.display = "none";
-                    groupMembersList.innerHTML = "";
-                    return;
-                }
-                
-                const members = groupsList.filter(g => 
-                    (g['loai-nhom'] ? String(g['loai-nhom']).trim() : "") === type && 
-                    (g['ten-nhom'] ? String(g['ten-nhom']).trim() : "") === name
-                );
+                const members = groupsList.filter(g => (g['loai-nhom'] ? String(g['loai-nhom']).trim() : "") === type && (g['ten-nhom'] ? String(g['ten-nhom']).trim() : "") === name);
 
                 if (members.length > 0) {
                     groupMembersList.innerHTML = "";
-                    members.forEach(m => {
-                        groupMembersList.innerHTML += `<li>${escapeHtml(m['ma-hoc-vien'])} - ${escapeHtml(m['ho-ten'])}</li>`;
-                    });
+                    members.forEach(m => { groupMembersList.innerHTML += `<li>${escapeHtml(m['ma-hoc-vien'])} - ${escapeHtml(m['ho-ten'])}</li>`; });
                     groupMembersDiv.style.display = "block";
                 } else {
                     groupMembersDiv.style.display = "none";
@@ -642,9 +655,6 @@
                 }
             });
 
-            /* =================================================
-               6. THÊM, SỬA, XÓA PHÂN CÔNG (THEO ID)
-            ================================================= */
             window.deleteAssignment = async function(assignId) {
                 if (!confirm("Bạn có chắc chắn muốn xóa phân công này không?")) return;
                 const assignment = currentAssignmentsData.find(a => String(a["id"]) === String(assignId));
@@ -698,7 +708,6 @@
                 instructorSelect.value = assignment["ma-giang-vien"];
                 assignNote.value = assignment["ghi-chu"] || "";
 
-                // Phục hồi Target Type
                 const dTuong = assignment["doi-tuong"] || "ca-lop";
                 targetTypeSelect.value = dTuong;
                 targetTypeSelect.dispatchEvent(new Event('change'));
@@ -709,7 +718,7 @@
                         groupTypeSelect.dispatchEvent(new Event('change'));
                         setTimeout(() => {
                             groupNameSelect.value = assignment["ten-nhom"] || "";
-                            groupNameSelect.dispatchEvent(new Event('change')); // Trigger hiển thị danh sách SV
+                            groupNameSelect.dispatchEvent(new Event('change')); 
                         }, 50);
                     }, 50);
                 } else if (dTuong === "ca-nhan") {
@@ -785,9 +794,6 @@
                 } finally { btnSaveAssignment.innerHTML = origText; btnSaveAssignment.disabled = false; }
             });
 
-            /* =================================================
-               KHỞI ĐỘNG
-            ================================================= */
             function startApp() {
                 let attempts = 0; const timer = setInterval(() => {
                     attempts++; if (window.supabaseClient) { clearInterval(timer); loadInitialData(); } else if (attempts >= 50) { clearInterval(timer); window.showToast("Không tải được Database.", true); }
