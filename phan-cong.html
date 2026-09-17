@@ -38,12 +38,71 @@
             min-width: 250px;
         }
         .action-column {
-            width: 120px;
+            width: 150px;
         }
-        
-        /* Chỉnh lại z-index cho modal để luôn đè lên các thành phần khác */
         .modal-overlay {
             z-index: 9999;
+        }
+
+        /* ----- CSS CHO DÒNG CHI TIẾT ----- */
+        .detail-row {
+            background-color: var(--bg-page);
+            display: none; /* Ẩn mặc định */
+        }
+        .detail-content {
+            padding: 1.5rem;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dashed var(--border);
+        }
+        .detail-item span {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.2rem;
+        }
+        .detail-item strong {
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+        .assignment-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .assignment-item {
+            display: flex;
+            align-items: center;
+            background: var(--surface);
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.5rem;
+            gap: 1rem;
+        }
+        .assignment-item i {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        .btn-toggle {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-body);
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-toggle:hover {
+            background: var(--border-light);
+            color: var(--primary);
         }
     </style>
 </head>
@@ -90,21 +149,16 @@
                     <table id="modulesTable">
                         <thead>
                             <tr>
-                                <th>STT</th>
-                                <th>Mã HP</th>
+                                <th style="width: 50px;">STT</th>
                                 <th>Tên Học phần</th>
-                                <th>Nhóm HP</th>
                                 <th>Chuyên ngành</th>
-                                <th>Tổng TC</th>
-                                <th>Tổng Buổi</th>
-                                <th>Buổi LT</th>
-                                <th>Buổi TH</th>
+                                <th>Giảng viên phụ trách</th>
                                 <th class="action-column">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="modulesTableBody">
                             <tr>
-                                <td colspan="10" class="text-center">Vui lòng chọn lớp học để xem chương trình.</td>
+                                <td colspan="5" class="text-center">Vui lòng chọn lớp học để xem chương trình.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -200,8 +254,12 @@
             ================================================= */
             let classesList = [];
             let instructorsList = [];
-            let currentSelectedClass = null; // Lưu object lớp đang chọn
-            let currentSelectedModule = null; // Lưu object học phần đang chọn để phân công
+            let currentSelectedClass = null; 
+            let currentSelectedModule = null; 
+            
+            // Lưu trữ dữ liệu đang hiển thị để tiện tải lại
+            let currentCurriculumData = [];
+            let currentAssignmentsData = [];
 
             const classSelect = document.getElementById("classSelect");
             const curriculumInfo = document.getElementById("curriculumInfo");
@@ -222,21 +280,19 @@
             const modalModuleInfo = document.getElementById("modalModuleInfo");
 
             /* =================================================
-               1. LẤY DỮ LIỆU CƠ BẢN (LỚP HỌC & GIẢNG VIÊN)
+               1. LẤY DỮ LIỆU BAN ĐẦU
             ================================================= */
             async function loadInitialData() {
                 try {
                     const supabase = window.supabaseClient;
 
-                    // Lấy danh sách lớp học
+                    // 1. Danh sách lớp
                     const { data: classData, error: classError } = await supabase
                         .from('lop-hoc')
                         .select('ma-lop, ten-lop, chuong-trinh');
-                    
                     if (classError) throw classError;
                     classesList = classData || [];
 
-                    // Render Select Lớp
                     classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
                     classesList.forEach(cls => {
                         const option = document.createElement("option");
@@ -245,16 +301,14 @@
                         classSelect.appendChild(option);
                     });
 
-                    // Lấy danh sách giảng viên
+                    // 2. Danh sách giảng viên
                     const { data: instData, error: instError } = await supabase
                         .from('giang-vien')
                         .select('ma-giang-vien, ho-ten')
                         .order('ho-ten', { ascending: true });
-
                     if (instError) throw instError;
                     instructorsList = instData || [];
 
-                    // Render Select Giảng viên (ẩn trong Modal)
                     instructorSelect.innerHTML = `<option value="">-- Chọn Giảng viên --</option>`;
                     instructorsList.forEach(inst => {
                         const option = document.createElement("option");
@@ -265,19 +319,29 @@
 
                 } catch (error) {
                     console.error("Lỗi lấy dữ liệu ban đầu:", error);
-                    window.showToast("Lỗi khi kết nối cơ sở dữ liệu.", true);
+                    window.showToast("Lỗi khi kết nối CSDL.", true);
                 }
             }
 
+            // Tiện ích lấy tên GV từ mã
+            function getInstructorName(maGv) {
+                const gv = instructorsList.find(i => i["ma-giang-vien"] === maGv);
+                return gv ? gv["ho-ten"] : maGv;
+            }
+
             /* =================================================
-               2. XỬ LÝ KHI CHỌN LỚP HỌC -> TẢI CHƯƠNG TRÌNH
+               2. TẢI DỮ LIỆU BẢNG & PHÂN CÔNG (KHI CHỌN LỚP)
             ================================================= */
-            classSelect.addEventListener("change", async (e) => {
-                const maLop = e.target.value;
+            classSelect.addEventListener("change", () => {
+                loadClassData();
+            });
+
+            async function loadClassData() {
+                const maLop = classSelect.value;
                 if (!maLop) {
                     currentSelectedClass = null;
                     curriculumInfo.style.display = "none";
-                    modulesTableBody.innerHTML = `<tr><td colspan="10" class="text-center">Vui lòng chọn lớp học để xem chương trình.</td></tr>`;
+                    modulesTableBody.innerHTML = `<tr><td colspan="5" class="text-center">Vui lòng chọn lớp học để xem chương trình.</td></tr>`;
                     return;
                 }
 
@@ -291,105 +355,168 @@
 
                 curriculumNameText.textContent = tableName;
                 curriculumInfo.style.display = "block";
-                modulesTableBody.innerHTML = `<tr><td colspan="10" class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải chương trình học...</td></tr>`;
+                modulesTableBody.innerHTML = `<tr><td colspan="5" class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>`;
 
                 try {
                     const supabase = window.supabaseClient;
-                    // Lấy dữ liệu học phần từ bảng được chỉ định trong cột chuong-trinh
+                    
+                    // A. Tải Chương trình học
                     const { data: curriculumData, error: curError } = await supabase
                         .from(tableName)
                         .select('*')
                         .order('stt', { ascending: true });
+                    if (curError) throw curError;
+                    currentCurriculumData = curriculumData || [];
 
-                    if (curError) {
-                        // Nếu bảng không tồn tại hoặc lỗi quyền
-                        throw curError;
-                    }
+                    // B. Tải các phân công đã có của lớp này
+                    const { data: assignData, error: assignError } = await supabase
+                        .from('phan-cong-giang-day')
+                        .select('*')
+                        .eq('ma-lop', maLop);
+                    if (assignError) throw assignError;
+                    currentAssignmentsData = assignData || [];
 
-                    renderModulesTable(curriculumData || []);
+                    // Render bảng
+                    renderModulesTable();
+
                 } catch (error) {
-                    console.error(`Lỗi tải bảng ${tableName}:`, error);
-                    modulesTableBody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Không thể tải chương trình. Có thể bảng "${escapeHtml(tableName)}" chưa được tạo trên Supabase.</td></tr>`;
+                    console.error("Lỗi tải chương trình/phân công:", error);
+                    modulesTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Lỗi tải dữ liệu. Bảng "${escapeHtml(tableName)}" có thể chưa tồn tại.</td></tr>`;
                 }
-            });
-
-            /* =================================================
-               3. RENDER BẢNG HỌC PHẦN
-            ================================================= */
-            function renderModulesTable(modules) {
-                modulesTableBody.innerHTML = "";
-
-                if (modules.length === 0) {
-                    modulesTableBody.innerHTML = `<tr><td colspan="10" class="text-center">Chương trình học trống.</td></tr>`;
-                    return;
-                }
-
-                modules.forEach(mod => {
-                    const tr = document.createElement("tr");
-
-                    // Lấy dữ liệu an toàn
-                    const stt = escapeHtml(mod["stt"] || "");
-                    const maHp = escapeHtml(mod["ma-hoc-phan"] || "");
-                    const tenHp = escapeHtml(mod["ten-hoc-phan"] || "");
-                    const nhomHp = escapeHtml(mod["nhom-hoc-phan"] || "");
-                    const chuyenNganh = escapeHtml(mod["chuyen-nganh"] || "");
-                    const tongTinChi = escapeHtml(mod["tong-tin-chi"] || "0");
-                    const tongBuoi = escapeHtml(mod["tong-so-buoi"] || "0");
-                    const soBuoiLT = escapeHtml(mod["so-buoi-ly-thuyet"] || "0");
-                    const soBuoiTH = escapeHtml(mod["so-buoi-thuc-hanh"] || "0");
-
-                    tr.innerHTML = `
-                        <td>${stt}</td>
-                        <td><strong>${maHp}</strong></td>
-                        <td class="text-left" style="min-width: 200px;">${tenHp}</td>
-                        <td>${nhomHp}</td>
-                        <td>${chuyenNganh}</td>
-                        <td>${tongTinChi}</td>
-                        <td>${tongBuoi}</td>
-                        <td>${soBuoiLT}</td>
-                        <td>${soBuoiTH}</td>
-                        <td>
-                            <button class="btn-primary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openAssignModal('${maHp}', '${tenHp}', ${soBuoiLT}, ${soBuoiTH})">
-                                Phân công
-                            </button>
-                        </td>
-                    `;
-                    modulesTableBody.appendChild(tr);
-                });
             }
 
             /* =================================================
-               4. MỞ MODAL VÀ LƯU PHÂN CÔNG
+               3. RENDER BẢNG HỌC PHẦN (VỚI DÒNG CHI TIẾT)
             ================================================= */
-            // Expose function ra window để gọi từ inline onclick
+            function renderModulesTable() {
+                modulesTableBody.innerHTML = "";
+
+                if (currentCurriculumData.length === 0) {
+                    modulesTableBody.innerHTML = `<tr><td colspan="5" class="text-center">Chương trình học trống.</td></tr>`;
+                    return;
+                }
+
+                currentCurriculumData.forEach((mod, index) => {
+                    const maHp = escapeHtml(mod["ma-hoc-phan"] || "");
+                    const tenHp = escapeHtml(mod["ten-hoc-phan"] || "");
+                    const rowId = `module-${index}`;
+
+                    // Lọc các phân công thuộc học phần này
+                    const moduleAssignments = currentAssignmentsData.filter(a => a["ma-hoc-phan"] === mod["ma-hoc-phan"]);
+                    
+                    // Tạo chuỗi tóm tắt GV
+                    let gvSummaryHtml = `<span class="text-muted">Chưa phân công</span>`;
+                    if (moduleAssignments.length > 0) {
+                        const gvNames = moduleAssignments.map(a => escapeHtml(getInstructorName(a["ma-giang-vien"])));
+                        gvSummaryHtml = `<strong>${gvNames.join(', ')}</strong>`;
+                    }
+
+                    // --- HTML DÒNG CHÍNH ---
+                    const mainTr = document.createElement("tr");
+                    mainTr.innerHTML = `
+                        <td>${escapeHtml(mod["stt"] || "")}</td>
+                        <td class="text-left" style="font-weight: 600; color: var(--primary);">${tenHp}</td>
+                        <td>${escapeHtml(mod["chuyen-nganh"] || "")}</td>
+                        <td class="text-left" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="Đã phân công ${moduleAssignments.length} GV">
+                            ${gvSummaryHtml}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 5px; justify-content: center;">
+                                <button class="btn-toggle" onclick="toggleDetails('${rowId}')" title="Xem chi tiết">
+                                    <i id="icon-${rowId}" class="fas fa-chevron-down"></i>
+                                </button>
+                                <button class="btn-primary" style="padding: 4px 10px; font-size: 0.75rem;" 
+                                    onclick="openAssignModal('${maHp}', '${tenHp}', ${mod["so-buoi-ly-thuyet"] || 0}, ${mod["so-buoi-thuc-hanh"] || 0})">
+                                    Phân công
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    modulesTableBody.appendChild(mainTr);
+
+                    // --- HTML DÒNG CHI TIẾT (ẨN) ---
+                    const detailTr = document.createElement("tr");
+                    detailTr.id = `detail-${rowId}`;
+                    detailTr.className = "detail-row";
+                    
+                    // Xây dựng danh sách GV chi tiết
+                    let assignListHtml = `<p class="text-muted" style="margin:0; font-size:0.85rem; font-style:italic;">Chưa có giảng viên nào được phân công.</p>`;
+                    if (moduleAssignments.length > 0) {
+                        assignListHtml = `<ul class="assignment-list">`;
+                        moduleAssignments.forEach(a => {
+                            assignListHtml += `
+                                <li class="assignment-item">
+                                    <i class="fas fa-user-circle"></i>
+                                    <div>
+                                        <strong>${escapeHtml(getInstructorName(a["ma-giang-vien"]))}</strong> <br>
+                                        <span style="font-size: 0.8rem; color: var(--text-body);">
+                                            Lý thuyết: <b>${escapeHtml(a["so-buoi-ly-thuyet"])}</b> buổi | Thực hành: <b>${escapeHtml(a["so-buoi-thuc-hanh"])}</b> buổi
+                                        </span>
+                                    </div>
+                                </li>
+                            `;
+                        });
+                        assignListHtml += `</ul>`;
+                    }
+
+                    detailTr.innerHTML = `
+                        <td colspan="5" style="padding: 0;">
+                            <div class="detail-content">
+                                <div class="detail-grid">
+                                    <div class="detail-item"><span>Mã Học phần</span><strong>${maHp}</strong></div>
+                                    <div class="detail-item"><span>Nhóm Học phần</span><strong>${escapeHtml(mod["nhom-hoc-phan"] || "---")}</strong></div>
+                                    <div class="detail-item"><span>Tổng Tín chỉ</span><strong>${escapeHtml(mod["tong-tin-chi"] || "0")}</strong></div>
+                                    <div class="detail-item"><span>Tổng số Buổi (Kế hoạch)</span><strong>${escapeHtml(mod["tong-so-buoi"] || "0")}</strong></div>
+                                    <div class="detail-item"><span>Lý thuyết (Kế hoạch)</span><strong>${escapeHtml(mod["so-buoi-ly-thuyet"] || "0")}</strong></div>
+                                    <div class="detail-item"><span>Thực hành (Kế hoạch)</span><strong>${escapeHtml(mod["so-buoi-thuc-hanh"] || "0")}</strong></div>
+                                </div>
+                                <div>
+                                    <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--primary);">Giảng viên đã phân công:</h4>
+                                    ${assignListHtml}
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                    modulesTableBody.appendChild(detailTr);
+                });
+            }
+
+            // Hàm Mở/Đóng dòng chi tiết
+            window.toggleDetails = function(rowId) {
+                const detailRow = document.getElementById(`detail-${rowId}`);
+                const icon = document.getElementById(`icon-${rowId}`);
+                
+                if (detailRow.style.display === "none" || detailRow.style.display === "") {
+                    detailRow.style.display = "table-row";
+                    icon.classList.remove("fa-chevron-down");
+                    icon.classList.add("fa-chevron-up");
+                } else {
+                    detailRow.style.display = "none";
+                    icon.classList.remove("fa-chevron-up");
+                    icon.classList.add("fa-chevron-down");
+                }
+            };
+
+            /* =================================================
+               4. MODAL PHÂN CÔNG & LƯU
+            ================================================= */
             window.openAssignModal = function(maHp, tenHp, maxLT, maxTH) {
                 if (!currentSelectedClass) {
                     window.showToast("Lỗi: Không xác định được lớp học.", true);
                     return;
                 }
 
-                currentSelectedModule = {
-                    maHp: maHp,
-                    tenHp: tenHp,
-                    maxLT: parseInt(maxLT) || 0,
-                    maxTH: parseInt(maxTH) || 0
-                };
-
-                // Setup giao diện Modal
+                currentSelectedModule = { maHp, tenHp, maxLT, maxTH };
                 modalModuleInfo.textContent = `Học phần: ${maHp} - ${tenHp}`;
                 instructorSelect.value = "";
                 theorySessions.value = 0;
                 practiceSessions.value = 0;
+                hintLT.textContent = `CTĐT yêu cầu: ${maxLT} buổi`;
+                hintTH.textContent = `CTĐT yêu cầu: ${maxTH} buổi`;
 
-                // Gợi ý số buổi tối đa
-                hintLT.textContent = `Tối đa trong CT: ${currentSelectedModule.maxLT} buổi`;
-                hintTH.textContent = `Tối đa trong CT: ${currentSelectedModule.maxTH} buổi`;
-
-                // Hiển thị modal
                 assignModal.classList.remove("hidden");
             };
 
-            // Đóng Modal
             function closeModal() {
                 assignModal.classList.add("hidden");
                 currentSelectedModule = null;
@@ -398,7 +525,6 @@
             btnCloseModal.addEventListener("click", closeModal);
             btnCancelModal.addEventListener("click", closeModal);
 
-            // Xử lý Lưu Form
             assignForm.addEventListener("submit", async (e) => {
                 e.preventDefault();
 
@@ -418,19 +544,15 @@
                     return;
                 }
 
-                // Vô hiệu hóa nút trong khi lưu
                 const origText = btnSaveAssignment.innerHTML;
                 btnSaveAssignment.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang lưu...`;
                 btnSaveAssignment.disabled = true;
 
-                // TẠO MÃ PHÂN CÔNG (Primary Key) ĐỘC NHẤT
-                // Cách tạo: "PC_" + Số miliseconds hiện tại (Ví dụ: PC_1714523689123)
                 const maPhanCongMoi = "PC_" + new Date().getTime();
 
                 try {
                     const supabase = window.supabaseClient;
 
-                    // Thực hiện Insert có truyền thêm 'ma-phan-cong'
                     const { data, error } = await supabase
                         .from('phan-cong-giang-day')
                         .insert([
@@ -448,9 +570,12 @@
 
                     window.showToast("Đã lưu phân công thành công!");
                     closeModal();
+                    
+                    // Load lại dữ liệu lớp học ngay lập tức để cập nhật bảng
+                    loadClassData();
 
                 } catch (error) {
-                    console.error("Lỗi khi lưu phân công:", error);
+                    console.error("Lỗi khi lưu:", error);
                     window.showToast("Lỗi: " + error.message, true);
                 } finally {
                     btnSaveAssignment.innerHTML = origText;
@@ -459,7 +584,7 @@
             });
 
             /* =================================================
-               KHỞI ĐỘNG SAU KHI CÓ SUPABASE
+               KHỞI ĐỘNG
             ================================================= */
             function startApp() {
                 let attempts = 0;
@@ -474,7 +599,6 @@
                     }
                 }, 100);
             }
-
             startApp();
         });
     </script>
