@@ -98,7 +98,7 @@
             font-size: 0.8rem; text-align: left;
         }
         .assignment-list-inline li {
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; align-items: flex-start;
             margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-light);
         }
         .assignment-list-inline li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
@@ -229,6 +229,11 @@
                     </div>
                 </div>
 
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="assignNote">Ghi chú (Tùy chọn)</label>
+                    <textarea id="assignNote" rows="2" placeholder="Nhập ghi chú... ví dụ: Dạy lớp A1, phòng thực hành..." style="width: 100%; max-width: 100%;"></textarea>
+                </div>
+
                 <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 10px;">
                     <button type="button" class="btn-warning" id="btnCancelModal" style="color: #fff; background: var(--text-muted); padding: 8px 12px;">Hủy</button>
                     <button type="submit" class="btn-primary" id="btnSaveAssignment" style="padding: 8px 12px;">
@@ -276,6 +281,7 @@
 
             const assignModal = document.getElementById("assignModal"), assignForm = document.getElementById("assignForm");
             const instructorSelect = document.getElementById("instructorSelect"), theorySessions = document.getElementById("theorySessions"), practiceSessions = document.getElementById("practiceSessions");
+            const assignNote = document.getElementById("assignNote"); // Ghi chú
             const hintLT = document.getElementById("hintLT"), hintTH = document.getElementById("hintTH");
             const btnCloseModal = document.getElementById("btnCloseModal"), btnCancelModal = document.getElementById("btnCancelModal"), btnSaveAssignment = document.getElementById("btnSaveAssignment");
 
@@ -375,6 +381,7 @@
             window.updateSemester = async function(maHp, newHk) {
                 try {
                     const maLop = currentSelectedClass["ma-lop"]; const supabase = window.supabaseClient;
+                    // Lấy record theo id để dễ xử lý insert/update
                     const { data: existingRecords, error: checkError } = await supabase.from('lop-hoc-phan').select('id').eq('ma-lop', maLop).eq('ma-hoc-phan', maHp);
                     if (checkError) throw checkError;
 
@@ -387,7 +394,10 @@
                     }
                     currentModuleSemesters[maHp] = newHk ? parseInt(newHk) : null;
                     window.showToast("Cập nhật học kỳ thành công!"); updateSummary();
-                } catch (err) { window.showToast("Lỗi: " + err.message, true); renderModulesTable(); }
+                } catch (err) { 
+                    window.showToast("Lỗi: " + err.message, true); 
+                    loadClassData(); // Tải lại để reset trạng thái UI
+                }
             };
 
             function renderModulesTable() {
@@ -418,12 +428,21 @@
                             assignListHtml = `<ul class="assignment-list-inline">`;
                             moduleAssignments.forEach(a => {
                                 const aLT = parseInt(a["so-buoi-ly-thuyet"]) || 0, aTH = parseInt(a["so-buoi-thuc-hanh"]) || 0, maPhanCong = escapeHtml(a["ma-phan-cong"] || "");
+                                const aNote = escapeHtml(a["ghi-chu"] || "");
                                 assignedLT += aLT; assignedTH += aTH;
+
+                                // HTML cho ghi chú
+                                let noteHtml = "";
+                                if (aNote) {
+                                    noteHtml = `<div style="font-size: 0.75rem; color: #d97706; margin-top: 2px; margin-left: 18px;"><i class="fas fa-sticky-note"></i> ${aNote}</div>`;
+                                }
+
                                 assignListHtml += `
                                     <li>
-                                        <div>
+                                        <div style="flex: 1;">
                                             <i class="fas fa-user-tie" style="color:var(--primary); font-size:0.75rem;"></i> <strong>${escapeHtml(getInstructorName(a["ma-giang-vien"]))}</strong><br>
-                                            <span class="text-muted" style="font-size:0.75rem;">LT:${aLT} | TH:${aTH}</span>
+                                            <span class="text-muted" style="font-size:0.75rem; margin-left:18px;">LT:${aLT} | TH:${aTH}</span>
+                                            ${noteHtml}
                                         </div>
                                         <div class="action-group">
                                             <button class="btn-action-assign edit" onclick="editAssignment('${maPhanCong}')" title="Sửa"><i class="fas fa-pen"></i></button>
@@ -501,8 +520,8 @@
                 document.getElementById("modalTitle").textContent = "Thêm Phân công Mới";
                 modalModuleInfo.textContent = `${maHp} - ${tenHp}`;
                 instructorSelect.value = "";
+                assignNote.value = "";
 
-                // Tính số buổi còn lại hợp lệ
                 const assignments = currentAssignmentsData.filter(a => a["ma-hoc-phan"] === maHp);
                 let assignedLT = 0, assignedTH = 0;
                 assignments.forEach(a => { assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0; assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0; });
@@ -530,8 +549,8 @@
                 document.getElementById("modalTitle").textContent = "Chỉnh sửa Phân công";
                 modalModuleInfo.textContent = `${maHp} - ${mod["ten-hoc-phan"]}`;
                 instructorSelect.value = assignment["ma-giang-vien"];
+                assignNote.value = assignment["ghi-chu"] || "";
 
-                // Tính số buổi còn lại (Không tính số buổi của chính dòng đang sửa)
                 const otherAssigns = currentAssignmentsData.filter(a => a["ma-hoc-phan"] === maHp && a["ma-phan-cong"] !== maPhanCong);
                 let otherLT = 0, otherTH = 0;
                 otherAssigns.forEach(a => { otherLT += parseInt(a["so-buoi-ly-thuyet"]) || 0; otherTH += parseInt(a["so-buoi-thuc-hanh"]) || 0; });
@@ -556,6 +575,7 @@
                 const maGv = instructorSelect.value;
                 const lt = parseInt(theorySessions.value) || 0; const th = parseInt(practiceSessions.value) || 0;
                 const maxLT = parseInt(theorySessions.max) || 0; const maxTH = parseInt(practiceSessions.max) || 0;
+                const note = assignNote.value.trim();
 
                 if (!maGv) { window.showToast("Vui lòng chọn giảng viên.", true); return; }
                 if (lt === 0 && th === 0) { window.showToast("Nhập số buổi LT hoặc TH > 0.", true); return; }
@@ -567,18 +587,16 @@
                 try {
                     const supabase = window.supabaseClient;
                     if (editingAssignmentId) {
-                        // Cập nhật
                         const { error } = await supabase.from('phan-cong-giang-day').update({
-                            "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th
+                            "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th, "ghi-chu": note
                         }).eq('ma-phan-cong', editingAssignmentId);
                         if (error) throw error;
                         window.showToast("Cập nhật phân công thành công!");
                     } else {
-                        // Thêm mới
                         const maPhanCongMoi = "PC_" + new Date().getTime();
                         const { error } = await supabase.from('phan-cong-giang-day').insert([{ 
                             "ma-phan-cong": maPhanCongMoi, "ma-lop": currentSelectedClass["ma-lop"], "ma-hoc-phan": currentSelectedModule.maHp,
-                            "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th
+                            "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th, "ghi-chu": note
                         }]);
                         if (error) throw error;
                         window.showToast("Đã thêm phân công thành công!");
@@ -588,6 +606,9 @@
                 } finally { btnSaveAssignment.innerHTML = origText; btnSaveAssignment.disabled = false; }
             });
 
+            /* =================================================
+               KHỞI ĐỘNG
+            ================================================= */
             function startApp() {
                 let attempts = 0; const timer = setInterval(() => {
                     attempts++; if (window.supabaseClient) { clearInterval(timer); loadInitialData(); } else if (attempts >= 50) { clearInterval(timer); window.showToast("Không thể tải cơ sở dữ liệu.", true); }
