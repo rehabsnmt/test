@@ -1,0 +1,38 @@
+[
+  {
+    "title": "Quản lý Giảng viên",
+    "description": "Thêm, sửa hồ sơ giảng viên, quản lý chức vụ và chuyên ngành công tác.",
+    "icon": "fas fa-chalkboard-teacher",
+    "link": "quan-ly-giang-vien.html"
+  },
+  {
+    "title": "Quản lý Sinh viên",
+    "description": "Tra cứu, cập nhật thông tin sinh viên, học viên sau đại học của Bộ môn.",
+    "icon": "fas fa-user-graduate",
+    "link": "quan-ly-sinh-vien.html"
+  },
+  {
+    "title": "Quản lý Học phần",
+    "description": "Danh sách các môn học, thiết lập đề cương và chỉ tiêu tín chỉ.",
+    "icon": "fas fa-book",
+    "link": "quan-ly-hoc-phan.html"
+  },
+  {
+    "title": "Phân công Giảng dạy",
+    "description": "Lập kế hoạch phân công công tác giảng dạy cho các giảng viên trong học kỳ.",
+    "icon": "fas fa-tasks",
+    "link": "phan-cong.html"
+  },
+  {
+    "title": "Thời khóa biểu",
+    "description": "Xếp lịch học, lịch thi và theo dõi tiến độ giảng dạy theo tuần.",
+    "icon": "fas fa-calendar-alt",
+    "link": "thoi-khoa-bieu.html"
+  },
+  {
+    "title": "Quản lý Điểm",
+    "description": "Nhập điểm, xét duyệt kết quả thi và đánh giá quá trình học tập.",
+    "icon": "fas fa-clipboard-check",
+    "link": "quan-ly-diem.html"
+  }
+]
