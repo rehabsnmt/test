@@ -177,8 +177,8 @@
                     </select>
                 </div>
 
-                <!-- KHUNG CHỌN NHÓM -->
-                <div id="groupTargetDiv" class="hidden" style="margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
+                <!-- KHUNG CHỌN NHÓM (Sửa lỗi CSS ẩn/hiện) -->
+                <div id="groupTargetDiv" style="display: none; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
                     <div style="display: flex; gap: 1rem;">
                         <div class="form-group" style="flex: 1; margin: 0;">
                             <label for="groupTypeSelect" style="font-size: 0.8rem;">Loại nhóm <span class="text-danger">*</span></label>
@@ -190,8 +190,8 @@
                         </div>
                     </div>
                     <!-- Khung hiển thị danh sách SV trong nhóm -->
-                    <div id="groupMembersDiv" style="margin-top: 10px; font-size: 0.8rem; display: none;">
-                        <strong style="color: var(--text-dark);">Danh sách học viên:</strong>
+                    <div id="groupMembersDiv" style="margin-top: 5px; font-size: 0.8rem; display: none;">
+                        <strong style="color: var(--text-dark);">Danh sách học viên nhóm:</strong>
                         <ul id="groupMembersList" style="margin: 5px 0 0 0; padding-left: 20px; color: var(--text-muted); max-height: 100px; overflow-y: auto;">
                             <!-- Li render dynamically -->
                         </ul>
@@ -199,7 +199,7 @@
                 </div>
 
                 <!-- KHUNG CHỌN CÁ NHÂN -->
-                <div id="studentTargetDiv" class="hidden" style="margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
+                <div id="studentTargetDiv" style="display: none; margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
                     <div class="form-group" style="margin: 0;">
                         <label for="studentSelect" style="font-size: 0.8rem;">Chọn Học viên <span class="text-danger">*</span></label>
                         <select id="studentSelect"><option value="">- Học viên -</option></select>
@@ -253,7 +253,7 @@
                 toast.innerHTML = `<i class="${iconClass}" style="color: ${iconColor};"></i><span>${message}</span>`;
                 container.appendChild(toast);
                 requestAnimationFrame(() => toast.classList.add("show"));
-                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 4000);
+                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
             };
 
             function escapeHtml(value) {
@@ -261,11 +261,13 @@
                 return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
             }
 
+            // DATA STATES
             let classesList = [], instructorsList = [], studentsList = [], groupsList = [];
             let currentSelectedClass = null, currentSelectedModule = null; 
             let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {}; 
             let editingAssignmentId = null;
 
+            // DOM ELEMENTS
             const classSelect = document.getElementById("classSelect"), specSelect = document.getElementById("specSelect");
             const curriculumInfo = document.getElementById("curriculumInfo"), curriculumNameText = document.getElementById("curriculumNameText");
             const modulesTableBody = document.getElementById("modulesTableBody");
@@ -275,6 +277,7 @@
             const instructorSelect = document.getElementById("instructorSelect"), theorySessions = document.getElementById("theorySessions"), practiceSessions = document.getElementById("practiceSessions");
             const assignNote = document.getElementById("assignNote"), hintLT = document.getElementById("hintLT"), hintTH = document.getElementById("hintTH");
             
+            // DOM Đối tượng
             const targetTypeSelect = document.getElementById("targetTypeSelect");
             const groupTargetDiv = document.getElementById("groupTargetDiv"), groupTypeSelect = document.getElementById("groupTypeSelect"), groupNameSelect = document.getElementById("groupNameSelect");
             const groupMembersDiv = document.getElementById("groupMembersDiv"), groupMembersList = document.getElementById("groupMembersList");
@@ -288,7 +291,7 @@
             async function loadInitialData() {
                 try {
                     const supabase = window.supabaseClient;
-                    const { data: classData, error: classError } = await supabase.from('lop-hoc').select('*');
+                    const { data: classData, error: classError } = await supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh');
                     if (classError) throw classError;
                     classesList = classData || [];
                     classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
@@ -298,7 +301,7 @@
                         classSelect.appendChild(option);
                     });
 
-                    const { data: instData, error: instError } = await supabase.from('giang-vien').select('*').order('ho-ten', { ascending: true });
+                    const { data: instData, error: instError } = await supabase.from('giang-vien').select('ma-giang-vien, ho-ten').order('ho-ten', { ascending: true });
                     if (instError) throw instError;
                     instructorsList = instData || [];
                     instructorSelect.innerHTML = `<option value="">-- Chọn Giảng viên --</option>`;
@@ -317,7 +320,7 @@
             classSelect.addEventListener("change", () => { specSelect.value = ""; summaryCard.style.display = "none"; loadClassData(false); });
 
             /* =================================================
-               2. TẢI DỮ LIỆU CHƯƠNG TRÌNH & ĐỐI TƯỢNG BẰNG TẤT CẢ CỘT (SELECT *)
+               2. TẢI DỮ LIỆU CHƯƠNG TRÌNH & ĐỐI TƯỢNG (HỌC VIÊN/NHÓM)
             ================================================= */
             async function loadClassData(isSilentReload = false) {
                 const maLop = classSelect.value;
@@ -345,7 +348,7 @@
                     if (assignError) throw assignError;
                     currentAssignmentsData = assignData || [];
 
-                    const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('*').eq('ma-lop', maLop);
+                    const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('id, ma-lop, ma-hoc-phan, hoc-ky').eq('ma-lop', maLop);
                     if (semesterError && !semesterError.message.includes("does not exist")) throw semesterError;
                     
                     currentModuleSemesters = {};
@@ -355,25 +358,24 @@
                         }); 
                     }
 
-                    // Tải Danh sách Học viên bằng SELECT * để tránh lỗi sót ma-lop
+                    // Tải Danh sách Học viên bằng SELECT *
                     const { data: stdData, error: stdError } = await supabase.from('danh-sach-lop').select('*').eq('ma-lop', maLop);
-                    if (stdError) {
-                        console.error("Lỗi danh-sach-lop:", stdError);
-                        window.showToast("Lỗi lấy danh sách học viên.", true);
-                    }
+                    if (stdError) console.error("Lỗi danh-sach-lop:", stdError);
                     studentsList = stdData || [];
 
-                    // Tải Danh sách Nhóm bằng SELECT * để tránh lỗi sót ma-lop
+                    // Tải Danh sách Nhóm bằng SELECT *
                     const { data: grpData, error: grpError } = await supabase.from('danh-sach-nhom').select('*').eq('ma-lop', maLop);
-                    if (grpError) {
-                        console.error("Lỗi danh-sach-nhom:", grpError);
-                        window.showToast("Lỗi lấy danh sách nhóm.", true);
-                    }
+                    if (grpError) console.error("Lỗi danh-sach-nhom:", grpError);
                     groupsList = grpData || [];
+                    
+                    if (!isSilentReload) {
+                        console.log("Danh sách Học viên tải về:", studentsList.length);
+                        console.log("Danh sách Nhóm tải về:", groupsList.length);
+                    }
 
                     updateSpecializationFilter();
                     renderModulesTable();
-                } catch (error) { modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu. Bảng "${escapeHtml(tableName)}" có thể chưa tạo. Lỗi: ${escapeHtml(error.message || "")}</td></tr>`; }
+                } catch (error) { modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu. Bảng "${escapeHtml(tableName)}" chưa tạo.</td></tr>`; }
             }
 
             /* =================================================
@@ -386,6 +388,7 @@
                 specSelect.innerHTML = `<option value="">-- Tất cả chuyên ngành --</option>`;
                 specs.forEach(sp => { const option = document.createElement("option"); option.value = sp; option.textContent = sp; specSelect.appendChild(option); });
                 specSelect.disabled = false;
+                
                 if (currentVal && Array.from(specSelect.options).some(opt => opt.value === currentVal)) specSelect.value = currentVal;
             }
 
@@ -419,7 +422,7 @@
             window.updateSemester = async function(maHpRaw, newHk) {
                 try {
                     const maLop = currentSelectedClass["ma-lop"]; const supabase = window.supabaseClient; const maHp = String(maHpRaw).trim(); 
-                    const { data: existingRecords, error: checkError } = await supabase.from('lop-hoc-phan').select('*').eq('ma-lop', maLop).eq('ma-hoc-phan', maHp);
+                    const { data: existingRecords, error: checkError } = await supabase.from('lop-hoc-phan').select('id').eq('ma-lop', maLop).eq('ma-hoc-phan', maHp);
                     if (checkError) throw checkError;
 
                     if (existingRecords && existingRecords.length > 0) {
@@ -431,7 +434,7 @@
                     }
                     currentModuleSemesters[maHp] = newHk ? parseInt(newHk) : null;
                     window.showToast("Cập nhật học kỳ thành công!"); updateSummary();
-                } catch (err) { window.showToast("Lỗi cập nhật: " + err.message, true); loadClassData(true); }
+                } catch (err) { window.showToast("Lỗi cập nhật bảng lop-hoc-phan: " + err.message, true); loadClassData(true); }
             };
 
             /* =================================================
@@ -574,17 +577,17 @@
             ================================================= */
             targetTypeSelect.addEventListener('change', () => {
                 const val = targetTypeSelect.value;
-                groupTargetDiv.classList.add('hidden');
-                studentTargetDiv.classList.add('hidden');
+                groupTargetDiv.style.display = 'none';
+                studentTargetDiv.style.display = 'none';
                 
                 groupMembersDiv.style.display = "none";
                 groupMembersList.innerHTML = "";
 
                 if (val === 'nhom') {
-                    groupTargetDiv.classList.remove('hidden');
+                    groupTargetDiv.style.display = 'flex';
                     populateGroupTypes();
                 } else if (val === 'ca-nhan') {
-                    studentTargetDiv.classList.remove('hidden');
+                    studentTargetDiv.style.display = 'block';
                     populateStudents();
                 }
             });
@@ -592,12 +595,12 @@
             function populateStudents() {
                 studentSelect.innerHTML = '<option value="">- Chọn học viên -</option>';
                 studentsList.forEach(s => {
-                    studentSelect.innerHTML += `<option value="${s['ma-hoc-vien']}">${s['ma-hoc-vien']} - ${s['ho-ten']}</option>`;
+                    studentSelect.innerHTML += `<option value="${escapeHtml(s['ma-hoc-vien'])}">${escapeHtml(s['ma-hoc-vien'])} - ${escapeHtml(s['ho-ten'])}</option>`;
                 });
             }
 
             function populateGroupTypes() {
-                const uniqueTypes = [...new Set(groupsList.map(g => g['loai-nhom']).filter(Boolean))];
+                const uniqueTypes = [...new Set(groupsList.map(g => g['loai-nhom'] ? String(g['loai-nhom']).trim() : "").filter(Boolean))];
                 groupTypeSelect.innerHTML = '<option value="">- Loại -</option>';
                 uniqueTypes.forEach(t => groupTypeSelect.innerHTML += `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`);
                 groupNameSelect.innerHTML = '<option value="">- Tên -</option>';
@@ -605,7 +608,7 @@
 
             groupTypeSelect.addEventListener('change', () => {
                 const type = groupTypeSelect.value;
-                const uniqueNames = [...new Set(groupsList.filter(g => g['loai-nhom'] === type).map(g => g['ten-nhom']).filter(Boolean))];
+                const uniqueNames = [...new Set(groupsList.filter(g => (g['loai-nhom'] ? String(g['loai-nhom']).trim() : "") === type).map(g => g['ten-nhom'] ? String(g['ten-nhom']).trim() : "").filter(Boolean))];
                 groupNameSelect.innerHTML = '<option value="">- Tên -</option>';
                 uniqueNames.forEach(n => groupNameSelect.innerHTML += `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`);
                 
@@ -624,7 +627,11 @@
                     return;
                 }
                 
-                const members = groupsList.filter(g => g['loai-nhom'] === type && g['ten-nhom'] === name);
+                const members = groupsList.filter(g => 
+                    (g['loai-nhom'] ? String(g['loai-nhom']).trim() : "") === type && 
+                    (g['ten-nhom'] ? String(g['ten-nhom']).trim() : "") === name
+                );
+
                 if (members.length > 0) {
                     groupMembersList.innerHTML = "";
                     members.forEach(m => {
@@ -704,7 +711,7 @@
                         groupTypeSelect.dispatchEvent(new Event('change'));
                         setTimeout(() => {
                             groupNameSelect.value = assignment["ten-nhom"] || "";
-                            groupNameSelect.dispatchEvent(new Event('change')); // Trigger hiển thị danh sách SV
+                            groupNameSelect.dispatchEvent(new Event('change')); 
                         }, 50);
                     }, 50);
                 } else if (dTuong === "ca-nhan") {
@@ -760,7 +767,6 @@
                 try {
                     const supabase = window.supabaseClient;
                     const payload = {
-                        "ma-lop": currentSelectedClass["ma-lop"], "ma-hoc-phan": currentSelectedModule.maHp,
                         "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th, "ghi-chu": note,
                         "doi-tuong": doiTuong, "loai-nhom": loaiNhom, "ten-nhom": tenNhom, "ma-hoc-vien": maHv, "ho-ten": hoTenHv
                     };
@@ -770,6 +776,8 @@
                         if (error) throw error;
                         window.showToast("Cập nhật phân công thành công!");
                     } else {
+                        payload["ma-lop"] = currentSelectedClass["ma-lop"];
+                        payload["ma-hoc-phan"] = currentSelectedModule.maHp;
                         const { error } = await supabase.from('phan-cong-giang-day').insert([payload]);
                         if (error) throw error;
                         window.showToast("Đã thêm phân công thành công!");
