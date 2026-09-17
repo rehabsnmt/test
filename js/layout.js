@@ -1,6 +1,6 @@
 /* =========================================================
    BMPHCN - LAYOUT DÙNG CHUNG
-   Header + Footer + Supabase Auth + Phân quyền
+   Header + Footer + Supabase Auth
    ========================================================= */
 
 (() => {
@@ -53,11 +53,7 @@
                     <div class="logo">
                         <img src="./images/logo_Bộ môn.png" alt="Logo Bộ môn" onerror="this.src='./logo.png'">
                     </div>
-                    <div class="logo-text">
-                        <div id="logo-line-1">BỘ MÔN PHỤC HỒI CHỨC NĂNG</div>
-                        <div id="logo-line-2">TRƯỜNG ĐIỀU DƯỠNG - KỸ THUẬT Y HỌC</div>
-                        <div id="logo-line-3">ĐẠI HỌC Y DƯỢC THÀNH PHỐ HỒ CHÍ MINH</div>
-                    </div>
+                    <!-- Đã xóa phần logo-text (BỘ MÔN PHỤC HỒI CHỨC NĂNG...) theo yêu cầu -->
                 </a>
                 <nav class="nav-links" id="mainNav" aria-label="Điều hướng chính">
                     <a href="./index.html" class="nav-item">Trang chủ</a>
@@ -123,14 +119,9 @@
     }
 
     /* =====================================================
-       5. PHÂN QUYỀN TRUY CẬP
+       5. QUẢN LÝ TRUY CẬP (ĐÃ ĐƠN GIẢN HÓA)
        ===================================================== */
     const PROTECTED_PAGES = [
-        "dashboard.html", "quan-ly-giang-vien.html", "quan-ly-sinh-vien.html",
-        "quan-ly-hoc-phan.html", "phan-cong.html", "thoi-khoa-bieu.html", "quan-ly-diem.html"
-    ];
-
-    const STAFF_PAGES = [
         "dashboard.html", "quan-ly-giang-vien.html", "quan-ly-sinh-vien.html",
         "quan-ly-hoc-phan.html", "phan-cong.html", "thoi-khoa-bieu.html", "quan-ly-diem.html"
     ];
@@ -139,6 +130,7 @@
         return window.location.pathname.split("/").pop().toLowerCase() || "index.html";
     }
 
+    // Vẫn giữ hàm này để lấy tên nếu có, nhưng không ép buộc phải có để truy cập
     async function getProfile(userId) {
         const { data, error } = await supabaseClient
             .from("profiles")
@@ -146,10 +138,7 @@
             .eq("id", userId)
             .maybeSingle();
 
-        if (error) {
-            console.error("Lỗi lấy profile:", error);
-            return null;
-        }
+        if (error) return null;
         return data;
     }
 
@@ -163,14 +152,9 @@
             return;
         }
 
-        const role = profile?.role || "";
-        if (role === "student") {
-            button.href = "#";
-            button.textContent = "Đăng xuất";
-        } else {
-            button.href = "./dashboard.html";
-            button.textContent = profile?.full_name || user.email || "Tài khoản";
-        }
+        // Nếu có tên trong profile thì hiển thị tên, không có thì hiển thị email, hoặc mặc định là "Tài khoản"
+        button.href = "./dashboard.html";
+        button.textContent = profile?.full_name || user.email || "Tài khoản";
     }
 
     async function logout() {
@@ -195,45 +179,21 @@
         });
     }
 
-    function accessDenied() {
-        const main = document.querySelector("main");
-        if (main) {
-            main.style.opacity = "1";
-            main.innerHTML = `
-                <div style="min-height: 60vh; display: flex; align-items: center; justify-content: center; text-align: center;">
-                    <div class="card" style="max-width: 400px; margin: auto;">
-                        <i class="fas fa-lock" style="font-size:3rem; color:var(--accent); margin-bottom:1rem;"></i>
-                        <h2>Không có quyền truy cập</h2>
-                        <p style="margin-top:.75rem;">Tài khoản của bạn không được cấp quyền xem trang này.</p>
-                        <a href="./index.html" class="btn-primary" style="margin-top:1.5rem;">Về trang chủ</a>
-                    </div>
-                </div>
-            `;
-        }
-    }
-
-    async function checkPageAccess(user, profile) {
+    // ĐÃ CHỈNH SỬA: Chỉ cần đăng nhập đúng là vào được trang bảo mật
+    async function checkPageAccess(user) {
         const page = getCurrentPage();
         const isProtected = PROTECTED_PAGES.includes(page);
 
+        // Nếu trang không bảo mật -> Cho qua
         if (!isProtected) return true;
 
+        // Nếu trang bảo mật mà CHƯA đăng nhập -> Đá về Login
         if (!user) {
             window.location.replace(`./login.html?redirect=${encodeURIComponent(page)}`);
             return false;
         }
 
-        if (!profile || (profile.status && profile.status !== "active")) {
-            alert("Tài khoản chưa được kích hoạt hoặc không tồn tại.");
-            await logout();
-            return false;
-        }
-
-        if (STAFF_PAGES.includes(page) && !["admin", "lecturer"].includes(profile.role)) {
-            accessDenied();
-            return false;
-        }
-
+        // Cứ có user là cho qua (Đã loại bỏ cơ chế kiểm tra bảng profiles)
         return true;
     }
 
@@ -255,7 +215,7 @@
             updateAuthButton(user, profile);
             
             // Xử lý logic khóa trang bảo mật
-            const allowed = await checkPageAccess(user, profile);
+            const allowed = await checkPageAccess(user);
             const mainEl = document.querySelector("main");
 
             if (allowed) {
@@ -268,7 +228,6 @@
 
             // Theo dõi khi người dùng Đăng nhập/Đăng xuất ở tab khác
             supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                const currentUser = session?.user || null;
                 if (event === 'SIGNED_OUT') {
                     const page = getCurrentPage();
                     if (PROTECTED_PAGES.includes(page)) {
