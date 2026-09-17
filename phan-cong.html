@@ -292,7 +292,7 @@
                     classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
                     classesList.forEach(cls => {
                         const option = document.createElement("option"); option.value = cls["ma-lop"]; 
-                        option.textContent = `${cls["ten-lop"]}`; // Ẩn mã lớp
+                        option.textContent = `${cls["ten-lop"]}`; 
                         classSelect.appendChild(option);
                     });
 
@@ -302,7 +302,7 @@
                     instructorSelect.innerHTML = `<option value="">-- Chọn Giảng viên --</option>`;
                     instructorsList.forEach(inst => {
                         const option = document.createElement("option"); option.value = inst["ma-giang-vien"]; 
-                        option.textContent = `${inst["ho-ten"]}`; // Ẩn mã GV
+                        option.textContent = `${inst["ho-ten"]}`; 
                         instructorSelect.appendChild(option);
                     });
                 } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
@@ -337,7 +337,6 @@
                     if (assignError) throw assignError;
                     currentAssignmentsData = assignData || [];
 
-                    // CHỈ SELECT ĐÚNG 4 CỘT CỦA BẢNG LOP-HOC-PHAN
                     const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('id, ma-lop, ma-hoc-phan, hoc-ky').eq('ma-lop', maLop);
                     if (semesterError && !semesterError.message.includes("does not exist")) throw semesterError;
                     
@@ -379,13 +378,11 @@
                 document.getElementById("hk3-credits").textContent = hkCredits[3]; document.getElementById("hk4-credits").textContent = hkCredits[4];
             }
 
-            // HÀM LƯU HỌC KỲ ĐÃ FIX THEO ĐÚNG CẤU TRÚC 4 CỘT
             window.updateSemester = async function(maHp, newHk) {
                 try {
                     const maLop = currentSelectedClass["ma-lop"]; 
                     const supabase = window.supabaseClient;
                     
-                    // Kiểm tra tồn tại
                     const { data: existingRecords, error: checkError } = await supabase
                         .from('lop-hoc-phan')
                         .select('id')
@@ -397,17 +394,14 @@
                     if (existingRecords && existingRecords.length > 0) {
                         const recordId = existingRecords[0].id;
                         if (newHk) {
-                            // Cập nhật dùng ID
                             const { error: updErr } = await supabase.from('lop-hoc-phan').update({ 'hoc-ky': parseInt(newHk) }).eq('id', recordId);
                             if (updErr) throw updErr;
                         } else {
-                            // Xóa nếu gỡ bỏ HK
                             const { error: delErr } = await supabase.from('lop-hoc-phan').delete().eq('id', recordId);
                             if (delErr) throw delErr;
                         }
                     } else {
                         if (newHk) {
-                            // Thêm mới (Supabase tự sinh id)
                             const { error: insErr } = await supabase.from('lop-hoc-phan')
                                 .insert([{ "ma-lop": maLop, "ma-hoc-phan": maHp, "hoc-ky": parseInt(newHk) }]);
                             if (insErr) throw insErr;
@@ -421,7 +415,7 @@
                 } catch (err) { 
                     console.error("Lỗi lưu học kỳ:", err);
                     window.showToast("Lỗi cập nhật bảng lop-hoc-phan: " + err.message, true);
-                    loadClassData(); // Tải lại để reset dropdown về như cũ
+                    loadClassData();
                 }
             };
 
@@ -452,7 +446,7 @@
                         if (moduleAssignments.length > 0) {
                             assignListHtml = `<ul class="assignment-list-inline">`;
                             moduleAssignments.forEach(a => {
-                                const aLT = parseInt(a["so-buoi-ly-thuyet"]) || 0, aTH = parseInt(a["so-buoi-thuc-hanh"]) || 0, maPhanCong = escapeHtml(a["ma-phan-cong"] || "");
+                                const aLT = parseInt(a["so-buoi-ly-thuyet"]) || 0, aTH = parseInt(a["so-buoi-thuc-hanh"]) || 0, assignId = escapeHtml(a["id"] || "");
                                 const aNote = escapeHtml(a["ghi-chu"] || "");
                                 assignedLT += aLT; assignedTH += aTH;
 
@@ -467,8 +461,8 @@
                                             ${noteHtml}
                                         </div>
                                         <div class="action-group">
-                                            <button class="btn-action-assign edit" onclick="editAssignment('${maPhanCong}')" title="Sửa"><i class="fas fa-pen"></i></button>
-                                            <button class="btn-action-assign delete" onclick="deleteAssignment('${maPhanCong}')" title="Xóa"><i class="fas fa-trash-alt"></i></button>
+                                            <button class="btn-action-assign edit" onclick="editAssignment('${assignId}')" title="Sửa"><i class="fas fa-pen"></i></button>
+                                            <button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}')" title="Xóa"><i class="fas fa-trash-alt"></i></button>
                                         </div>
                                     </li>`;
                             });
@@ -529,12 +523,12 @@
             }
 
             /* =================================================
-               6. THÊM, SỬA, XÓA PHÂN CÔNG
+               6. THÊM, SỬA, XÓA PHÂN CÔNG (THEO ID)
             ================================================= */
-            window.deleteAssignment = async function(maPhanCong) {
+            window.deleteAssignment = async function(assignId) {
                 if (!confirm("Bạn có chắc chắn muốn xóa phân công này không?")) return;
                 try {
-                    const { error } = await window.supabaseClient.from('phan-cong-giang-day').delete().eq('ma-phan-cong', maPhanCong);
+                    const { error } = await window.supabaseClient.from('phan-cong-giang-day').delete().eq('id', assignId);
                     if (error) throw error;
                     window.showToast("Đã xóa phân công!"); loadClassData();
                 } catch (err) { window.showToast("Lỗi xóa dữ liệu: " + err.message, true); }
@@ -546,7 +540,7 @@
                 currentSelectedModule = { maHp, tenHp, khLT, khTH };
                 
                 document.getElementById("modalTitle").textContent = "Thêm Phân công Mới";
-                modalModuleInfo.textContent = `${tenHp}`; // Ẩn Mã HP
+                modalModuleInfo.textContent = `${tenHp}`; 
                 instructorSelect.value = "";
                 assignNote.value = "";
 
@@ -564,22 +558,22 @@
                 assignModal.classList.remove("hidden");
             };
 
-            window.editAssignment = function(maPhanCong) {
-                const assignment = currentAssignmentsData.find(a => a["ma-phan-cong"] === maPhanCong);
+            window.editAssignment = function(assignId) {
+                const assignment = currentAssignmentsData.find(a => a["id"] === assignId);
                 if (!assignment) return;
                 const maHp = assignment["ma-hoc-phan"];
                 const mod = currentCurriculumData.find(m => m["ma-hoc-phan"] === maHp);
                 if(!mod) return;
 
-                editingAssignmentId = maPhanCong;
+                editingAssignmentId = assignId;
                 currentSelectedModule = { maHp, tenHp: mod["ten-hoc-phan"], khLT: parseInt(mod["so-buoi-ly-thuyet"]) || 0, khTH: parseInt(mod["so-buoi-thuc-hanh"]) || 0 };
 
                 document.getElementById("modalTitle").textContent = "Chỉnh sửa Phân công";
-                modalModuleInfo.textContent = `${mod["ten-hoc-phan"]}`; // Ẩn Mã HP
+                modalModuleInfo.textContent = `${mod["ten-hoc-phan"]}`; 
                 instructorSelect.value = assignment["ma-giang-vien"];
                 assignNote.value = assignment["ghi-chu"] || "";
 
-                const otherAssigns = currentAssignmentsData.filter(a => a["ma-hoc-phan"] === maHp && a["ma-phan-cong"] !== maPhanCong);
+                const otherAssigns = currentAssignmentsData.filter(a => a["ma-hoc-phan"] === maHp && a["id"] !== assignId);
                 let otherLT = 0, otherTH = 0;
                 otherAssigns.forEach(a => { otherLT += parseInt(a["so-buoi-ly-thuyet"]) || 0; otherTH += parseInt(a["so-buoi-thuc-hanh"]) || 0; });
 
@@ -617,13 +611,13 @@
                     if (editingAssignmentId) {
                         const { error } = await supabase.from('phan-cong-giang-day').update({
                             "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th, "ghi-chu": note
-                        }).eq('ma-phan-cong', editingAssignmentId);
+                        }).eq('id', editingAssignmentId);
                         if (error) throw error;
                         window.showToast("Cập nhật phân công thành công!");
                     } else {
-                        const maPhanCongMoi = "PC_" + new Date().getTime();
+                        // KHÔNG TRUYỀN `id`, DB SẼ TỰ SINH
                         const { error } = await supabase.from('phan-cong-giang-day').insert([{ 
-                            "ma-phan-cong": maPhanCongMoi, "ma-lop": currentSelectedClass["ma-lop"], "ma-hoc-phan": currentSelectedModule.maHp,
+                            "ma-lop": currentSelectedClass["ma-lop"], "ma-hoc-phan": currentSelectedModule.maHp,
                             "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th, "ghi-chu": note
                         }]);
                         if (error) throw error;
