@@ -1,851 +1,1079 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 /* =========================================================
-   1. GLOBAL
+   BMPHCN - LAYOUT DÙNG CHUNG
+   Header + Footer + Supabase Auth + Phân quyền
    ========================================================= */
 
-:root {
-  --primary: #0284c7;
-  --primary-hover: #0369a1;
-  --primary-light: #f0f9ff;
-
-  --accent: #e11d48;
-  --accent-light: #fff1f2;
-
-  --text-dark: #0f172a;
-  --text-body: #475569;
-  --border: #e2e8f0;
-
-  --bg-page: #f8fafc;
-  --surface: #ffffff;
-
-  --shadow-sm: 0 1px 2px rgba(2, 132, 199, .05);
-  --shadow-card: 0 4px 20px rgba(2, 132, 199, .04);
-  --shadow-hover: 0 12px 30px rgba(2, 132, 199, .08);
-
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-pill: 50px;
-
-  --transition: all .2s cubic-bezier(.4, 0, .2, 1);
-}
-
-/* =========================================================
-   2. RESET
-   ========================================================= */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  min-height: 100vh;
-
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-
-  color: var(--text-body);
-  background: var(--bg-page);
-
-  -webkit-font-smoothing: antialiased;
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-
-img {
-  max-width: 100%;
-  display: block;
-}
-
-/* Nội dung thông thường không tự ngắt */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-label,
-button,
-a,
-th,
-td,
-.nav-item,
-.btn-login,
-.btn-primary {
-  overflow-wrap: normal;
-  word-break: normal;
-}
-
-/* Các đoạn văn mới được phép xuống dòng */
-p {
-  overflow-wrap: break-word;
-  word-break: normal;
-}
-
-/* =========================================================
-   3. HEADER
-   ========================================================= */
-
-header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+(() => {
+    "use strict";
 
-  width: 100%;
-  gap: 1rem;
-  padding: .8rem 4%;
+    /* =====================================================
+       1. CONFIG SUPABASE
+       ===================================================== */
 
-  background: rgba(255, 255, 255, .95);
-  border-bottom: 1px solid rgba(0, 0, 0, .03);
+    const SUPABASE_URL =
+        "https://swuqrtnfgzyatqwxojge.supabase.co";
 
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+    const SUPABASE_KEY =
+        "sb_publishable_tyhD6m-_HF6igF_HDpz6rQ_Boa0IzMp";
 
-  transition: var(--transition);
-}
 
-/* =========================================================
-   4. LOGO
-   ========================================================= */
+    /* =====================================================
+       2. TẢI SUPABASE JS
+       ===================================================== */
 
-.logo-link {
-  display: flex;
-  align-items: center;
+    function loadSupabase() {
 
-  min-width: 0;
-  flex-shrink: 1;
-  gap: 10px;
+        return new Promise((resolve, reject) => {
 
-  color: inherit;
-  text-decoration: none;
-}
+            if (window.supabase) {
+                resolve();
+                return;
+            }
 
-.logo {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
+            const script =
+                document.createElement("script");
 
-.logo img {
-  width: auto;
-  height: clamp(28px, 3.5vw, 42px);
+            script.src =
+                "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
-  object-fit: contain;
-}
+            script.onload = resolve;
 
-.logo-text {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+            script.onerror = () => {
+                reject(
+                    new Error("Không thể tải Supabase.")
+                );
+            };
 
-  min-width: 0;
-}
+            document.head.appendChild(script);
+        });
+    }
 
-.logo-text div {
-  overflow: hidden;
 
-  white-space: nowrap;
-  text-overflow: ellipsis;
+    /* =====================================================
+       3. SUPABASE CLIENT
+       ===================================================== */
 
-  line-height: 1.1;
-}
+    let supabaseClient = null;
 
-#logo-line-1 {
-  color: var(--text-dark);
-  font-size: clamp(.8rem, 1.1vw, .95rem);
-  font-weight: 700;
-}
 
-#logo-line-2 {
-  margin-top: .2em;
+    function initSupabase() {
 
-  color: var(--text-body);
-  font-size: clamp(.6rem, .85vw, .75rem);
-  font-weight: 600;
-}
+        if (!window.supabase) {
+            throw new Error(
+                "Supabase JS chưa được tải."
+            );
+        }
 
-#logo-line-3 {
-  margin-top: .1em;
+        if (!window.supabaseClient) {
 
-  color: var(--text-body);
-  font-size: clamp(.55rem, .75vw, .65rem);
-  font-weight: 500;
-}
+            window.supabaseClient =
+                window.supabase.createClient(
+                    SUPABASE_URL,
+                    SUPABASE_KEY
+                );
+        }
 
-/* =========================================================
-   5. NAVIGATION
-   ========================================================= */
+        supabaseClient =
+            window.supabaseClient;
 
-.nav-links {
-  display: flex;
-  align-items: center;
+        return supabaseClient;
+    }
 
-  gap: clamp(.8rem, 1.5vw, 2rem);
 
-  flex-shrink: 0;
-}
+    /* =====================================================
+       4. HEADER
+       ===================================================== */
 
-.nav-item {
-  position: relative;
+    function renderHeader() {
 
-  padding: .4rem 0;
+        const placeholder =
+            document.getElementById(
+                "header-placeholder"
+            );
 
-  color: var(--text-body);
-  font-size: clamp(.75rem, 1vw, .85rem);
-  font-weight: 500;
+        if (!placeholder) {
+            console.warn(
+                "Không tìm thấy #header-placeholder"
+            );
+            return;
+        }
 
-  text-decoration: none;
-  white-space: nowrap;
 
-  transition: var(--transition);
-}
+        placeholder.innerHTML = `
 
-.nav-item::after {
-  content: '';
+            <header>
 
-  position: absolute;
-  left: 0;
-  bottom: 0;
+                <a
+                    href="index.html"
+                    class="logo-link"
+                    aria-label="Trang chủ"
+                >
+
+                    <div class="logo">
+
+                        <img
+                            src="images/logo_Bộ môn.png"
+                            alt="Logo Bộ môn"
+                        >
+
+                    </div>
+
+
+                    <div class="logo-text">
+
+                        <div id="logo-line-1">
+                            BỘ MÔN PHỤC HỒI CHỨC NĂNG
+                        </div>
+
+                        <div id="logo-line-2">
+                            TRƯỜNG ĐIỀU DƯỠNG - KỸ THUẬT Y HỌC
+                        </div>
+
+                        <div id="logo-line-3">
+                            ĐẠI HỌC Y DƯỢC THÀNH PHỐ HỒ CHÍ MINH
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+                <nav
+                    class="nav-links"
+                    id="mainNav"
+                    aria-label="Điều hướng chính"
+                >
+
+                    <a
+                        href="index.html"
+                        class="nav-item"
+                    >
+                        Trang chủ
+                    </a>
+
+                    <a
+                        href="gioi-thieu.html"
+                        class="nav-item"
+                    >
+                        Giới thiệu
+                    </a>
+
+                    <a
+                        href="tuyen-sinh.html"
+                        class="nav-item"
+                    >
+                        Tuyển sinh
+                    </a>
+
+                    <a
+                        href="luan-van.html"
+                        class="nav-item"
+                    >
+                        Luận văn
+                    </a>
 
-  width: 0;
-  height: 2px;
+                    <a
+                        href="tai-nguyen.html"
+                        class="nav-item"
+                    >
+                        Tài nguyên
+                    </a>
+
+                    <a
+                        href="thong-bao.html"
+                        class="nav-item"
+                    >
+                        Thông báo
+                    </a>
 
-  background: var(--primary);
-  border-radius: 2px;
+                    <a
+                        href="login.html"
+                        class="btn-login"
+                        id="btnAuthNav"
+                    >
+                        Đăng nhập
+                    </a>
 
-  transition: var(--transition);
-}
+                </nav>
 
-.nav-item:hover {
-  color: var(--text-dark);
-}
 
-.nav-item:hover::after {
-  width: 100%;
-}
+                <button
+                    type="button"
+                    class="menu-toggle"
+                    id="menuToggle"
+                    aria-label="Mở menu"
+                    aria-expanded="false"
+                >
+                    <i class="fas fa-bars"></i>
+                </button>
 
-.menu-toggle {
-  display: none;
+            </header>
+        `;
+    }
 
-  padding: .4rem;
 
-  border: 0;
-  background: transparent;
+    /* =====================================================
+       5. FOOTER
+       ===================================================== */
 
-  color: var(--text-dark);
-  font-size: 1.2rem;
+    function renderFooter() {
 
-  cursor: pointer;
-}
+        const placeholder =
+            document.getElementById(
+                "footer-placeholder"
+            );
 
-/* =========================================================
-   6. BUTTONS
-   ========================================================= */
+        if (!placeholder) {
+            console.warn(
+                "Không tìm thấy #footer-placeholder"
+            );
+            return;
+        }
 
-.btn-login,
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 
-  min-width: max-content;
-  padding: .5rem 1rem;
+        placeholder.innerHTML = `
 
-  border: 0;
-  border-radius: var(--radius-pill);
+            <footer>
 
-  background: var(--primary);
-  color: var(--surface);
+                <p>
+                    © ${new Date().getFullYear()}
+                    Bộ môn Phục hồi chức năng -
+                    Đại học Y Dược Thành phố Hồ Chí Minh
+                </p>
 
-  font-size: clamp(.75rem, 1vw, .85rem);
-  font-weight: 500;
+            </footer>
+        `;
+    }
 
-  text-decoration: none;
-  white-space: nowrap;
 
-  cursor: pointer;
+    /* =====================================================
+       6. MOBILE MENU
+       ===================================================== */
 
-  box-shadow: var(--shadow-sm);
+    function initMobileMenu() {
 
-  transition: var(--transition);
-}
+        const toggle =
+            document.getElementById(
+                "menuToggle"
+            );
+
+        const nav =
+            document.getElementById(
+                "mainNav"
+            );
 
-.btn-login:hover,
-.btn-primary:hover {
-  background: var(--primary-hover);
-  box-shadow: 0 4px 10px rgba(2, 132, 199, .15);
-  transform: translateY(-1px);
-}
+        if (!toggle || !nav) {
+            return;
+        }
 
-.btn-login:active,
-.btn-primary:active {
-  transform: translateY(0);
-}
 
-/* =========================================================
-   7. MAIN
-   ========================================================= */
+        toggle.addEventListener(
+            "click",
+            () => {
 
-main {
-  width: 100%;
-  max-width: 1200px;
+                const isOpen =
+                    nav.classList.toggle(
+                        "active"
+                    );
 
-  margin: 0 auto;
-  padding: 0 4% 3rem;
-}
+                toggle.setAttribute(
+                    "aria-expanded",
+                    String(isOpen)
+                );
 
-/* Các nội dung khối chính căn giữa */
-main > section,
-main > .card,
-main > .quick-links {
-  margin-left: auto;
-  margin-right: auto;
-}
 
-/* =========================================================
-   8. QUICK LINKS
-   ========================================================= */
+                const icon =
+                    toggle.querySelector("i");
 
-.quick-links {
-  display: grid;
+                if (icon) {
 
-  grid-template-columns:
-    repeat(auto-fit, minmax(280px, 1fr));
+                    icon.className =
+                        isOpen
+                            ? "fas fa-times"
+                            : "fas fa-bars";
+                }
 
-  gap: 1.5rem;
-}
+            }
+        );
 
-.quick-card {
-  position: relative;
-  overflow: hidden;
 
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+        nav.addEventListener(
+            "click",
+            (event) => {
 
-  min-width: 0;
-  padding: 2rem 1.5rem;
+                const link =
+                    event.target.closest(
+                        "a"
+                    );
 
-  border: 1px solid rgba(0, 0, 0, .02);
-  border-radius: var(--radius-md);
+                if (!link) {
+                    return;
+                }
 
-  background: var(--surface);
-  box-shadow: var(--shadow-card);
+                nav.classList.remove(
+                    "active"
+                );
 
-  text-decoration: none;
+                toggle.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
 
-  transition: var(--transition);
-}
+                const icon =
+                    toggle.querySelector("i");
 
-.quick-card::before {
-  content: '';
+                if (icon) {
+                    icon.className =
+                        "fas fa-bars";
+                }
+            }
+        );
 
-  position: absolute;
-  top: 0;
-  left: 0;
 
-  width: 100%;
-  height: 3px;
+        document.addEventListener(
+            "click",
+            (event) => {
 
-  background: var(--accent);
+                if (
+                    !nav.contains(event.target) &&
+                    !toggle.contains(event.target)
+                ) {
 
-  transform: scaleX(0);
-  transform-origin: left;
+                    nav.classList.remove(
+                        "active"
+                    );
 
-  transition: transform .4s ease;
-}
+                    toggle.setAttribute(
+                        "aria-expanded",
+                        "false"
+                    );
 
-.quick-card:hover {
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-3px);
-}
+                    const icon =
+                        toggle.querySelector("i");
 
-.quick-card:hover::before {
-  transform: scaleX(1);
-}
+                    if (icon) {
+                        icon.className =
+                            "fas fa-bars";
+                    }
+                }
+            }
+        );
+    }
 
-.icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 
-  width: 48px;
-  height: 48px;
+    /* =====================================================
+       7. ACTIVE MENU
+       ===================================================== */
 
-  margin-bottom: 1.2rem;
+    function setActiveMenu() {
 
-  flex-shrink: 0;
+        const currentFile =
+            window.location.pathname
+                .split("/")
+                .pop()
+                .toLowerCase();
 
-  border-radius: var(--radius-md);
 
-  background: var(--primary-light);
-  color: var(--primary);
+        const currentPage =
+            currentFile || "index.html";
 
-  font-size: 1.3rem;
 
-  transition: var(--transition);
-}
+        document
+            .querySelectorAll(".nav-item")
+            .forEach((link) => {
 
-.quick-card:hover .icon-wrapper {
-  background: var(--primary);
-  color: var(--surface);
-  transform: scale(1.05);
-}
+                const href =
+                    (link.getAttribute("href") || "")
+                        .split("?")[0]
+                        .split("#")[0]
+                        .toLowerCase();
 
-.quick-card h3 {
-  margin-bottom: .5rem;
 
-  color: var(--text-dark);
-  font-size: 1.05rem;
-  font-weight: 600;
+                if (href === currentPage) {
 
-  white-space: nowrap;
-}
+                    link.classList.add(
+                        "active"
+                    );
 
-.quick-card p {
-  color: var(--text-body);
-  font-size: .85rem;
-  line-height: 1.5;
+                } else {
 
-  text-align: justify;
-}
+                    link.classList.remove(
+                        "active"
+                    );
+                }
 
-/* =========================================================
-   9. CARD
-   ========================================================= */
+            });
+    }
 
-.card {
-  width: 100%;
 
-  margin-bottom: 1.5rem;
-  padding: 1.5rem;
+    /* =====================================================
+       8. TRANG CẦN ĐĂNG NHẬP
+       ===================================================== */
 
-  border-radius: var(--radius-md);
+    const PROTECTED_PAGES = [
 
-  background: var(--surface);
-  box-shadow: var(--shadow-card);
-}
+        "dashboard.html",
 
-/* =========================================================
-   10. TABLE
-   ========================================================= */
+        "quan-ly-giang-vien.html",
 
-.table-responsive {
-  width: 100%;
+        "quan-ly-sinh-vien.html",
 
-  margin-top: 1rem;
+        "quan-ly-hoc-phan.html",
 
-  overflow-x: auto;
-  overflow-y: hidden;
+        "phan-cong.html",
 
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+        "thoi-khoa-bieu.html",
 
-  -webkit-overflow-scrolling: touch;
-}
+        "quan-ly-diem.html"
 
-table {
-  width: 100%;
-  min-width: max-content;
+    ];
 
-  border-collapse: collapse;
 
-  text-align: center;
-}
+    /* =====================================================
+       9. TRANG DÀNH CHO ADMIN / GIẢNG VIÊN
+       ===================================================== */
 
-th,
-td {
-  padding: .75rem 1rem;
+    const STAFF_PAGES = [
 
-  border-bottom: 1px solid var(--border);
+        "dashboard.html",
 
-  font-size: .85rem;
+        "quan-ly-giang-vien.html",
 
-  white-space: nowrap;
-  vertical-align: middle;
-}
+        "quan-ly-sinh-vien.html",
 
-th {
-  background: var(--bg-page);
+        "quan-ly-hoc-phan.html",
 
-  color: var(--text-dark);
+        "phan-cong.html",
 
-  font-size: .75rem;
-  font-weight: 600;
+        "thoi-khoa-bieu.html",
 
-  letter-spacing: .03em;
-  text-transform: uppercase;
+        "quan-ly-diem.html"
 
-  text-align: center;
-}
+    ];
 
-td {
-  text-align: center;
-}
 
-tr:last-child td {
-  border-bottom: 0;
-}
+    /* =====================================================
+       10. LẤY TÊN TRANG
+       ===================================================== */
 
-/* Cột cần chứa văn bản dài có thể cho xuống dòng */
-td.text-long,
-td.description,
-td.note,
-.text-long {
-  white-space: normal;
-  min-width: 220px;
+    function getCurrentPage() {
 
-  text-align: justify;
-  overflow-wrap: break-word;
-}
+        return (
+            window.location.pathname
+                .split("/")
+                .pop()
+                .toLowerCase()
+            || "index.html"
+        );
+    }
 
-/* =========================================================
-   11. FORM
-   ========================================================= */
 
-input[type='number'],
-input[type='text'],
-input[type='password'],
-input[type='email'],
-select,
-textarea {
-  width: 100%;
+    /* =====================================================
+       11. LẤY PROFILE
+       ===================================================== */
 
-  padding: .5rem;
+    async function getProfile(userId) {
 
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("profiles")
+            .select(
+                "id, full_name, email, role, status"
+            )
+            .eq("id", userId)
+            .maybeSingle();
 
-  background: var(--bg-page);
-  color: var(--text-dark);
 
-  font-size: .85rem;
+        if (error) {
 
-  transition: var(--transition);
-}
+            console.error(
+                "Lỗi lấy profile:",
+                error
+            );
 
-input[type='number'] {
-  max-width: 70px;
-  text-align: center;
-}
+            throw error;
+        }
 
-input:focus,
-select:focus,
-textarea:focus {
-  outline: 0;
 
-  border-color: var(--primary);
+        return data;
+    }
 
-  background: var(--surface);
 
-  box-shadow: 0 0 0 2px rgba(2, 132, 199, .15);
-}
+    /* =====================================================
+       12. HIỂN THỊ TRẠNG THÁI AUTH
+       ===================================================== */
 
-textarea {
-  min-height: 100px;
-  resize: vertical;
+    function updateAuthButton(user, profile) {
 
-  line-height: 1.5;
-}
+        const button =
+            document.getElementById(
+                "btnAuthNav"
+            );
 
-/* =========================================================
-   12. FOOTER
-   ========================================================= */
+        if (!button) {
+            return;
+        }
 
-footer {
-  margin-top: auto;
-  padding: 1.5rem 1rem;
 
-  overflow: hidden;
+        /* ---------------------------------------------
+           CHƯA ĐĂNG NHẬP
+           --------------------------------------------- */
 
-  border-top: 1px solid var(--border);
+        if (!user) {
 
-  background: var(--surface);
-  color: var(--text-body);
+            button.href =
+                "login.html";
 
-  text-align: center;
-}
+            button.textContent =
+                "Đăng nhập";
 
-footer p {
-  margin: 0;
+            button.className =
+                "btn-login";
 
-  overflow: hidden;
+            return;
+        }
 
-  font-size: clamp(.55rem, 2.5vw, .8rem);
 
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
+        /* ---------------------------------------------
+           ĐÃ ĐĂNG NHẬP
+           --------------------------------------------- */
 
-/* =========================================================
-   13. COMMON COMPONENTS
-   ========================================================= */
+        const role =
+            profile?.role || "";
 
-.author-info {
-  display: none !important;
-}
 
-body.is-logged-in .author-info {
-  display: flex !important;
-  align-items: center;
-  gap: 6px;
-}
+        if (role === "student") {
 
-.action-buttons {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+            button.href =
+                "#";
 
-  margin-top: 8px;
-  padding-top: 12px;
+            button.textContent =
+                "Đăng xuất";
 
-  border-top: 1px dashed var(--border);
-}
+            button.className =
+                "btn-login";
 
-.btn-warning,
-.btn-danger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+            return;
+        }
 
-  min-width: max-content;
-  padding: 5px 10px;
 
-  border: 0;
-  border-radius: var(--radius-sm);
+        button.href =
+            "dashboard.html";
 
-  color: #fff;
+        button.textContent =
+            profile?.full_name ||
+            user.email ||
+            "Tài khoản";
 
-  font-size: .75rem;
-  font-weight: 500;
+        button.className =
+            "btn-login";
+    }
 
-  white-space: nowrap;
 
-  cursor: pointer;
+    /* =====================================================
+       13. ĐĂNG XUẤT
+       ===================================================== */
 
-  transition: var(--transition);
-}
+    async function logout() {
 
-.btn-warning {
-  background: #f59e0b;
-}
+        try {
 
-.btn-warning:hover {
-  background: #d97706;
-}
+            const {
+                error
+            } = await supabaseClient.auth.signOut();
 
-.btn-danger {
-  background: var(--accent);
-}
 
-.btn-danger:hover {
-  background: #be123c;
-}
+            if (error) {
+                throw error;
+            }
 
-.btn-danger:disabled {
-  opacity: .6;
-  cursor: not-allowed;
-}
 
-/* =========================================================
-   14. MODAL
-   ========================================================= */
+            window.location.href =
+                "index.html";
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
+        } catch (error) {
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+            console.error(
+                "Lỗi đăng xuất:",
+                error
+            );
 
-  padding: 15px;
+            alert(
+                "Không thể đăng xuất. Vui lòng thử lại."
+            );
+        }
+    }
 
-  background: rgba(15, 23, 42, .6);
 
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-}
+    /* =====================================================
+       14. XỬ LÝ CLICK NÚT AUTH
+       ===================================================== */
 
-.modal-content {
-  position: relative;
+    function initAuthButton() {
 
-  width: 100%;
-  max-width: 400px;
+        document.addEventListener(
+            "click",
+            async (event) => {
 
-  padding: 25px;
+                const button =
+                    event.target.closest(
+                        "#btnAuthNav"
+                    );
 
-  border-radius: var(--radius-md);
+                if (!button) {
+                    return;
+                }
 
-  background: var(--surface);
-  box-shadow: var(--shadow-hover);
 
-  text-align: center;
-}
+                const sessionResult =
+                    await supabaseClient.auth.getSession();
 
-.modal-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+                const user =
+                    sessionResult
+                        ?.data
+                        ?.session
+                        ?.user;
 
-  width: 30px;
-  height: 30px;
 
-  border: 1px solid var(--border);
-  border-radius: 50%;
+                if (
+                    user &&
+                    button.textContent
+                        .trim()
+                        .toLowerCase()
+                        .includes("đăng xuất")
+                ) {
 
-  background: var(--bg-page);
-  color: var(--text-body);
+                    event.preventDefault();
 
-  cursor: pointer;
+                    await logout();
+                }
 
-  transition: var(--transition);
-}
+            }
+        );
+    }
 
-.modal-close:hover {
-  background: var(--border);
-  color: var(--text-dark);
-}
 
-.hidden {
-  display: none !important;
-}
+    /* =====================================================
+       15. TRANG TỪ CHỐI TRUY CẬP
+       ===================================================== */
 
-/* =========================================================
-   15. RESPONSIVE
-   ========================================================= */
+    function accessDenied() {
 
-@media (max-width: 900px) {
+        document.body.innerHTML = `
 
-  header {
-    gap: .8rem;
-    padding: .8rem 4%;
-  }
+            <main
+                style="
+                    min-height:100vh;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    text-align:center;
+                "
+            >
 
-  .menu-toggle {
-    display: block;
-    flex-shrink: 0;
-  }
+                <div class="card">
 
-  .nav-links {
-    position: absolute;
-    top: 100%;
-    left: 0;
+                    <i
+                        class="fas fa-lock"
+                        style="
+                            font-size:3rem;
+                            color:var(--accent);
+                            margin-bottom:1rem;
+                        "
+                    ></i>
 
-    width: 100%;
+                    <h2>
+                        Không có quyền truy cập
+                    </h2>
 
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+                    <p style="margin-top:.75rem;">
+                        Tài khoản của bạn không được
+                        cấp quyền truy cập trang này.
+                    </p>
 
-    gap: 0;
-    padding: .5rem 0;
+                    <a
+                        href="index.html"
+                        class="btn-primary"
+                        style="margin-top:1.5rem;"
+                    >
+                        Về trang chủ
+                    </a>
 
-    border-top: 1px solid var(--border);
+                </div>
 
-    background: var(--surface);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, .05);
+            </main>
+        `;
+    }
 
-    opacity: 0;
-    visibility: hidden;
 
-    transform: translateY(-10px);
+    /* =====================================================
+       16. KIỂM TRA QUYỀN TRUY CẬP
+       ===================================================== */
 
-    transition: var(--transition);
-  }
+    async function checkPageAccess(
+        user,
+        profile
+    ) {
 
-  .nav-links.active {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-  }
+        const page =
+            getCurrentPage();
 
-  .nav-item {
-    display: block;
 
-    width: 100%;
-    padding: .8rem 1.5rem;
+        const isProtected =
+            PROTECTED_PAGES.includes(
+                page
+            );
 
-    font-size: .85rem;
 
-    white-space: nowrap;
-  }
+        if (!isProtected) {
+            return true;
+        }
 
-  .nav-item::after {
-    display: none;
-  }
 
-  .btn-login {
-    width: calc(100% - 3rem);
+        /* ---------------------------------------------
+           CHƯA ĐĂNG NHẬP
+           --------------------------------------------- */
 
-    margin: .5rem 1.5rem;
-  }
-}
+        if (!user) {
 
-/* =========================================================
-   16. SMALL MOBILE
-   ========================================================= */
+            window.location.href =
+                `login.html?redirect=${encodeURIComponent(
+                    page
+                )}`;
 
-@media (max-width: 480px) {
+            return false;
+        }
 
-  main {
-    padding-left: 3%;
-    padding-right: 3%;
-  }
 
-  .quick-links {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
+        /* ---------------------------------------------
+           KHÔNG CÓ PROFILE
+           --------------------------------------------- */
 
-  .quick-card {
-    padding: 1.5rem 1rem;
-  }
+        if (!profile) {
 
-  .icon-wrapper {
-    width: 40px;
-    height: 40px;
+            await logout();
 
-    margin-bottom: 1rem;
+            return false;
+        }
 
-    font-size: 1.1rem;
-  }
 
-  .quick-card h3 {
-    font-size: .95rem;
-  }
+        /* ---------------------------------------------
+           TÀI KHOẢN KHÔNG HOẠT ĐỘNG
+           --------------------------------------------- */
 
-  .quick-card p {
-    font-size: .8rem;
-  }
+        if (
+            profile.status &&
+            profile.status !== "active"
+        ) {
 
-  th,
-  td {
-    padding: .5rem;
+            alert(
+                "Tài khoản của bạn chưa được kích hoạt."
+            );
 
-    font-size: .75rem;
+            await logout();
 
-    white-space: nowrap;
-  }
-}
+            return false;
+        }
+
+
+        /* ---------------------------------------------
+           KIỂM TRA ROLE
+           --------------------------------------------- */
+
+        if (
+            STAFF_PAGES.includes(page) &&
+            !["admin", "lecturer"].includes(
+                profile.role
+            )
+        ) {
+
+            accessDenied();
+
+            return false;
+        }
+
+
+        return true;
+    }
+
+
+    /* =====================================================
+       17. LOG TRUY CẬP
+       ===================================================== */
+
+    async function recordAccessLog(user) {
+
+        if (!user) {
+            return;
+        }
+
+
+        try {
+
+            const page =
+                getCurrentPage();
+
+
+            const key =
+                `access_log_${page}`;
+
+
+            const last =
+                sessionStorage.getItem(
+                    key
+                );
+
+
+            const now =
+                Date.now();
+
+
+            if (
+                last &&
+                now - Number(last) < 60000
+            ) {
+                return;
+            }
+
+
+            sessionStorage.setItem(
+                key,
+                String(now)
+            );
+
+
+            await supabaseClient
+                .from("access_logs")
+                .insert({
+
+                    timestamp:
+                        new Date().toISOString(),
+
+                    path:
+                        window.location.pathname,
+
+                    user_id:
+                        user.id,
+
+                    user_email:
+                        user.email || "",
+
+                    user_agent:
+                        navigator.userAgent
+
+                });
+
+        } catch (error) {
+
+            console.warn(
+                "Không ghi được access log:",
+                error
+            );
+        }
+    }
+
+
+    /* =====================================================
+       18. KHỞI TẠO AUTH
+       ===================================================== */
+
+    async function initAuth() {
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient.auth
+                    .getSession();
+
+
+            if (error) {
+                throw error;
+            }
+
+
+            const session =
+                data?.session || null;
+
+
+            const user =
+                session?.user || null;
+
+
+            let profile = null;
+
+
+            if (user) {
+
+                profile =
+                    await getProfile(
+                        user.id
+                    );
+            }
+
+
+            updateAuthButton(
+                user,
+                profile
+            );
+
+
+            const allowed =
+                await checkPageAccess(
+                    user,
+                    profile
+                );
+
+
+            if (!allowed) {
+                return;
+            }
+
+
+            if (user) {
+
+                document.body.classList.add(
+                    "is-logged-in"
+                );
+
+                await recordAccessLog(
+                    user
+                );
+
+            } else {
+
+                document.body.classList.remove(
+                    "is-logged-in"
+                );
+            }
+
+
+            /* -----------------------------------------
+               THEO DÕI THAY ĐỔI AUTH
+               ----------------------------------------- */
+
+            supabaseClient.auth
+                .onAuthStateChange(
+                    async (
+                        event,
+                        session
+                    ) => {
+
+                        const currentUser =
+                            session?.user ||
+                            null;
+
+
+                        let currentProfile =
+                            null;
+
+
+                        if (currentUser) {
+
+                            try {
+
+                                currentProfile =
+                                    await getProfile(
+                                        currentUser.id
+                                    );
+
+                            } catch (error) {
+
+                                console.error(
+                                    error
+                                );
+                            }
+                        }
+
+
+                        updateAuthButton(
+                            currentUser,
+                            currentProfile
+                        );
+
+
+                        if (
+                            currentUser
+                        ) {
+
+                            document.body.classList.add(
+                                "is-logged-in"
+                            );
+
+                        } else {
+
+                            document.body.classList.remove(
+                                "is-logged-in"
+                            );
+                        }
+                    }
+                );
+
+        } catch (error) {
+
+            console.error(
+                "Lỗi khởi tạo Auth:",
+                error
+            );
+        }
+    }
+
+
+    /* =====================================================
+       19. KHỞI TẠO
+       ===================================================== */
+
+    async function init() {
+
+        try {
+
+            renderHeader();
+
+            renderFooter();
+
+            initMobileMenu();
+
+            setActiveMenu();
+
+            await loadSupabase();
+
+            initSupabase();
+
+            initAuthButton();
+
+            await initAuth();
+
+        } catch (error) {
+
+            console.error(
+                "Lỗi khởi tạo layout:",
+                error
+            );
+        }
+    }
+
+
+    /* =====================================================
+       20. CHẠY
+       ===================================================== */
+
+    if (
+        document.readyState === "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            init
+        );
+
+    } else {
+
+        init();
+    }
+
+})();
