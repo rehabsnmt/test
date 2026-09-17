@@ -261,7 +261,7 @@
                 toast.innerHTML = `<i class="${iconClass}" style="color: ${iconColor};"></i><span>${message}</span>`;
                 container.appendChild(toast);
                 requestAnimationFrame(() => toast.classList.add("show"));
-                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 4000); // Tăng thời gian toast để đọc rõ lỗi
+                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 4000);
             };
 
             function escapeHtml(value) {
@@ -273,16 +273,14 @@
             let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {}; 
             let editingAssignmentId = null;
 
-            const classSelect = document.getElementById("classSelect");
-            const specSelect = document.getElementById("specSelect");
+            const classSelect = document.getElementById("classSelect"), specSelect = document.getElementById("specSelect");
             const curriculumInfo = document.getElementById("curriculumInfo"), curriculumNameText = document.getElementById("curriculumNameText");
             const modulesTableBody = document.getElementById("modulesTableBody");
             const summaryCard = document.getElementById("summaryCard"), summaryMajorName = document.getElementById("summaryMajorName");
 
             const assignModal = document.getElementById("assignModal"), assignForm = document.getElementById("assignForm");
             const instructorSelect = document.getElementById("instructorSelect"), theorySessions = document.getElementById("theorySessions"), practiceSessions = document.getElementById("practiceSessions");
-            const assignNote = document.getElementById("assignNote"); 
-            const hintLT = document.getElementById("hintLT"), hintTH = document.getElementById("hintTH");
+            const assignNote = document.getElementById("assignNote"), hintLT = document.getElementById("hintLT"), hintTH = document.getElementById("hintTH");
             const btnCloseModal = document.getElementById("btnCloseModal"), btnCancelModal = document.getElementById("btnCancelModal"), btnSaveAssignment = document.getElementById("btnSaveAssignment");
 
             async function loadInitialData() {
@@ -294,7 +292,7 @@
                     classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
                     classesList.forEach(cls => {
                         const option = document.createElement("option"); option.value = cls["ma-lop"]; 
-                        option.textContent = `${cls["ten-lop"]}`; // Đã ẩn Mã lớp
+                        option.textContent = `${cls["ten-lop"]}`; // Ẩn mã lớp
                         classSelect.appendChild(option);
                     });
 
@@ -304,7 +302,7 @@
                     instructorSelect.innerHTML = `<option value="">-- Chọn Giảng viên --</option>`;
                     instructorsList.forEach(inst => {
                         const option = document.createElement("option"); option.value = inst["ma-giang-vien"]; 
-                        option.textContent = `${inst["ho-ten"]}`; // Đã ẩn Mã giảng viên
+                        option.textContent = `${inst["ho-ten"]}`; // Ẩn mã GV
                         instructorSelect.appendChild(option);
                     });
                 } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
@@ -339,7 +337,8 @@
                     if (assignError) throw assignError;
                     currentAssignmentsData = assignData || [];
 
-                    const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('*').eq('ma-lop', maLop);
+                    // CHỈ SELECT ĐÚNG 4 CỘT CỦA BẢNG LOP-HOC-PHAN
+                    const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('id, ma-lop, ma-hoc-phan, hoc-ky').eq('ma-lop', maLop);
                     if (semesterError && !semesterError.message.includes("does not exist")) throw semesterError;
                     
                     currentModuleSemesters = {};
@@ -380,37 +379,35 @@
                 document.getElementById("hk3-credits").textContent = hkCredits[3]; document.getElementById("hk4-credits").textContent = hkCredits[4];
             }
 
-            // HÀM LƯU HỌC KỲ ĐÃ ĐƯỢC BẮT LỖI CHẶT CHẼ
+            // HÀM LƯU HỌC KỲ ĐÃ FIX THEO ĐÚNG CẤU TRÚC 4 CỘT
             window.updateSemester = async function(maHp, newHk) {
                 try {
                     const maLop = currentSelectedClass["ma-lop"]; 
                     const supabase = window.supabaseClient;
                     
+                    // Kiểm tra tồn tại
                     const { data: existingRecords, error: checkError } = await supabase
                         .from('lop-hoc-phan')
-                        .select('*')
+                        .select('id')
                         .eq('ma-lop', maLop)
                         .eq('ma-hoc-phan', maHp);
                         
                     if (checkError) throw checkError;
 
                     if (existingRecords && existingRecords.length > 0) {
+                        const recordId = existingRecords[0].id;
                         if (newHk) {
-                            // Cập nhật
-                            const { error: updErr } = await supabase.from('lop-hoc-phan')
-                                .update({ 'hoc-ky': parseInt(newHk) })
-                                .eq('ma-lop', maLop).eq('ma-hoc-phan', maHp);
+                            // Cập nhật dùng ID
+                            const { error: updErr } = await supabase.from('lop-hoc-phan').update({ 'hoc-ky': parseInt(newHk) }).eq('id', recordId);
                             if (updErr) throw updErr;
                         } else {
-                            // Xóa nếu chọn (-)
-                            const { error: delErr } = await supabase.from('lop-hoc-phan')
-                                .delete()
-                                .eq('ma-lop', maLop).eq('ma-hoc-phan', maHp);
+                            // Xóa nếu gỡ bỏ HK
+                            const { error: delErr } = await supabase.from('lop-hoc-phan').delete().eq('id', recordId);
                             if (delErr) throw delErr;
                         }
                     } else {
                         if (newHk) {
-                            // Thêm mới
+                            // Thêm mới (Supabase tự sinh id)
                             const { error: insErr } = await supabase.from('lop-hoc-phan')
                                 .insert([{ "ma-lop": maLop, "ma-hoc-phan": maHp, "hoc-ky": parseInt(newHk) }]);
                             if (insErr) throw insErr;
@@ -423,7 +420,7 @@
 
                 } catch (err) { 
                     console.error("Lỗi lưu học kỳ:", err);
-                    window.showToast("Không lưu được học kỳ. Bạn có cấp quyền Insert/Update cho bảng lop-hoc-phan chưa? Lỗi: " + err.message, true);
+                    window.showToast("Lỗi cập nhật bảng lop-hoc-phan: " + err.message, true);
                     loadClassData(); // Tải lại để reset dropdown về như cũ
                 }
             };
@@ -489,7 +486,6 @@
                             btnAddState = `class="btn-primary" style="padding: 4px; font-size: 0.75rem; width: 100%; border:none;" onclick="openAssignModal('${maHp}', '${tenHp}', ${khLT}, ${khTH})"`;
                         }
 
-                        // Đã ẩn Mã HP khỏi UI
                         const nameHtml = `
                             <div style="text-align: left;">
                                 <strong style="color: var(--text-dark);">${tenHp}</strong>
@@ -550,7 +546,7 @@
                 currentSelectedModule = { maHp, tenHp, khLT, khTH };
                 
                 document.getElementById("modalTitle").textContent = "Thêm Phân công Mới";
-                modalModuleInfo.textContent = `${tenHp}`; // Đã ẩn Mã HP
+                modalModuleInfo.textContent = `${tenHp}`; // Ẩn Mã HP
                 instructorSelect.value = "";
                 assignNote.value = "";
 
@@ -579,7 +575,7 @@
                 currentSelectedModule = { maHp, tenHp: mod["ten-hoc-phan"], khLT: parseInt(mod["so-buoi-ly-thuyet"]) || 0, khTH: parseInt(mod["so-buoi-thuc-hanh"]) || 0 };
 
                 document.getElementById("modalTitle").textContent = "Chỉnh sửa Phân công";
-                modalModuleInfo.textContent = `${mod["ten-hoc-phan"]}`; // Đã ẩn Mã HP
+                modalModuleInfo.textContent = `${mod["ten-hoc-phan"]}`; // Ẩn Mã HP
                 instructorSelect.value = assignment["ma-giang-vien"];
                 assignNote.value = assignment["ghi-chu"] || "";
 
