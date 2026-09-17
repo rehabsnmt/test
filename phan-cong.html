@@ -24,47 +24,79 @@
         /* =========================================
            ÉP BUỘC GIAO DIỆN FULL MÀN HÌNH
         ========================================= */
-        main { max-width: 100% !important; padding: 1rem 2% 2rem !important; }
-        .container { max-width: 100% !important; padding: 0 !important; }
-        #modulesTable th, #modulesTable td { padding: 0.5rem 0.4rem; font-size: 0.82rem; vertical-align: middle; white-space: normal !important; overflow-wrap: break-word; line-height: 1.4; }
+        main {
+            max-width: 100% !important;
+            padding: 1rem 2% 2rem !important;
+        }
+        .container {
+            max-width: 100% !important;
+            padding: 0 !important;
+        }
+        #modulesTable th, #modulesTable td {
+            padding: 0.6rem 0.4rem;
+            font-size: 0.82rem;
+            vertical-align: middle;
+            white-space: normal !important;
+            overflow-wrap: break-word;
+            line-height: 1.4;
+        }
 
         /* =========================================
-           CÁC STYLE CƠ BẢN
+           CÁC STYLE KHÁC
         ========================================= */
-        .filter-section { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 0.5rem; flex-wrap: wrap; }
+        .filter-section {
+            display: flex; gap: 1rem; align-items: flex-end;
+            margin-bottom: 0.5rem; flex-wrap: wrap;
+        }
         .filter-section .form-group { margin-bottom: 0; flex: 1; min-width: 200px; }
         .modal-overlay { z-index: 9999; }
-        .hk-select { padding: 4px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-page); font-size: 0.8rem; width: 100%; cursor: pointer; transition: var(--transition); }
+
+        .hk-select {
+            padding: 4px; border: 1px solid var(--border); border-radius: 4px;
+            background: var(--bg-page); font-size: 0.8rem; width: 100%; cursor: pointer; transition: var(--transition);
+        }
         .hk-select:focus { border-color: var(--primary); outline: none; }
 
-        /* Thanh tiến độ bảng */
+        /* Thanh tiến độ */
         .progress-wrapper { display: flex; align-items: center; gap: 5px; margin-top: 3px; }
-        .progress-container { flex: 1; background-color: var(--border); border-radius: var(--radius-pill); height: 6px; overflow: hidden; margin: 0; }
+        .progress-container {
+            flex: 1; background-color: var(--border); border-radius: var(--radius-pill);
+            height: 6px; overflow: hidden; margin: 0;
+        }
         .progress-bar { height: 100%; background-color: var(--primary); transition: width 0.3s ease; }
         .progress-bar.complete { background-color: #16a34a; } 
         .progress-bar.over { background-color: var(--accent); } 
 
         /* Danh sách GV & Nút Thao tác */
         .assignment-list-inline { list-style: none; padding: 0; margin: 0; font-size: 0.8rem; text-align: left; }
-        .assignment-list-inline li { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-light); }
+        .assignment-list-inline li {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-light);
+        }
         .assignment-list-inline li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        
         .action-group { display: flex; gap: 4px; flex-shrink: 0; }
-        .btn-action-assign { background: none; border: none; cursor: pointer; padding: 3px 5px; border-radius: 4px; transition: all 0.2s ease; font-size: 0.85rem; }
+        .btn-action-assign {
+            background: none; border: none; cursor: pointer; padding: 3px 5px;
+            border-radius: 4px; transition: all 0.2s ease; font-size: 0.85rem;
+        }
         .btn-action-assign.edit { color: #0284c7; }
         .btn-action-assign.edit:hover { background: #e0f2fe; color: #0369a1; }
         .btn-action-assign.delete { color: #ef4444; }
         .btn-action-assign.delete:hover { background: #fee2e2; color: #b91c1c; }
 
-        /* =========================================
-           THỐNG KÊ TÍN CHỈ (DẠNG THANH NGANG)
-        ========================================= */
-        .summary-card { background: var(--surface); border: 1px solid var(--primary-light); border-radius: var(--radius-md); padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); display: none; }
-        .hk-bar-container { display: flex; align-items: center; margin-bottom: 8px; }
-        .hk-bar-label { width: 70px; font-size: 0.85rem; font-weight: 600; color: var(--text-dark); }
-        .hk-bar-track { flex: 1; background: var(--border-light); height: 14px; border-radius: 8px; margin: 0 10px; overflow: hidden; }
-        .hk-bar-fill { background: var(--primary); height: 100%; border-radius: 8px; transition: width 0.5s ease; }
-        .hk-bar-value { width: 45px; font-size: 0.85rem; font-weight: bold; color: var(--primary); text-align: right; }
+        /* Card Thống kê Tín chỉ */
+        .summary-card {
+            background: var(--surface); border: 1px solid var(--primary-light); border-radius: var(--radius-md);
+            padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); display: none;
+        }
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 0.5rem; }
+        .summary-box { background: var(--bg-page); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem; text-align: center; }
+        .summary-box .hk-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 600;}
+        .summary-box .hk-value { font-size: 1.4rem; font-weight: bold; color: var(--primary); margin: 0.1rem 0; }
+        .summary-box .hk-unit { font-size: 0.7rem; color: var(--text-muted); }
         
+        /* Hiệu ứng chớp sáng cho row vừa chỉnh sửa */
         .highlight-row { background-color: var(--primary-light) !important; transition: background-color 0.5s ease; }
     </style>
 </head>
@@ -101,32 +133,14 @@
                 </div>
             </div>
 
-            <!-- BẢNG THỐNG KÊ DẠNG THANH NGANG -->
             <div id="summaryCard" class="summary-card">
-                <h3 style="margin-bottom: 0.2rem; font-size: 1rem;">Phân bổ Tín chỉ: <span id="summaryMajorName" style="color: var(--primary);"></span></h3>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">* Đã cộng gộp học phần nhóm <strong>"Chung"</strong>.</p>
-                
-                <div id="hkBarsContainer">
-                    <div class="hk-bar-container">
-                        <div class="hk-bar-label">Học kỳ 1</div>
-                        <div class="hk-bar-track"><div id="bar-hk1" class="hk-bar-fill" style="width: 0%;"></div></div>
-                        <div class="hk-bar-value" id="val-hk1">0 TC</div>
-                    </div>
-                    <div class="hk-bar-container">
-                        <div class="hk-bar-label">Học kỳ 2</div>
-                        <div class="hk-bar-track"><div id="bar-hk2" class="hk-bar-fill" style="width: 0%;"></div></div>
-                        <div class="hk-bar-value" id="val-hk2">0 TC</div>
-                    </div>
-                    <div class="hk-bar-container">
-                        <div class="hk-bar-label">Học kỳ 3</div>
-                        <div class="hk-bar-track"><div id="bar-hk3" class="hk-bar-fill" style="width: 0%;"></div></div>
-                        <div class="hk-bar-value" id="val-hk3">0 TC</div>
-                    </div>
-                    <div class="hk-bar-container">
-                        <div class="hk-bar-label">Học kỳ 4</div>
-                        <div class="hk-bar-track"><div id="bar-hk4" class="hk-bar-fill" style="width: 0%;"></div></div>
-                        <div class="hk-bar-value" id="val-hk4">0 TC</div>
-                    </div>
+                <h3 style="margin-bottom: 0.2rem; font-size: 1rem;">Tín chỉ: <span id="summaryMajorName" style="color: var(--primary);"></span></h3>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">* Đã cộng gộp học phần nhóm <strong>"Chung"</strong>.</p>
+                <div class="summary-grid">
+                    <div class="summary-box"><div class="hk-title">Học kỳ 1</div><div class="hk-value" id="hk1-credits">0</div><div class="hk-unit">TC</div></div>
+                    <div class="summary-box"><div class="hk-title">Học kỳ 2</div><div class="hk-value" id="hk2-credits">0</div><div class="hk-unit">TC</div></div>
+                    <div class="summary-box"><div class="hk-title">Học kỳ 3</div><div class="hk-value" id="hk3-credits">0</div><div class="hk-unit">TC</div></div>
+                    <div class="summary-box"><div class="hk-title">Học kỳ 4</div><div class="hk-value" id="hk4-credits">0</div><div class="hk-unit">TC</div></div>
                 </div>
             </div>
 
@@ -135,11 +149,11 @@
                     <table id="modulesTable" style="table-layout: fixed; width: 100%;">
                         <thead>
                             <tr>
-                                <th style="width: 35px; text-align: center;">STT</th>
-                                <th style="width: 28%;">Học phần</th>
+                                <th style="width: 40px; text-align: center;">STT</th>
+                                <th style="width: 25%;">Học phần</th>
                                 <th style="width: 75px;">Học kỳ</th>
-                                <th style="width: 140px;">Tiến độ Phân công</th>
-                                <th style="width: auto;">Giảng viên & Số buổi</th>
+                                <th style="width: 150px;">Tiến độ Phân công</th>
+                                <th style="width: auto;">Chi tiết Phân công</th>
                                 <th style="width: 80px;">Thao tác</th>
                             </tr>
                         </thead>
@@ -157,7 +171,7 @@
         <div class="modal-content" style="max-width: 500px; text-align: left; padding: 1.5rem;">
             <button class="modal-close" id="btnCloseModal" aria-label="Đóng"><i class="fas fa-times"></i></button>
             <h3 id="modalTitle" style="margin-bottom: 0.5rem; text-align: center; font-size: 1.2rem;">Phân công Giảng viên</h3>
-            <p id="modalModuleInfo" style="text-align: center; color: var(--primary); font-weight: 600; font-size: 0.9rem; margin-bottom: 1.2rem;"></p>
+            <p id="modalModuleInfo" style="text-align: center; color: var(--primary); font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem;"></p>
 
             <form id="assignForm">
                 <div class="form-group">
@@ -167,7 +181,7 @@
                     </select>
                 </div>
 
-                <!-- BỔ SUNG: CHỌN ĐỐI TƯỢNG -->
+                <!-- BỔ SUNG: CHỌN ĐỐI TƯỢNG (PHỤC HỒI) -->
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="targetTypeSelect">Đối tượng giảng dạy</label>
                     <select id="targetTypeSelect" style="border-color: var(--primary);">
@@ -197,7 +211,8 @@
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <!-- NHẬP SỐ BUỔI -->
+                <div style="display: flex; gap: 1rem;">
                     <div class="form-group" style="flex: 1;">
                         <label for="theorySessions">Lý thuyết (LT) <span class="text-danger">*</span></label>
                         <input type="number" id="theorySessions" min="0" value="0" required>
@@ -213,7 +228,7 @@
 
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="assignNote">Ghi chú (Tùy chọn)</label>
-                    <textarea id="assignNote" rows="2" placeholder="Ghi chú phân công..." style="width: 100%; max-width: 100%;"></textarea>
+                    <textarea id="assignNote" rows="2" placeholder="Nhập ghi chú... ví dụ: Phòng thực hành 1..." style="width: 100%; max-width: 100%;"></textarea>
                 </div>
 
                 <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 10px;">
@@ -243,7 +258,7 @@
                 toast.innerHTML = `<i class="${iconClass}" style="color: ${iconColor};"></i><span>${message}</span>`;
                 container.appendChild(toast);
                 requestAnimationFrame(() => toast.classList.add("show"));
-                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 4000);
+                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
             };
 
             function escapeHtml(value) {
@@ -251,24 +266,21 @@
                 return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
             }
 
-            // DATA STATES
             let classesList = [], instructorsList = [], studentsList = [], groupsList = [];
             let currentSelectedClass = null, currentSelectedModule = null; 
             let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {}; 
             let editingAssignmentId = null;
 
-            // DOM ELEMENTS
             const classSelect = document.getElementById("classSelect"), specSelect = document.getElementById("specSelect");
             const curriculumInfo = document.getElementById("curriculumInfo"), curriculumNameText = document.getElementById("curriculumNameText");
             const modulesTableBody = document.getElementById("modulesTableBody");
             const summaryCard = document.getElementById("summaryCard"), summaryMajorName = document.getElementById("summaryMajorName");
 
             const assignModal = document.getElementById("assignModal"), assignForm = document.getElementById("assignForm");
-            const instructorSelect = document.getElementById("instructorSelect");
-            const theorySessions = document.getElementById("theorySessions"), practiceSessions = document.getElementById("practiceSessions");
+            const instructorSelect = document.getElementById("instructorSelect"), theorySessions = document.getElementById("theorySessions"), practiceSessions = document.getElementById("practiceSessions");
             const assignNote = document.getElementById("assignNote"), hintLT = document.getElementById("hintLT"), hintTH = document.getElementById("hintTH");
             
-            // Đối tượng giảng dạy
+            // DOM Đối tượng
             const targetTypeSelect = document.getElementById("targetTypeSelect");
             const groupTargetDiv = document.getElementById("groupTargetDiv"), groupTypeSelect = document.getElementById("groupTypeSelect"), groupNameSelect = document.getElementById("groupNameSelect");
             const studentTargetDiv = document.getElementById("studentTargetDiv"), studentSelect = document.getElementById("studentSelect");
@@ -281,13 +293,13 @@
             async function loadInitialData() {
                 try {
                     const supabase = window.supabaseClient;
-                    
                     const { data: classData, error: classError } = await supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh');
                     if (classError) throw classError;
                     classesList = classData || [];
                     classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
                     classesList.forEach(cls => {
-                        const option = document.createElement("option"); option.value = cls["ma-lop"]; option.textContent = `${cls["ten-lop"]}`; 
+                        const option = document.createElement("option"); option.value = cls["ma-lop"]; 
+                        option.textContent = `${cls["ten-lop"]}`; 
                         classSelect.appendChild(option);
                     });
 
@@ -296,7 +308,8 @@
                     instructorsList = instData || [];
                     instructorSelect.innerHTML = `<option value="">-- Chọn Giảng viên --</option>`;
                     instructorsList.forEach(inst => {
-                        const option = document.createElement("option"); option.value = inst["ma-giang-vien"]; option.textContent = `${inst["ho-ten"]}`; 
+                        const option = document.createElement("option"); option.value = inst["ma-giang-vien"]; 
+                        option.textContent = `${inst["ho-ten"]}`; 
                         instructorSelect.appendChild(option);
                     });
                 } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
@@ -309,7 +322,7 @@
             classSelect.addEventListener("change", () => { specSelect.value = ""; summaryCard.style.display = "none"; loadClassData(false); });
 
             /* =================================================
-               2. TẢI DỮ LIỆU CHƯƠNG TRÌNH & HỌC VIÊN
+               2. TẢI DỮ LIỆU CHƯƠNG TRÌNH & ĐỐI TƯỢNG (HỌC VIÊN/NHÓM)
             ================================================= */
             async function loadClassData(isSilentReload = false) {
                 const maLop = classSelect.value;
@@ -329,21 +342,30 @@
                     const supabase = window.supabaseClient;
 
                     // Load chương trình & phân công
-                    const { data: curData } = await supabase.from(tableName).select('*').order('stt', { ascending: true });
-                    currentCurriculumData = curData || [];
+                    const { data: curriculumData, error: curError } = await supabase.from(tableName).select('*').order('stt', { ascending: true });
+                    if (curError) throw curError;
+                    currentCurriculumData = curriculumData || [];
 
-                    const { data: assignData } = await supabase.from('phan-cong-giang-day').select('*').eq('ma-lop', maLop);
+                    const { data: assignData, error: assignError } = await supabase.from('phan-cong-giang-day').select('*').eq('ma-lop', maLop);
+                    if (assignError) throw assignError;
                     currentAssignmentsData = assignData || [];
 
-                    const { data: semesterData } = await supabase.from('lop-hoc-phan').select('id, ma-lop, ma-hoc-phan, hoc-ky').eq('ma-lop', maLop);
+                    const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('id, ma-lop, ma-hoc-phan, hoc-ky').eq('ma-lop', maLop);
+                    if (semesterError && !semesterError.message.includes("does not exist")) throw semesterError;
+                    
                     currentModuleSemesters = {};
-                    if (semesterData) { semesterData.forEach(item => { if(item["ma-hoc-phan"]) currentModuleSemesters[String(item["ma-hoc-phan"]).trim()] = item["hoc-ky"]; }); }
+                    if (semesterData) { 
+                        semesterData.forEach(item => { 
+                            if(item["ma-hoc-phan"]) currentModuleSemesters[String(item["ma-hoc-phan"]).trim()] = item["hoc-ky"]; 
+                        }); 
+                    }
 
-                    // Load Danh sách Học viên & Nhóm
-                    const { data: stdData } = await supabase.from('danh-sach-lop').select('*').eq('ma-lop', maLop);
+                    // Tải Danh sách Học viên của lớp
+                    const { data: stdData } = await supabase.from('danh-sach-lop').select('ma-hoc-vien, ho-ten').eq('ma-lop', maLop);
                     studentsList = stdData || [];
 
-                    const { data: grpData } = await supabase.from('danh-sach-nhom').select('*').eq('ma-lop', maLop);
+                    // Tải Danh sách Nhóm của lớp
+                    const { data: grpData } = await supabase.from('danh-sach-nhom').select('ten-nhom, loai-nhom').eq('ma-lop', maLop);
                     groupsList = grpData || [];
 
                     updateSpecializationFilter();
@@ -352,7 +374,7 @@
             }
 
             /* =================================================
-               3. BỘ LỌC CHUYÊN NGÀNH & BAR CHART TÍN CHỈ
+               3. BỘ LỌC CHUYÊN NGÀNH & TÍN CHỈ
             ================================================= */
             function updateSpecializationFilter() {
                 const currentVal = specSelect.value;
@@ -361,7 +383,11 @@
                 specSelect.innerHTML = `<option value="">-- Tất cả chuyên ngành --</option>`;
                 specs.forEach(sp => { const option = document.createElement("option"); option.value = sp; option.textContent = sp; specSelect.appendChild(option); });
                 specSelect.disabled = false;
-                if (currentVal && Array.from(specSelect.options).some(opt => opt.value === currentVal)) specSelect.value = currentVal;
+                
+                if (currentVal) {
+                    const exists = Array.from(specSelect.options).some(opt => opt.value === currentVal);
+                    if (exists) specSelect.value = currentVal;
+                }
             }
 
             specSelect.addEventListener("change", () => { updateSummary(); renderModulesTable(); });
@@ -383,19 +409,16 @@
                     }
                 });
 
-                // Cập nhật Thanh ngang
-                const maxCredit = Math.max(hkCredits[1], hkCredits[2], hkCredits[3], hkCredits[4], 1); // Tránh chia 0
-                for(let i=1; i<=4; i++) {
-                    document.getElementById(`val-hk${i}`).textContent = hkCredits[i] + " TC";
-                    const percentage = (hkCredits[i] / maxCredit) * 100;
-                    document.getElementById(`bar-hk${i}`).style.width = percentage + "%";
-                }
+                document.getElementById("hk1-credits").textContent = hkCredits[1]; document.getElementById("hk2-credits").textContent = hkCredits[2];
+                document.getElementById("hk3-credits").textContent = hkCredits[3]; document.getElementById("hk4-credits").textContent = hkCredits[4];
             }
 
-            // HÀM LƯU HỌC KỲ
             window.updateSemester = async function(maHpRaw, newHk) {
                 try {
-                    const maLop = currentSelectedClass["ma-lop"]; const supabase = window.supabaseClient; const maHp = String(maHpRaw).trim(); 
+                    const maLop = currentSelectedClass["ma-lop"]; 
+                    const supabase = window.supabaseClient;
+                    const maHp = String(maHpRaw).trim(); 
+                    
                     const { data: existingRecords, error: checkError } = await supabase.from('lop-hoc-phan').select('id').eq('ma-lop', maLop).eq('ma-hoc-phan', maHp);
                     if (checkError) throw checkError;
 
@@ -406,13 +429,18 @@
                     } else {
                         if (newHk) await supabase.from('lop-hoc-phan').insert([{ "ma-lop": maLop, "ma-hoc-phan": maHp, "hoc-ky": parseInt(newHk) }]);
                     }
+                    
                     currentModuleSemesters[maHp] = newHk ? parseInt(newHk) : null;
-                    window.showToast("Cập nhật học kỳ thành công!"); updateSummary();
-                } catch (err) { window.showToast("Lỗi cập nhật: " + err.message, true); loadClassData(true); }
+                    window.showToast("Cập nhật học kỳ thành công!"); 
+                    updateSummary();
+                } catch (err) { 
+                    window.showToast("Lỗi cập nhật bảng lop-hoc-phan: " + err.message, true);
+                    loadClassData(true);
+                }
             };
 
             /* =================================================
-               4. RENDER BẢNG HỌC PHẦN
+               4. RENDER BẢNG HỌC PHẦN & ĐỐI TƯỢNG
             ================================================= */
             function renderModulesTable() {
                 modulesTableBody.innerHTML = ""; const filterVal = specSelect.value;
@@ -451,7 +479,7 @@
                                 const aLT = parseInt(a["so-buoi-ly-thuyet"]) || 0, aTH = parseInt(a["so-buoi-thuc-hanh"]) || 0, assignId = escapeHtml(a["id"] || "");
                                 const aNote = escapeHtml(a["ghi-chu"] || "");
                                 
-                                // Format Đối tượng
+                                // LOGIC HIỂN THỊ ĐỐI TƯỢNG GIẢNG DẠY
                                 let targetText = "Cả lớp";
                                 if (a["doi-tuong"] === "nhom") targetText = `Nhóm: ${escapeHtml(a["ten-nhom"])} (${escapeHtml(a["loai-nhom"])})`;
                                 else if (a["doi-tuong"] === "ca-nhan") targetText = `HV: ${escapeHtml(a["ho-ten"])}`;
@@ -459,7 +487,7 @@
                                 assignedLT += aLT; assignedTH += aTH;
 
                                 let noteHtml = "";
-                                if (aNote) { noteHtml = `<div style="font-size: 0.75rem; color: #d97706; margin-top: 2px;"><i class="fas fa-sticky-note"></i> ${aNote}</div>`; }
+                                if (aNote) { noteHtml = `<div style="font-size: 0.75rem; color: #d97706; margin-top: 2px;"><i class="fas fa-sticky-note"></i> Ghi chú: ${aNote}</div>`; }
 
                                 assignListHtml += `
                                     <li>
@@ -467,7 +495,7 @@
                                             <i class="fas fa-user-tie" style="color:var(--primary); font-size:0.8rem;"></i> 
                                             <strong>${escapeHtml(getInstructorName(a["ma-giang-vien"]))}</strong> 
                                             <span class="text-muted" style="font-size:0.75rem; display:block; margin-left:18px;">
-                                                LT:${aLT} | TH:${aTH} | <span style="color:var(--accent);">${targetText}</span>
+                                                LT:${aLT} | TH:${aTH} | <span style="color:var(--accent); font-weight:500;">${targetText}</span>
                                             </span>
                                             ${noteHtml}
                                         </div>
@@ -495,7 +523,7 @@
                             <div style="text-align: left; padding-right: 5px;">
                                 <strong style="color: var(--text-dark); font-size: 0.9rem;">${tenHp}</strong>
                                 <br>
-                                <span class="text-muted" style="font-size: 0.8rem;">${tinChi} TC | ${escapeHtml(mod["chuyen-nganh"] || "Chung")}</span>
+                                <span class="text-muted" style="font-size: 0.75rem;">${tinChi} TC | ${escapeHtml(mod["chuyen-nganh"] || "Chung")}</span>
                             </div>
                         `;
 
@@ -548,7 +576,7 @@
             }
 
             /* =================================================
-               5. LOGIC MODAL: ĐỐI TƯỢNG GIẢNG DẠY
+               5. SỰ KIỆN CHỌN ĐỐI TƯỢNG TRONG MODAL
             ================================================= */
             targetTypeSelect.addEventListener('change', () => {
                 const val = targetTypeSelect.value;
@@ -574,7 +602,7 @@
             function populateGroupTypes() {
                 const uniqueTypes = [...new Set(groupsList.map(g => g['loai-nhom']).filter(Boolean))];
                 groupTypeSelect.innerHTML = '<option value="">- Loại -</option>';
-                uniqueTypes.forEach(t => groupTypeSelect.innerHTML += `<option value="${t}">${t}</option>`);
+                uniqueTypes.forEach(t => groupTypeSelect.innerHTML += `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`);
                 groupNameSelect.innerHTML = '<option value="">- Tên -</option>';
             }
 
@@ -582,7 +610,7 @@
                 const type = groupTypeSelect.value;
                 const uniqueNames = [...new Set(groupsList.filter(g => g['loai-nhom'] === type).map(g => g['ten-nhom']).filter(Boolean))];
                 groupNameSelect.innerHTML = '<option value="">- Tên -</option>';
-                uniqueNames.forEach(n => groupNameSelect.innerHTML += `<option value="${n}">${n}</option>`);
+                uniqueNames.forEach(n => groupNameSelect.innerHTML += `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`);
             });
 
             /* =================================================
@@ -615,7 +643,8 @@
                 let assignedLT = 0, assignedTH = 0;
                 assignments.forEach(a => { assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0; assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0; });
                 
-                let remainLT = Math.max(0, khLT - assignedLT); let remainTH = Math.max(0, khTH - assignedTH);
+                let remainLT = Math.max(0, khLT - assignedLT);
+                let remainTH = Math.max(0, khTH - assignedTH);
 
                 theorySessions.max = remainLT; theorySessions.value = 0;
                 practiceSessions.max = remainTH; practiceSessions.value = 0;
@@ -680,7 +709,6 @@
                 const maxLT = parseInt(theorySessions.max) || 0; const maxTH = parseInt(practiceSessions.max) || 0;
                 const note = assignNote.value.trim();
 
-                // Lấy thông tin đối tượng
                 const doiTuong = targetTypeSelect.value;
                 let loaiNhom = null, tenNhom = null, maHv = null, hoTenHv = null;
 
@@ -703,7 +731,6 @@
 
                 try {
                     const supabase = window.supabaseClient;
-                    
                     const payload = {
                         "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th, "ghi-chu": note,
                         "doi-tuong": doiTuong, "loai-nhom": loaiNhom, "ten-nhom": tenNhom, "ma-hoc-vien": maHv, "ho-ten": hoTenHv
