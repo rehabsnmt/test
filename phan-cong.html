@@ -157,7 +157,7 @@
         <div class="modal-content" style="max-width: 500px; text-align: left; padding: 1.5rem;">
             <button class="modal-close" id="btnCloseModal" aria-label="Đóng"><i class="fas fa-times"></i></button>
             <h3 id="modalTitle" style="margin-bottom: 0.5rem; text-align: center; font-size: 1.2rem;">Phân công Giảng viên</h3>
-            <p id="modalModuleInfo" style="text-align: center; color: var(--primary); font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem;"></p>
+            <p id="modalModuleInfo" style="text-align: center; color: var(--primary); font-weight: 600; font-size: 0.9rem; margin-bottom: 1.2rem;"></p>
 
             <form id="assignForm">
                 <div class="form-group">
@@ -167,7 +167,7 @@
                     </select>
                 </div>
 
-                <!-- BỔ SUNG: CHỌN ĐỐI TƯỢNG -->
+                <!-- CHỌN ĐỐI TƯỢNG -->
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="targetTypeSelect">Đối tượng giảng dạy</label>
                     <select id="targetTypeSelect" style="border-color: var(--primary);">
@@ -253,7 +253,7 @@
                 toast.innerHTML = `<i class="${iconClass}" style="color: ${iconColor};"></i><span>${message}</span>`;
                 container.appendChild(toast);
                 requestAnimationFrame(() => toast.classList.add("show"));
-                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
+                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 4000);
             };
 
             function escapeHtml(value) {
@@ -261,24 +261,20 @@
                 return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
             }
 
-            // DATA STATES
             let classesList = [], instructorsList = [], studentsList = [], groupsList = [];
             let currentSelectedClass = null, currentSelectedModule = null; 
             let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {}; 
             let editingAssignmentId = null;
 
-            // DOM ELEMENTS
             const classSelect = document.getElementById("classSelect"), specSelect = document.getElementById("specSelect");
             const curriculumInfo = document.getElementById("curriculumInfo"), curriculumNameText = document.getElementById("curriculumNameText");
             const modulesTableBody = document.getElementById("modulesTableBody");
             const summaryCard = document.getElementById("summaryCard"), summaryMajorName = document.getElementById("summaryMajorName");
 
             const assignModal = document.getElementById("assignModal"), assignForm = document.getElementById("assignForm");
-            const instructorSelect = document.getElementById("instructorSelect");
-            const theorySessions = document.getElementById("theorySessions"), practiceSessions = document.getElementById("practiceSessions");
+            const instructorSelect = document.getElementById("instructorSelect"), theorySessions = document.getElementById("theorySessions"), practiceSessions = document.getElementById("practiceSessions");
             const assignNote = document.getElementById("assignNote"), hintLT = document.getElementById("hintLT"), hintTH = document.getElementById("hintTH");
             
-            // Đối tượng giảng dạy
             const targetTypeSelect = document.getElementById("targetTypeSelect");
             const groupTargetDiv = document.getElementById("groupTargetDiv"), groupTypeSelect = document.getElementById("groupTypeSelect"), groupNameSelect = document.getElementById("groupNameSelect");
             const groupMembersDiv = document.getElementById("groupMembersDiv"), groupMembersList = document.getElementById("groupMembersList");
@@ -292,21 +288,23 @@
             async function loadInitialData() {
                 try {
                     const supabase = window.supabaseClient;
-                    const { data: classData, error: classError } = await supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh');
+                    const { data: classData, error: classError } = await supabase.from('lop-hoc').select('*');
                     if (classError) throw classError;
                     classesList = classData || [];
                     classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
                     classesList.forEach(cls => {
-                        const option = document.createElement("option"); option.value = cls["ma-lop"]; option.textContent = `${cls["ten-lop"]}`; 
+                        const option = document.createElement("option"); option.value = cls["ma-lop"]; 
+                        option.textContent = `${cls["ten-lop"]}`; 
                         classSelect.appendChild(option);
                     });
 
-                    const { data: instData, error: instError } = await supabase.from('giang-vien').select('ma-giang-vien, ho-ten').order('ho-ten', { ascending: true });
+                    const { data: instData, error: instError } = await supabase.from('giang-vien').select('*').order('ho-ten', { ascending: true });
                     if (instError) throw instError;
                     instructorsList = instData || [];
                     instructorSelect.innerHTML = `<option value="">-- Chọn Giảng viên --</option>`;
                     instructorsList.forEach(inst => {
-                        const option = document.createElement("option"); option.value = inst["ma-giang-vien"]; option.textContent = `${inst["ho-ten"]}`; 
+                        const option = document.createElement("option"); option.value = inst["ma-giang-vien"]; 
+                        option.textContent = `${inst["ho-ten"]}`; 
                         instructorSelect.appendChild(option);
                     });
                 } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
@@ -319,7 +317,7 @@
             classSelect.addEventListener("change", () => { specSelect.value = ""; summaryCard.style.display = "none"; loadClassData(false); });
 
             /* =================================================
-               2. TẢI DỮ LIỆU CHƯƠNG TRÌNH & ĐỐI TƯỢNG (HỌC VIÊN/NHÓM)
+               2. TẢI DỮ LIỆU CHƯƠNG TRÌNH & ĐỐI TƯỢNG BẰNG TẤT CẢ CỘT (SELECT *)
             ================================================= */
             async function loadClassData(isSilentReload = false) {
                 const maLop = classSelect.value;
@@ -347,7 +345,7 @@
                     if (assignError) throw assignError;
                     currentAssignmentsData = assignData || [];
 
-                    const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('id, ma-lop, ma-hoc-phan, hoc-ky').eq('ma-lop', maLop);
+                    const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('*').eq('ma-lop', maLop);
                     if (semesterError && !semesterError.message.includes("does not exist")) throw semesterError;
                     
                     currentModuleSemesters = {};
@@ -357,17 +355,25 @@
                         }); 
                     }
 
-                    // Tải Danh sách Học viên của lớp
-                    const { data: stdData } = await supabase.from('danh-sach-lop').select('ma-hoc-vien, ho-ten').eq('ma-lop', maLop);
+                    // Tải Danh sách Học viên bằng SELECT * để tránh lỗi sót ma-lop
+                    const { data: stdData, error: stdError } = await supabase.from('danh-sach-lop').select('*').eq('ma-lop', maLop);
+                    if (stdError) {
+                        console.error("Lỗi danh-sach-lop:", stdError);
+                        window.showToast("Lỗi lấy danh sách học viên.", true);
+                    }
                     studentsList = stdData || [];
 
-                    // CẬP NHẬT: Tải Danh sách Nhóm Gồm cả HV (Mã + Tên)
-                    const { data: grpData } = await supabase.from('danh-sach-nhom').select('ma-hoc-vien, ho-ten, ten-nhom, loai-nhom').eq('ma-lop', maLop);
+                    // Tải Danh sách Nhóm bằng SELECT * để tránh lỗi sót ma-lop
+                    const { data: grpData, error: grpError } = await supabase.from('danh-sach-nhom').select('*').eq('ma-lop', maLop);
+                    if (grpError) {
+                        console.error("Lỗi danh-sach-nhom:", grpError);
+                        window.showToast("Lỗi lấy danh sách nhóm.", true);
+                    }
                     groupsList = grpData || [];
 
                     updateSpecializationFilter();
                     renderModulesTable();
-                } catch (error) { modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu. Bảng "${escapeHtml(tableName)}" chưa tạo.</td></tr>`; }
+                } catch (error) { modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu. Bảng "${escapeHtml(tableName)}" có thể chưa tạo. Lỗi: ${escapeHtml(error.message || "")}</td></tr>`; }
             }
 
             /* =================================================
@@ -380,11 +386,7 @@
                 specSelect.innerHTML = `<option value="">-- Tất cả chuyên ngành --</option>`;
                 specs.forEach(sp => { const option = document.createElement("option"); option.value = sp; option.textContent = sp; specSelect.appendChild(option); });
                 specSelect.disabled = false;
-                
-                if (currentVal) {
-                    const exists = Array.from(specSelect.options).some(opt => opt.value === currentVal);
-                    if (exists) specSelect.value = currentVal;
-                }
+                if (currentVal && Array.from(specSelect.options).some(opt => opt.value === currentVal)) specSelect.value = currentVal;
             }
 
             specSelect.addEventListener("change", () => { updateSummary(); renderModulesTable(); });
@@ -406,7 +408,6 @@
                     }
                 });
 
-                // Cập nhật Thanh ngang
                 const maxCredit = Math.max(hkCredits[1], hkCredits[2], hkCredits[3], hkCredits[4], 1); 
                 for(let i=1; i<=4; i++) {
                     document.getElementById(`val-hk${i}`).textContent = hkCredits[i] + " TC";
@@ -418,7 +419,7 @@
             window.updateSemester = async function(maHpRaw, newHk) {
                 try {
                     const maLop = currentSelectedClass["ma-lop"]; const supabase = window.supabaseClient; const maHp = String(maHpRaw).trim(); 
-                    const { data: existingRecords, error: checkError } = await supabase.from('lop-hoc-phan').select('id').eq('ma-lop', maLop).eq('ma-hoc-phan', maHp);
+                    const { data: existingRecords, error: checkError } = await supabase.from('lop-hoc-phan').select('*').eq('ma-lop', maLop).eq('ma-hoc-phan', maHp);
                     if (checkError) throw checkError;
 
                     if (existingRecords && existingRecords.length > 0) {
@@ -652,8 +653,9 @@
                 } catch (err) { window.showToast("Lỗi xóa dữ liệu: " + err.message, true); }
             };
 
-            window.openAssignModal = function(maHp, tenHp, khLT, khTH) {
+            window.openAssignModal = function(maHpRaw, tenHp, khLT, khTH) {
                 if (!currentSelectedClass) return;
+                const maHp = String(maHpRaw).trim();
                 editingAssignmentId = null;
                 currentSelectedModule = { maHp, tenHp, khLT, khTH };
                 
@@ -758,6 +760,7 @@
                 try {
                     const supabase = window.supabaseClient;
                     const payload = {
+                        "ma-lop": currentSelectedClass["ma-lop"], "ma-hoc-phan": currentSelectedModule.maHp,
                         "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th, "ghi-chu": note,
                         "doi-tuong": doiTuong, "loai-nhom": loaiNhom, "ten-nhom": tenNhom, "ma-hoc-vien": maHv, "ho-ten": hoTenHv
                     };
@@ -767,8 +770,6 @@
                         if (error) throw error;
                         window.showToast("Cập nhật phân công thành công!");
                     } else {
-                        payload["ma-lop"] = currentSelectedClass["ma-lop"];
-                        payload["ma-hoc-phan"] = currentSelectedModule.maHp;
                         const { error } = await supabase.from('phan-cong-giang-day').insert([payload]);
                         if (error) throw error;
                         window.showToast("Đã thêm phân công thành công!");
