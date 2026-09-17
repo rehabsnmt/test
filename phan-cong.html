@@ -56,7 +56,7 @@
         .btn-action-assign.delete:hover { background: #fee2e2; color: #b91c1c; }
 
         /* =========================================
-           THỐNG KÊ TÍN CHỈ (DẠNG THANH NGANG)
+           THỐNG KÊ TÍN CHỈ
         ========================================= */
         .summary-card { background: var(--surface); border: 1px solid var(--primary-light); border-radius: var(--radius-md); padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); display: none; }
         .hk-bar-container { display: flex; align-items: center; margin-bottom: 8px; }
@@ -177,7 +177,7 @@
                     </select>
                 </div>
 
-                <!-- KHUNG CHỌN NHÓM (Sửa lỗi CSS ẩn/hiện) -->
+                <!-- KHUNG CHỌN NHÓM (Bỏ class hidden, xài style trực tiếp) -->
                 <div id="groupTargetDiv" style="display: none; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
                     <div style="display: flex; gap: 1rem;">
                         <div class="form-group" style="flex: 1; margin: 0;">
@@ -198,7 +198,7 @@
                     </div>
                 </div>
 
-                <!-- KHUNG CHỌN CÁ NHÂN -->
+                <!-- KHUNG CHỌN CÁ NHÂN (Bỏ class hidden, xài style trực tiếp) -->
                 <div id="studentTargetDiv" style="display: none; margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
                     <div class="form-group" style="margin: 0;">
                         <label for="studentSelect" style="font-size: 0.8rem;">Chọn Học viên <span class="text-danger">*</span></label>
@@ -253,7 +253,7 @@
                 toast.innerHTML = `<i class="${iconClass}" style="color: ${iconColor};"></i><span>${message}</span>`;
                 container.appendChild(toast);
                 requestAnimationFrame(() => toast.classList.add("show"));
-                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
+                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 4000);
             };
 
             function escapeHtml(value) {
@@ -291,7 +291,7 @@
             async function loadInitialData() {
                 try {
                     const supabase = window.supabaseClient;
-                    const { data: classData, error: classError } = await supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh');
+                    const { data: classData, error: classError } = await supabase.from('lop-hoc').select('*');
                     if (classError) throw classError;
                     classesList = classData || [];
                     classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
@@ -301,7 +301,7 @@
                         classSelect.appendChild(option);
                     });
 
-                    const { data: instData, error: instError } = await supabase.from('giang-vien').select('ma-giang-vien, ho-ten').order('ho-ten', { ascending: true });
+                    const { data: instData, error: instError } = await supabase.from('giang-vien').select('*').order('ho-ten', { ascending: true });
                     if (instError) throw instError;
                     instructorsList = instData || [];
                     instructorSelect.innerHTML = `<option value="">-- Chọn Giảng viên --</option>`;
@@ -348,7 +348,7 @@
                     if (assignError) throw assignError;
                     currentAssignmentsData = assignData || [];
 
-                    const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('id, ma-lop, ma-hoc-phan, hoc-ky').eq('ma-lop', maLop);
+                    const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('*').eq('ma-lop', maLop);
                     if (semesterError && !semesterError.message.includes("does not exist")) throw semesterError;
                     
                     currentModuleSemesters = {};
@@ -367,15 +367,10 @@
                     const { data: grpData, error: grpError } = await supabase.from('danh-sach-nhom').select('*').eq('ma-lop', maLop);
                     if (grpError) console.error("Lỗi danh-sach-nhom:", grpError);
                     groupsList = grpData || [];
-                    
-                    if (!isSilentReload) {
-                        console.log("Danh sách Học viên tải về:", studentsList.length);
-                        console.log("Danh sách Nhóm tải về:", groupsList.length);
-                    }
 
                     updateSpecializationFilter();
                     renderModulesTable();
-                } catch (error) { modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu. Bảng "${escapeHtml(tableName)}" chưa tạo.</td></tr>`; }
+                } catch (error) { modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu. Bảng "${escapeHtml(tableName)}" có thể chưa tạo. Lỗi: ${escapeHtml(error.message || "")}</td></tr>`; }
             }
 
             /* =================================================
@@ -585,9 +580,11 @@
 
                 if (val === 'nhom') {
                     groupTargetDiv.style.display = 'flex';
+                    if(groupsList.length === 0) window.showToast("Không có dữ liệu nhóm học viên cho lớp này.", true);
                     populateGroupTypes();
                 } else if (val === 'ca-nhan') {
                     studentTargetDiv.style.display = 'block';
+                    if(studentsList.length === 0) window.showToast("Không có dữ liệu học viên cho lớp này.", true);
                     populateStudents();
                 }
             });
@@ -711,7 +708,7 @@
                         groupTypeSelect.dispatchEvent(new Event('change'));
                         setTimeout(() => {
                             groupNameSelect.value = assignment["ten-nhom"] || "";
-                            groupNameSelect.dispatchEvent(new Event('change')); 
+                            groupNameSelect.dispatchEvent(new Event('change')); // Trigger hiển thị danh sách SV
                         }, 50);
                     }, 50);
                 } else if (dTuong === "ca-nhan") {
