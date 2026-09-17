@@ -32,10 +32,15 @@
             max-width: 100% !important;
             padding: 0 !important;
         }
+        
+        /* CHỈNH SỬA TẠI ĐÂY: Cho phép chữ rớt dòng và ép các ô cùng chiều cao */
         #modulesTable th, #modulesTable td {
-            padding: 0.5rem 0.4rem;
+            padding: 0.6rem 0.4rem;
             font-size: 0.82rem;
             vertical-align: middle;
+            white-space: normal !important; /* Ghi đè nowrap của CSS gốc */
+            overflow-wrap: break-word; /* Bẻ từ nếu quá dài */
+            line-height: 1.4;
         }
 
         /* =========================================
@@ -57,7 +62,7 @@
 
         /* Dropdown Học kỳ */
         .hk-select {
-            padding: 3px;
+            padding: 4px;
             border: 1px solid var(--border);
             border-radius: 4px;
             background: var(--bg-page);
@@ -104,7 +109,7 @@
         .assignment-list-inline li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         
         .action-group {
-            display: flex; gap: 4px;
+            display: flex; gap: 4px; flex-shrink: 0;
         }
         .btn-action-assign {
             background: none; border: none; cursor: pointer;
@@ -189,9 +194,8 @@
                     <table id="modulesTable" style="table-layout: fixed; width: 100%;">
                         <thead>
                             <tr>
-                                <!-- CHỈNH TỶ LỆ CỘT: Cột GV auto để lấy hết khoảng trắng thừa -->
                                 <th style="width: 40px; text-align: center;">STT</th>
-                                <th style="width: 25%;">Học phần</th>
+                                <th style="width: 28%;">Học phần</th>
                                 <th style="width: 75px;">Học kỳ</th>
                                 <th style="width: 150px;">Tiến độ Phân công</th>
                                 <th style="width: auto;">Giảng viên & Số buổi</th>
@@ -321,7 +325,6 @@
 
             classSelect.addEventListener("change", () => { specSelect.value = ""; summaryCard.style.display = "none"; loadClassData(false); });
 
-            // THÊM THAM SỐ isSilentReload ĐỂ NGĂN NHẢY TRANG
             async function loadClassData(isSilentReload = false) {
                 const maLop = classSelect.value;
                 if (!maLop) {
@@ -334,7 +337,6 @@
 
                 curriculumNameText.textContent = tableName; curriculumInfo.style.display = "block";
                 
-                // Chỉ hiển thị 'Đang tải' nếu không phải là load ngầm
                 if (!isSilentReload) {
                     modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>`;
                 }
@@ -443,7 +445,7 @@
 
                 for (const [groupName, mods] of Object.entries(groups)) {
                     const groupTr = document.createElement("tr");
-                    groupTr.innerHTML = `<td colspan="6" class="text-left" style="background-color: var(--primary-light); color: var(--primary-hover); padding: 0.4rem 0.5rem;"><i class="fas fa-layer-group" style="margin-right: 5px;"></i> <strong>${escapeHtml(groupName)}</strong></td>`;
+                    groupTr.innerHTML = `<td colspan="6" class="text-left" style="background-color: var(--primary-light); color: var(--primary-hover); padding: 0.5rem 0.6rem;"><i class="fas fa-layer-group" style="margin-right: 5px;"></i> <strong>${escapeHtml(groupName)}</strong></td>`;
                     modulesTableBody.appendChild(groupTr);
 
                     mods.forEach(mod => {
@@ -472,8 +474,8 @@
 
                                 assignListHtml += `
                                     <li>
-                                        <div style="flex: 1; padding-right: 5px; line-height: 1.2;">
-                                            <i class="fas fa-user-tie" style="color:var(--primary); font-size:0.75rem;"></i> 
+                                        <div style="flex: 1; padding-right: 8px; line-height: 1.3;">
+                                            <i class="fas fa-user-tie" style="color:var(--primary); font-size:0.8rem;"></i> 
                                             <strong>${escapeHtml(getInstructorName(a["ma-giang-vien"]))}</strong> 
                                             <span class="text-muted" style="font-size:0.75rem;">(LT:${aLT} TH:${aTH})</span>
                                             ${noteHtml}
@@ -493,16 +495,16 @@
 
                         let btnAddState = "";
                         if (assignedLT >= khLT && assignedTH >= khTH && khTong > 0) {
-                            btnAddState = `disabled style="background: var(--text-muted); cursor: not-allowed; padding: 4px; font-size: 0.75rem; width:100%; border:none; color:#fff;" title="Đã phân đủ số buổi"`;
+                            btnAddState = `disabled style="background: var(--text-muted); cursor: not-allowed; padding: 5px; font-size: 0.8rem; width:100%; border:none; color:#fff;" title="Đã phân đủ số buổi"`;
                         } else {
-                            btnAddState = `class="btn-primary" style="padding: 4px; font-size: 0.75rem; width: 100%; border:none;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"`;
+                            btnAddState = `class="btn-primary" style="padding: 5px; font-size: 0.8rem; width: 100%; border:none;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"`;
                         }
 
                         const nameHtml = `
                             <div style="text-align: left; padding-right: 5px;">
-                                <strong style="color: var(--text-dark);">${tenHp}</strong>
+                                <strong style="color: var(--text-dark); font-size: 0.9rem;">${tenHp}</strong>
                                 <br>
-                                <span class="text-muted" style="font-size: 0.75rem;">${tinChi} TC | ${escapeHtml(mod["chuyen-nganh"] || "Chung")}</span>
+                                <span class="text-muted" style="font-size: 0.8rem;">${tinChi} TC | ${escapeHtml(mod["chuyen-nganh"] || "Chung")}</span>
                             </div>
                         `;
 
@@ -517,20 +519,20 @@
                         `;
 
                         const progressHtml = `
-                            <div style="font-size: 0.75rem; margin-bottom: 2px; text-align: left; line-height: 1.1;">
+                            <div style="font-size: 0.8rem; margin-bottom: 2px; text-align: left; line-height: 1.2;">
                                 <b>${assignedTong}/${khTong}</b> <span class="text-muted">(LT:${assignedLT}/${khLT} TH:${assignedTH}/${khTH})</span>
                             </div>
                             <div class="progress-wrapper">
                                 <div class="progress-container"><div class="progress-bar ${pColor}" style="width: ${Math.min(percent, 100)}%;"></div></div>
-                                <span style="font-size:0.7rem; font-weight:bold; color:var(--text-muted);">${percent}%</span>
+                                <span style="font-size:0.75rem; font-weight:bold; color:var(--text-muted);">${percent}%</span>
                             </div>
                         `;
 
                         const tr = document.createElement("tr");
-                        tr.id = `row-${btoa(rawMaHp).replace(/=/g, '')}`; // Set ID để Scroll tới
+                        tr.id = `row-${btoa(rawMaHp).replace(/=/g, '')}`; 
                         tr.innerHTML = `
                             <td class="text-center">${escapeHtml(mod["stt"] || "")}</td>
-                            <td style="line-height: 1.3;">${nameHtml}</td>
+                            <td>${nameHtml}</td>
                             <td>${hkSelectHtml}</td>
                             <td>${progressHtml}</td>
                             <td style="vertical-align: top;">${assignListHtml}</td>
@@ -543,13 +545,8 @@
                 }
             }
 
-            /* =================================================
-               HÀM HỖ TRỢ: FOCUS LẠI DÒNG VỪA THAO TÁC
-            ================================================= */
             async function reloadAndFocus(maHpRaw) {
-                await loadClassData(true); // Load ngầm
-                
-                // Focus lại môn vừa sửa
+                await loadClassData(true); 
                 const rowId = `row-${btoa(maHpRaw).replace(/=/g, '')}`;
                 const targetRow = document.getElementById(rowId);
                 if (targetRow) {
@@ -559,12 +556,8 @@
                 }
             }
 
-            /* =================================================
-               6. THÊM, SỬA, XÓA PHÂN CÔNG (THEO ID)
-            ================================================= */
             window.deleteAssignment = async function(assignId) {
                 if (!confirm("Bạn có chắc chắn muốn xóa phân công này không?")) return;
-                
                 const assignment = currentAssignmentsData.find(a => String(a["id"]) === String(assignId));
                 const maHp = assignment ? String(assignment["ma-hoc-phan"]).trim() : null;
 
@@ -572,9 +565,7 @@
                     const { error } = await window.supabaseClient.from('phan-cong-giang-day').delete().eq('id', assignId);
                     if (error) throw error;
                     window.showToast("Đã xóa phân công!"); 
-                    
-                    if (maHp) reloadAndFocus(maHp);
-                    else loadClassData(true);
+                    if (maHp) reloadAndFocus(maHp); else loadClassData(true);
                 } catch (err) { window.showToast("Lỗi xóa dữ liệu: " + err.message, true); }
             };
 
@@ -649,7 +640,6 @@
 
                 const origText = btnSaveAssignment.innerHTML;
                 btnSaveAssignment.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang lưu...`; btnSaveAssignment.disabled = true;
-
                 const savedMaHp = currentSelectedModule.maHp;
 
                 try {
@@ -668,15 +658,11 @@
                         if (error) throw error;
                         window.showToast("Đã thêm phân công thành công!");
                     }
-                    closeModal(); 
-                    reloadAndFocus(savedMaHp);
+                    closeModal(); reloadAndFocus(savedMaHp);
                 } catch (error) { window.showToast("Lỗi: " + error.message, true);
                 } finally { btnSaveAssignment.innerHTML = origText; btnSaveAssignment.disabled = false; }
             });
 
-            /* =================================================
-               KHỞI ĐỘNG
-            ================================================= */
             function startApp() {
                 let attempts = 0; const timer = setInterval(() => {
                     attempts++; if (window.supabaseClient) { clearInterval(timer); loadInitialData(); } else if (attempts >= 50) { clearInterval(timer); window.showToast("Không tải được Database. RLS Policy?", true); }
