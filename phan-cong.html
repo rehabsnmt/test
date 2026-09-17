@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Quản lý Phân công giảng dạy - Bộ môn Phục hồi chức năng.">
+
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+            default-src 'self';
+            connect-src 'self' https://*.supabase.co;
+            img-src 'self' data: https://*.supabase.co;
+            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+            script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+            font-src 'self' https://cdnjs.cloudflare.com;
+        ">
+
+    <title>Phân công giảng dạy - Bộ môn Phục hồi chức năng</title>
+
+    <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
+    
+    <!-- CSS dùng chung -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .filter-section .form-group {
+            margin-bottom: 0;
+            flex: 1;
+            min-width: 250px;
+        }
+        .action-column {
+            width: 120px;
+        }
+        
+        /* Chỉnh lại z-index cho modal để luôn đè lên các thành phần khác */
+        .modal-overlay {
+            z-index: 9999;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <div id="header-placeholder"></div>
+
+    <!-- TOAST -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- MAIN CONTENT -->
+    <main style="opacity: 0; transition: opacity 0.3s ease;">
+        
+        <div class="section-title" style="margin-top: 1rem;">
+            <h1>Phân công <span class="title-break">Giảng dạy</span></h1>
+            <div class="section-divider"></div>
+        </div>
+
+        <div class="container">
+            <!-- Khu vực Bộ lọc -->
+            <div class="card">
+                <div class="filter-section">
+                    <div class="form-group">
+                        <label for="classSelect">Chọn Lớp học</label>
+                        <select id="classSelect">
+                            <option value="">-- Đang tải danh sách lớp --</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="curriculumInfo" style="margin-top: 10px; font-size: 0.85rem; color: var(--text-muted); display: none;">
+                    Chương trình đào tạo: <strong id="curriculumNameText">...</strong>
+                </div>
+            </div>
+
+            <!-- Bảng Học phần -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3>Danh sách Học phần</h3>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="modulesTable">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã HP</th>
+                                <th>Tên Học phần</th>
+                                <th>Nhóm HP</th>
+                                <th>Chuyên ngành</th>
+                                <th>Tổng TC</th>
+                                <th>Tổng Buổi</th>
+                                <th>Buổi LT</th>
+                                <th>Buổi TH</th>
+                                <th class="action-column">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modulesTableBody">
+                            <tr>
+                                <td colspan="10" class="text-center">Vui lòng chọn lớp học để xem chương trình.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ==============================================
+         MODAL PHÂN CÔNG GIẢNG VIÊN
+    =============================================== -->
+    <div id="assignModal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 500px; text-align: left;">
+            <button class="modal-close" id="btnCloseModal" aria-label="Đóng"><i class="fas fa-times"></i></button>
+            
+            <h3 style="margin-bottom: 0.5rem; text-align: center;">Phân công Giảng viên</h3>
+            <p id="modalModuleInfo" style="text-align: center; color: var(--primary); font-weight: 600; margin-bottom: 1.5rem;"></p>
+
+            <form id="assignForm">
+                <div class="form-group">
+                    <label for="instructorSelect">Chọn Giảng viên <span class="text-danger">*</span></label>
+                    <select id="instructorSelect" required>
+                        <option value="">-- Đang tải giảng viên --</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="theorySessions">Số buổi Lý thuyết (LT) <span class="text-danger">*</span></label>
+                        <input type="number" id="theorySessions" min="0" value="0" required style="max-width: 100%;">
+                        <small id="hintLT" class="text-muted">Tối đa: 0 buổi</small>
+                    </div>
+
+                    <div class="form-group" style="flex: 1;">
+                        <label for="practiceSessions">Số buổi Thực hành (TH) <span class="text-danger">*</span></label>
+                        <input type="number" id="practiceSessions" min="0" value="0" required style="max-width: 100%;">
+                        <small id="hintTH" class="text-muted">Tối đa: 0 buổi</small>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn-warning" id="btnCancelModal" style="color: #fff; background: var(--text-muted);">Hủy</button>
+                    <button type="submit" class="btn-primary" id="btnSaveAssignment">
+                        <i class="fas fa-save"></i> Lưu phân công
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div id="footer-placeholder"></div>
+
+    <!-- TẢI GIAO DIỆN CHUNG & AUTH SUPABASE -->
+    <script src="js/layout.js"></script>
+
+    <!-- SCRIPT CHÍNH CHO TRANG PHÂN CÔNG -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            /* =================================================
+               HÀM HIỂN THỊ THÔNG BÁO (TOAST)
+            ================================================= */
+            window.showToast = function (message, isError = false) {
+                const container = document.getElementById("toastContainer");
+                if (!container) return;
+                const toast = document.createElement("div");
+                toast.className = "toast";
+                if (isError) toast.style.borderLeftColor = "var(--accent)";
+                
+                const iconClass = isError ? "fas fa-exclamation-circle" : "fas fa-check-circle";
+                const iconColor = isError ? "var(--accent)" : "#16a34a";
+
+                toast.innerHTML = `<i class="${iconClass}" style="color: ${iconColor};"></i><span>${message}</span>`;
+                container.appendChild(toast);
+                requestAnimationFrame(() => toast.classList.add("show"));
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                    setTimeout(() => toast.remove(), 400);
+                }, 3000);
+            };
+
+            function escapeHtml(value) {
+                if (value == null) return "";
+                return String(value)
+                    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            }
+
+            /* =================================================
+               BIẾN TOÀN CỤC & ELEMENT
+            ================================================= */
+            let classesList = [];
+            let instructorsList = [];
+            let currentSelectedClass = null; // Lưu object lớp đang chọn
+            let currentSelectedModule = null; // Lưu object học phần đang chọn để phân công
+
+            const classSelect = document.getElementById("classSelect");
+            const curriculumInfo = document.getElementById("curriculumInfo");
+            const curriculumNameText = document.getElementById("curriculumNameText");
+            const modulesTableBody = document.getElementById("modulesTableBody");
+
+            // Modal elements
+            const assignModal = document.getElementById("assignModal");
+            const assignForm = document.getElementById("assignForm");
+            const instructorSelect = document.getElementById("instructorSelect");
+            const theorySessions = document.getElementById("theorySessions");
+            const practiceSessions = document.getElementById("practiceSessions");
+            const hintLT = document.getElementById("hintLT");
+            const hintTH = document.getElementById("hintTH");
+            const btnCloseModal = document.getElementById("btnCloseModal");
+            const btnCancelModal = document.getElementById("btnCancelModal");
+            const btnSaveAssignment = document.getElementById("btnSaveAssignment");
+            const modalModuleInfo = document.getElementById("modalModuleInfo");
+
+            /* =================================================
+               1. LẤY DỮ LIỆU CƠ BẢN (LỚP HỌC & GIẢNG VIÊN)
+            ================================================= */
+            async function loadInitialData() {
+                try {
+                    const supabase = window.supabaseClient;
+
+                    // Lấy danh sách lớp học
+                    const { data: classData, error: classError } = await supabase
+                        .from('lop-hoc')
+                        .select('ma-lop, ten-lop, chuong-trinh');
+                    
+                    if (classError) throw classError;
+                    classesList = classData || [];
+
+                    // Render Select Lớp
+                    classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
+                    classesList.forEach(cls => {
+                        const option = document.createElement("option");
+                        option.value = cls["ma-lop"];
+                        option.textContent = `${cls["ma-lop"]} - ${cls["ten-lop"]}`;
+                        classSelect.appendChild(option);
+                    });
+
+                    // Lấy danh sách giảng viên
+                    const { data: instData, error: instError } = await supabase
+                        .from('giang-vien')
+                        .select('ma-giang-vien, ho-ten')
+                        .order('ho-ten', { ascending: true });
+
+                    if (instError) throw instError;
+                    instructorsList = instData || [];
+
+                    // Render Select Giảng viên (ẩn trong Modal)
+                    instructorSelect.innerHTML = `<option value="">-- Chọn Giảng viên --</option>`;
+                    instructorsList.forEach(inst => {
+                        const option = document.createElement("option");
+                        option.value = inst["ma-giang-vien"];
+                        option.textContent = `${inst["ho-ten"]} (${inst["ma-giang-vien"]})`;
+                        instructorSelect.appendChild(option);
+                    });
+
+                } catch (error) {
+                    console.error("Lỗi lấy dữ liệu ban đầu:", error);
+                    window.showToast("Lỗi khi kết nối cơ sở dữ liệu.", true);
+                }
+            }
+
+            /* =================================================
+               2. XỬ LÝ KHI CHỌN LỚP HỌC -> TẢI CHƯƠNG TRÌNH
+            ================================================= */
+            classSelect.addEventListener("change", async (e) => {
+                const maLop = e.target.value;
+                if (!maLop) {
+                    currentSelectedClass = null;
+                    curriculumInfo.style.display = "none";
+                    modulesTableBody.innerHTML = `<tr><td colspan="10" class="text-center">Vui lòng chọn lớp học để xem chương trình.</td></tr>`;
+                    return;
+                }
+
+                currentSelectedClass = classesList.find(c => c["ma-lop"] === maLop);
+                const tableName = currentSelectedClass["chuong-trinh"];
+
+                if (!tableName) {
+                    window.showToast("Lớp học này chưa được gán mã bảng chương trình.", true);
+                    return;
+                }
+
+                curriculumNameText.textContent = tableName;
+                curriculumInfo.style.display = "block";
+                modulesTableBody.innerHTML = `<tr><td colspan="10" class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải chương trình học...</td></tr>`;
+
+                try {
+                    const supabase = window.supabaseClient;
+                    // Lấy dữ liệu học phần từ bảng được chỉ định trong cột chuong-trinh
+                    const { data: curriculumData, error: curError } = await supabase
+                        .from(tableName)
+                        .select('*')
+                        .order('stt', { ascending: true });
+
+                    if (curError) {
+                        // Nếu bảng không tồn tại hoặc lỗi quyền
+                        throw curError;
+                    }
+
+                    renderModulesTable(curriculumData || []);
+                } catch (error) {
+                    console.error(`Lỗi tải bảng ${tableName}:`, error);
+                    modulesTableBody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Không thể tải chương trình. Có thể bảng "${escapeHtml(tableName)}" chưa được tạo trên Supabase.</td></tr>`;
+                }
+            });
+
+            /* =================================================
+               3. RENDER BẢNG HỌC PHẦN
+            ================================================= */
+            function renderModulesTable(modules) {
+                modulesTableBody.innerHTML = "";
+
+                if (modules.length === 0) {
+                    modulesTableBody.innerHTML = `<tr><td colspan="10" class="text-center">Chương trình học trống.</td></tr>`;
+                    return;
+                }
+
+                modules.forEach(mod => {
+                    const tr = document.createElement("tr");
+
+                    // Lấy dữ liệu an toàn
+                    const stt = escapeHtml(mod["stt"] || "");
+                    const maHp = escapeHtml(mod["ma-hoc-phan"] || "");
+                    const tenHp = escapeHtml(mod["ten-hoc-phan"] || "");
+                    const nhomHp = escapeHtml(mod["nhom-hoc-phan"] || "");
+                    const chuyenNganh = escapeHtml(mod["chuyen-nganh"] || "");
+                    const tongTinChi = escapeHtml(mod["tong-tin-chi"] || "0");
+                    const tongBuoi = escapeHtml(mod["tong-so-buoi"] || "0");
+                    const soBuoiLT = escapeHtml(mod["so-buoi-ly-thuyet"] || "0");
+                    const soBuoiTH = escapeHtml(mod["so-buoi-thuc-hanh"] || "0");
+
+                    tr.innerHTML = `
+                        <td>${stt}</td>
+                        <td><strong>${maHp}</strong></td>
+                        <td class="text-left" style="min-width: 200px;">${tenHp}</td>
+                        <td>${nhomHp}</td>
+                        <td>${chuyenNganh}</td>
+                        <td>${tongTinChi}</td>
+                        <td>${tongBuoi}</td>
+                        <td>${soBuoiLT}</td>
+                        <td>${soBuoiTH}</td>
+                        <td>
+                            <button class="btn-primary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openAssignModal('${maHp}', '${tenHp}', ${soBuoiLT}, ${soBuoiTH})">
+                                Phân công
+                            </button>
+                        </td>
+                    `;
+                    modulesTableBody.appendChild(tr);
+                });
+            }
+
+            /* =================================================
+               4. MỞ MODAL VÀ LƯU PHÂN CÔNG
+            ================================================= */
+            // Expose function ra window để gọi từ inline onclick
+            window.openAssignModal = function(maHp, tenHp, maxLT, maxTH) {
+                if (!currentSelectedClass) {
+                    window.showToast("Lỗi: Không xác định được lớp học.", true);
+                    return;
+                }
+
+                currentSelectedModule = {
+                    maHp: maHp,
+                    tenHp: tenHp,
+                    maxLT: parseInt(maxLT) || 0,
+                    maxTH: parseInt(maxTH) || 0
+                };
+
+                // Setup giao diện Modal
+                modalModuleInfo.textContent = `Học phần: ${maHp} - ${tenHp}`;
+                instructorSelect.value = "";
+                theorySessions.value = 0;
+                practiceSessions.value = 0;
+
+                // Gợi ý số buổi tối đa
+                hintLT.textContent = `Tối đa trong CT: ${currentSelectedModule.maxLT} buổi`;
+                hintTH.textContent = `Tối đa trong CT: ${currentSelectedModule.maxTH} buổi`;
+
+                // Hiển thị modal
+                assignModal.classList.remove("hidden");
+            };
+
+            // Đóng Modal
+            function closeModal() {
+                assignModal.classList.add("hidden");
+                currentSelectedModule = null;
+            }
+
+            btnCloseModal.addEventListener("click", closeModal);
+            btnCancelModal.addEventListener("click", closeModal);
+
+            // Xử lý Lưu Form
+            assignForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                if (!currentSelectedClass || !currentSelectedModule) return;
+
+                const maGiangVien = instructorSelect.value;
+                const soBuoiLT = parseInt(theorySessions.value) || 0;
+                const soBuoiTH = parseInt(practiceSessions.value) || 0;
+
+                if (!maGiangVien) {
+                    window.showToast("Vui lòng chọn giảng viên.", true);
+                    return;
+                }
+
+                if (soBuoiLT === 0 && soBuoiTH === 0) {
+                    window.showToast("Cần nhập số buổi Lý thuyết hoặc Thực hành > 0.", true);
+                    return;
+                }
+
+                // Vô hiệu hóa nút trong khi lưu
+                const origText = btnSaveAssignment.innerHTML;
+                btnSaveAssignment.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang lưu...`;
+                btnSaveAssignment.disabled = true;
+
+                try {
+                    const supabase = window.supabaseClient;
+
+                    // Thực hiện Insert (hoặc Upsert nếu bạn đã setup Primary Key kết hợp)
+                    const { data, error } = await supabase
+                        .from('phan-cong-giang-day')
+                        .insert([
+                            { 
+                                "ma-lop": currentSelectedClass["ma-lop"],
+                                "ma-hoc-phan": currentSelectedModule.maHp,
+                                "ma-giang-vien": maGiangVien,
+                                "so-buoi-ly-thuyet": soBuoiLT,
+                                "so-buoi-thuc-hanh": soBuoiTH
+                            }
+                        ]);
+
+                    if (error) throw error;
+
+                    window.showToast("Đã lưu phân công thành công!");
+                    closeModal();
+
+                } catch (error) {
+                    console.error("Lỗi khi lưu phân công:", error);
+                    window.showToast("Lỗi: " + error.message, true);
+                } finally {
+                    btnSaveAssignment.innerHTML = origText;
+                    btnSaveAssignment.disabled = false;
+                }
+            });
+
+            /* =================================================
+               KHỞI ĐỘNG SAU KHI CÓ SUPABASE
+            ================================================= */
+            function startApp() {
+                let attempts = 0;
+                const timer = setInterval(() => {
+                    attempts++;
+                    if (window.supabaseClient) {
+                        clearInterval(timer);
+                        loadInitialData();
+                    } else if (attempts >= 50) {
+                        clearInterval(timer);
+                        window.showToast("Không thể tải cơ sở dữ liệu. Vui lòng F5 lại.", true);
+                    }
+                }, 100);
+            }
+
+            startApp();
+        });
+    </script>
+</body>
+</html>
