@@ -24,79 +24,47 @@
         /* =========================================
            ÉP BUỘC GIAO DIỆN FULL MÀN HÌNH
         ========================================= */
-        main {
-            max-width: 100% !important;
-            padding: 1rem 2% 2rem !important;
-        }
-        .container {
-            max-width: 100% !important;
-            padding: 0 !important;
-        }
-        #modulesTable th, #modulesTable td {
-            padding: 0.6rem 0.4rem;
-            font-size: 0.82rem;
-            vertical-align: middle;
-            white-space: normal !important;
-            overflow-wrap: break-word;
-            line-height: 1.4;
-        }
+        main { max-width: 100% !important; padding: 1rem 2% 2rem !important; }
+        .container { max-width: 100% !important; padding: 0 !important; }
+        #modulesTable th, #modulesTable td { padding: 0.5rem 0.4rem; font-size: 0.82rem; vertical-align: middle; white-space: normal !important; overflow-wrap: break-word; line-height: 1.4; }
 
         /* =========================================
-           CÁC STYLE KHÁC
+           CÁC STYLE CƠ BẢN
         ========================================= */
-        .filter-section {
-            display: flex; gap: 1rem; align-items: flex-end;
-            margin-bottom: 0.5rem; flex-wrap: wrap;
-        }
+        .filter-section { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 0.5rem; flex-wrap: wrap; }
         .filter-section .form-group { margin-bottom: 0; flex: 1; min-width: 200px; }
         .modal-overlay { z-index: 9999; }
-
-        .hk-select {
-            padding: 4px; border: 1px solid var(--border); border-radius: 4px;
-            background: var(--bg-page); font-size: 0.8rem; width: 100%; cursor: pointer; transition: var(--transition);
-        }
+        .hk-select { padding: 4px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-page); font-size: 0.8rem; width: 100%; cursor: pointer; transition: var(--transition); }
         .hk-select:focus { border-color: var(--primary); outline: none; }
 
-        /* Thanh tiến độ */
+        /* Thanh tiến độ bảng */
         .progress-wrapper { display: flex; align-items: center; gap: 5px; margin-top: 3px; }
-        .progress-container {
-            flex: 1; background-color: var(--border); border-radius: var(--radius-pill);
-            height: 6px; overflow: hidden; margin: 0;
-        }
+        .progress-container { flex: 1; background-color: var(--border); border-radius: var(--radius-pill); height: 6px; overflow: hidden; margin: 0; }
         .progress-bar { height: 100%; background-color: var(--primary); transition: width 0.3s ease; }
         .progress-bar.complete { background-color: #16a34a; } 
         .progress-bar.over { background-color: var(--accent); } 
 
         /* Danh sách GV & Nút Thao tác */
         .assignment-list-inline { list-style: none; padding: 0; margin: 0; font-size: 0.8rem; text-align: left; }
-        .assignment-list-inline li {
-            display: flex; justify-content: space-between; align-items: flex-start;
-            margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-light);
-        }
+        .assignment-list-inline li { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-light); }
         .assignment-list-inline li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        
         .action-group { display: flex; gap: 4px; flex-shrink: 0; }
-        .btn-action-assign {
-            background: none; border: none; cursor: pointer; padding: 3px 5px;
-            border-radius: 4px; transition: all 0.2s ease; font-size: 0.85rem;
-        }
+        .btn-action-assign { background: none; border: none; cursor: pointer; padding: 3px 5px; border-radius: 4px; transition: all 0.2s ease; font-size: 0.85rem; }
         .btn-action-assign.edit { color: #0284c7; }
         .btn-action-assign.edit:hover { background: #e0f2fe; color: #0369a1; }
         .btn-action-assign.delete { color: #ef4444; }
         .btn-action-assign.delete:hover { background: #fee2e2; color: #b91c1c; }
 
-        /* Card Thống kê Tín chỉ */
-        .summary-card {
-            background: var(--surface); border: 1px solid var(--primary-light); border-radius: var(--radius-md);
-            padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); display: none;
-        }
-        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 0.5rem; }
-        .summary-box { background: var(--bg-page); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem; text-align: center; }
-        .summary-box .hk-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 600;}
-        .summary-box .hk-value { font-size: 1.4rem; font-weight: bold; color: var(--primary); margin: 0.1rem 0; }
-        .summary-box .hk-unit { font-size: 0.7rem; color: var(--text-muted); }
+        /* =========================================
+           THỐNG KÊ TÍN CHỈ (DẠNG THANH NGANG)
+        ========================================= */
+        .summary-card { background: var(--surface); border: 1px solid var(--primary-light); border-radius: var(--radius-md); padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); display: none; }
+        .hk-bar-container { display: flex; align-items: center; margin-bottom: 8px; }
+        .hk-bar-label { width: 70px; font-size: 0.85rem; font-weight: 600; color: var(--text-dark); }
+        .hk-bar-track { flex: 1; background: var(--border-light); height: 14px; border-radius: 8px; margin: 0 10px; overflow: hidden; }
+        .hk-bar-fill { background: var(--primary); height: 100%; border-radius: 8px; transition: width 0.5s ease; }
+        .hk-bar-value { width: 45px; font-size: 0.85rem; font-weight: bold; color: var(--primary); text-align: right; }
         
-        /* Hiệu ứng chớp sáng cho row vừa chỉnh sửa */
         .highlight-row { background-color: var(--primary-light) !important; transition: background-color 0.5s ease; }
     </style>
 </head>
@@ -133,14 +101,32 @@
                 </div>
             </div>
 
+            <!-- BẢNG THỐNG KÊ DẠNG THANH NGANG -->
             <div id="summaryCard" class="summary-card">
-                <h3 style="margin-bottom: 0.2rem; font-size: 1rem;">Tín chỉ: <span id="summaryMajorName" style="color: var(--primary);"></span></h3>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">* Đã cộng gộp học phần nhóm <strong>"Chung"</strong>.</p>
-                <div class="summary-grid">
-                    <div class="summary-box"><div class="hk-title">Học kỳ 1</div><div class="hk-value" id="hk1-credits">0</div><div class="hk-unit">TC</div></div>
-                    <div class="summary-box"><div class="hk-title">Học kỳ 2</div><div class="hk-value" id="hk2-credits">0</div><div class="hk-unit">TC</div></div>
-                    <div class="summary-box"><div class="hk-title">Học kỳ 3</div><div class="hk-value" id="hk3-credits">0</div><div class="hk-unit">TC</div></div>
-                    <div class="summary-box"><div class="hk-title">Học kỳ 4</div><div class="hk-value" id="hk4-credits">0</div><div class="hk-unit">TC</div></div>
+                <h3 style="margin-bottom: 0.2rem; font-size: 1rem;">Phân bổ Tín chỉ: <span id="summaryMajorName" style="color: var(--primary);"></span></h3>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">* Đã cộng gộp học phần nhóm <strong>"Chung"</strong>.</p>
+                
+                <div id="hkBarsContainer">
+                    <div class="hk-bar-container">
+                        <div class="hk-bar-label">Học kỳ 1</div>
+                        <div class="hk-bar-track"><div id="bar-hk1" class="hk-bar-fill" style="width: 0%;"></div></div>
+                        <div class="hk-bar-value" id="val-hk1">0 TC</div>
+                    </div>
+                    <div class="hk-bar-container">
+                        <div class="hk-bar-label">Học kỳ 2</div>
+                        <div class="hk-bar-track"><div id="bar-hk2" class="hk-bar-fill" style="width: 0%;"></div></div>
+                        <div class="hk-bar-value" id="val-hk2">0 TC</div>
+                    </div>
+                    <div class="hk-bar-container">
+                        <div class="hk-bar-label">Học kỳ 3</div>
+                        <div class="hk-bar-track"><div id="bar-hk3" class="hk-bar-fill" style="width: 0%;"></div></div>
+                        <div class="hk-bar-value" id="val-hk3">0 TC</div>
+                    </div>
+                    <div class="hk-bar-container">
+                        <div class="hk-bar-label">Học kỳ 4</div>
+                        <div class="hk-bar-track"><div id="bar-hk4" class="hk-bar-fill" style="width: 0%;"></div></div>
+                        <div class="hk-bar-value" id="val-hk4">0 TC</div>
+                    </div>
                 </div>
             </div>
 
@@ -149,10 +135,10 @@
                     <table id="modulesTable" style="table-layout: fixed; width: 100%;">
                         <thead>
                             <tr>
-                                <th style="width: 40px; text-align: center;">STT</th>
-                                <th style="width: 25%;">Học phần</th>
+                                <th style="width: 35px; text-align: center;">STT</th>
+                                <th style="width: 28%;">Học phần</th>
                                 <th style="width: 75px;">Học kỳ</th>
-                                <th style="width: 150px;">Tiến độ Phân công</th>
+                                <th style="width: 140px;">Tiến độ Phân công</th>
                                 <th style="width: auto;">Chi tiết Phân công</th>
                                 <th style="width: 80px;">Thao tác</th>
                             </tr>
@@ -181,7 +167,7 @@
                     </select>
                 </div>
 
-                <!-- BỔ SUNG: CHỌN ĐỐI TƯỢNG (PHỤC HỒI) -->
+                <!-- BỔ SUNG: CHỌN ĐỐI TƯỢNG -->
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="targetTypeSelect">Đối tượng giảng dạy</label>
                     <select id="targetTypeSelect" style="border-color: var(--primary);">
@@ -192,14 +178,23 @@
                 </div>
 
                 <!-- KHUNG CHỌN NHÓM -->
-                <div id="groupTargetDiv" class="hidden" style="display: flex; gap: 1rem; margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
-                    <div class="form-group" style="flex: 1; margin: 0;">
-                        <label for="groupTypeSelect" style="font-size: 0.8rem;">Loại nhóm <span class="text-danger">*</span></label>
-                        <select id="groupTypeSelect"><option value="">- Loại -</option></select>
+                <div id="groupTargetDiv" class="hidden" style="margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
+                    <div style="display: flex; gap: 1rem;">
+                        <div class="form-group" style="flex: 1; margin: 0;">
+                            <label for="groupTypeSelect" style="font-size: 0.8rem;">Loại nhóm <span class="text-danger">*</span></label>
+                            <select id="groupTypeSelect"><option value="">- Loại -</option></select>
+                        </div>
+                        <div class="form-group" style="flex: 1; margin: 0;">
+                            <label for="groupNameSelect" style="font-size: 0.8rem;">Tên nhóm <span class="text-danger">*</span></label>
+                            <select id="groupNameSelect"><option value="">- Tên -</option></select>
+                        </div>
                     </div>
-                    <div class="form-group" style="flex: 1; margin: 0;">
-                        <label for="groupNameSelect" style="font-size: 0.8rem;">Tên nhóm <span class="text-danger">*</span></label>
-                        <select id="groupNameSelect"><option value="">- Tên -</option></select>
+                    <!-- Khung hiển thị danh sách SV trong nhóm -->
+                    <div id="groupMembersDiv" style="margin-top: 10px; font-size: 0.8rem; display: none;">
+                        <strong style="color: var(--text-dark);">Danh sách học viên:</strong>
+                        <ul id="groupMembersList" style="margin: 5px 0 0 0; padding-left: 20px; color: var(--text-muted); max-height: 100px; overflow-y: auto;">
+                            <!-- Li render dynamically -->
+                        </ul>
                     </div>
                 </div>
 
@@ -212,7 +207,7 @@
                 </div>
 
                 <!-- NHẬP SỐ BUỔI -->
-                <div style="display: flex; gap: 1rem;">
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                     <div class="form-group" style="flex: 1;">
                         <label for="theorySessions">Lý thuyết (LT) <span class="text-danger">*</span></label>
                         <input type="number" id="theorySessions" min="0" value="0" required>
@@ -228,7 +223,7 @@
 
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="assignNote">Ghi chú (Tùy chọn)</label>
-                    <textarea id="assignNote" rows="2" placeholder="Nhập ghi chú... ví dụ: Phòng thực hành 1..." style="width: 100%; max-width: 100%;"></textarea>
+                    <textarea id="assignNote" rows="2" placeholder="Ghi chú phân công..." style="width: 100%; max-width: 100%;"></textarea>
                 </div>
 
                 <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 10px;">
@@ -266,23 +261,27 @@
                 return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
             }
 
+            // DATA STATES
             let classesList = [], instructorsList = [], studentsList = [], groupsList = [];
             let currentSelectedClass = null, currentSelectedModule = null; 
             let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {}; 
             let editingAssignmentId = null;
 
+            // DOM ELEMENTS
             const classSelect = document.getElementById("classSelect"), specSelect = document.getElementById("specSelect");
             const curriculumInfo = document.getElementById("curriculumInfo"), curriculumNameText = document.getElementById("curriculumNameText");
             const modulesTableBody = document.getElementById("modulesTableBody");
             const summaryCard = document.getElementById("summaryCard"), summaryMajorName = document.getElementById("summaryMajorName");
 
             const assignModal = document.getElementById("assignModal"), assignForm = document.getElementById("assignForm");
-            const instructorSelect = document.getElementById("instructorSelect"), theorySessions = document.getElementById("theorySessions"), practiceSessions = document.getElementById("practiceSessions");
+            const instructorSelect = document.getElementById("instructorSelect");
+            const theorySessions = document.getElementById("theorySessions"), practiceSessions = document.getElementById("practiceSessions");
             const assignNote = document.getElementById("assignNote"), hintLT = document.getElementById("hintLT"), hintTH = document.getElementById("hintTH");
             
-            // DOM Đối tượng
+            // Đối tượng giảng dạy
             const targetTypeSelect = document.getElementById("targetTypeSelect");
             const groupTargetDiv = document.getElementById("groupTargetDiv"), groupTypeSelect = document.getElementById("groupTypeSelect"), groupNameSelect = document.getElementById("groupNameSelect");
+            const groupMembersDiv = document.getElementById("groupMembersDiv"), groupMembersList = document.getElementById("groupMembersList");
             const studentTargetDiv = document.getElementById("studentTargetDiv"), studentSelect = document.getElementById("studentSelect");
 
             const btnCloseModal = document.getElementById("btnCloseModal"), btnCancelModal = document.getElementById("btnCancelModal"), btnSaveAssignment = document.getElementById("btnSaveAssignment");
@@ -298,8 +297,7 @@
                     classesList = classData || [];
                     classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
                     classesList.forEach(cls => {
-                        const option = document.createElement("option"); option.value = cls["ma-lop"]; 
-                        option.textContent = `${cls["ten-lop"]}`; 
+                        const option = document.createElement("option"); option.value = cls["ma-lop"]; option.textContent = `${cls["ten-lop"]}`; 
                         classSelect.appendChild(option);
                     });
 
@@ -308,8 +306,7 @@
                     instructorsList = instData || [];
                     instructorSelect.innerHTML = `<option value="">-- Chọn Giảng viên --</option>`;
                     instructorsList.forEach(inst => {
-                        const option = document.createElement("option"); option.value = inst["ma-giang-vien"]; 
-                        option.textContent = `${inst["ho-ten"]}`; 
+                        const option = document.createElement("option"); option.value = inst["ma-giang-vien"]; option.textContent = `${inst["ho-ten"]}`; 
                         instructorSelect.appendChild(option);
                     });
                 } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
@@ -364,8 +361,8 @@
                     const { data: stdData } = await supabase.from('danh-sach-lop').select('ma-hoc-vien, ho-ten').eq('ma-lop', maLop);
                     studentsList = stdData || [];
 
-                    // Tải Danh sách Nhóm của lớp
-                    const { data: grpData } = await supabase.from('danh-sach-nhom').select('ten-nhom, loai-nhom').eq('ma-lop', maLop);
+                    // CẬP NHẬT: Tải Danh sách Nhóm Gồm cả HV (Mã + Tên)
+                    const { data: grpData } = await supabase.from('danh-sach-nhom').select('ma-hoc-vien, ho-ten, ten-nhom, loai-nhom').eq('ma-lop', maLop);
                     groupsList = grpData || [];
 
                     updateSpecializationFilter();
@@ -409,16 +406,18 @@
                     }
                 });
 
-                document.getElementById("hk1-credits").textContent = hkCredits[1]; document.getElementById("hk2-credits").textContent = hkCredits[2];
-                document.getElementById("hk3-credits").textContent = hkCredits[3]; document.getElementById("hk4-credits").textContent = hkCredits[4];
+                // Cập nhật Thanh ngang
+                const maxCredit = Math.max(hkCredits[1], hkCredits[2], hkCredits[3], hkCredits[4], 1); 
+                for(let i=1; i<=4; i++) {
+                    document.getElementById(`val-hk${i}`).textContent = hkCredits[i] + " TC";
+                    const percentage = (hkCredits[i] / maxCredit) * 100;
+                    document.getElementById(`bar-hk${i}`).style.width = percentage + "%";
+                }
             }
 
             window.updateSemester = async function(maHpRaw, newHk) {
                 try {
-                    const maLop = currentSelectedClass["ma-lop"]; 
-                    const supabase = window.supabaseClient;
-                    const maHp = String(maHpRaw).trim(); 
-                    
+                    const maLop = currentSelectedClass["ma-lop"]; const supabase = window.supabaseClient; const maHp = String(maHpRaw).trim(); 
                     const { data: existingRecords, error: checkError } = await supabase.from('lop-hoc-phan').select('id').eq('ma-lop', maLop).eq('ma-hoc-phan', maHp);
                     if (checkError) throw checkError;
 
@@ -429,18 +428,13 @@
                     } else {
                         if (newHk) await supabase.from('lop-hoc-phan').insert([{ "ma-lop": maLop, "ma-hoc-phan": maHp, "hoc-ky": parseInt(newHk) }]);
                     }
-                    
                     currentModuleSemesters[maHp] = newHk ? parseInt(newHk) : null;
-                    window.showToast("Cập nhật học kỳ thành công!"); 
-                    updateSummary();
-                } catch (err) { 
-                    window.showToast("Lỗi cập nhật bảng lop-hoc-phan: " + err.message, true);
-                    loadClassData(true);
-                }
+                    window.showToast("Cập nhật học kỳ thành công!"); updateSummary();
+                } catch (err) { window.showToast("Lỗi cập nhật: " + err.message, true); loadClassData(true); }
             };
 
             /* =================================================
-               4. RENDER BẢNG HỌC PHẦN & ĐỐI TƯỢNG
+               4. RENDER BẢNG HỌC PHẦN
             ================================================= */
             function renderModulesTable() {
                 modulesTableBody.innerHTML = ""; const filterVal = specSelect.value;
@@ -479,7 +473,6 @@
                                 const aLT = parseInt(a["so-buoi-ly-thuyet"]) || 0, aTH = parseInt(a["so-buoi-thuc-hanh"]) || 0, assignId = escapeHtml(a["id"] || "");
                                 const aNote = escapeHtml(a["ghi-chu"] || "");
                                 
-                                // LOGIC HIỂN THỊ ĐỐI TƯỢNG GIẢNG DẠY
                                 let targetText = "Cả lớp";
                                 if (a["doi-tuong"] === "nhom") targetText = `Nhóm: ${escapeHtml(a["ten-nhom"])} (${escapeHtml(a["loai-nhom"])})`;
                                 else if (a["doi-tuong"] === "ca-nhan") targetText = `HV: ${escapeHtml(a["ho-ten"])}`;
@@ -523,7 +516,7 @@
                             <div style="text-align: left; padding-right: 5px;">
                                 <strong style="color: var(--text-dark); font-size: 0.9rem;">${tenHp}</strong>
                                 <br>
-                                <span class="text-muted" style="font-size: 0.75rem;">${tinChi} TC | ${escapeHtml(mod["chuyen-nganh"] || "Chung")}</span>
+                                <span class="text-muted" style="font-size: 0.8rem;">${tinChi} TC | ${escapeHtml(mod["chuyen-nganh"] || "Chung")}</span>
                             </div>
                         `;
 
@@ -583,6 +576,9 @@
                 groupTargetDiv.classList.add('hidden');
                 studentTargetDiv.classList.add('hidden');
                 
+                groupMembersDiv.style.display = "none";
+                groupMembersList.innerHTML = "";
+
                 if (val === 'nhom') {
                     groupTargetDiv.classList.remove('hidden');
                     populateGroupTypes();
@@ -611,6 +607,33 @@
                 const uniqueNames = [...new Set(groupsList.filter(g => g['loai-nhom'] === type).map(g => g['ten-nhom']).filter(Boolean))];
                 groupNameSelect.innerHTML = '<option value="">- Tên -</option>';
                 uniqueNames.forEach(n => groupNameSelect.innerHTML += `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`);
+                
+                groupMembersDiv.style.display = "none";
+                groupMembersList.innerHTML = "";
+            });
+
+            // HIỂN THỊ DANH SÁCH HV TRONG NHÓM
+            groupNameSelect.addEventListener('change', () => {
+                const type = groupTypeSelect.value;
+                const name = groupNameSelect.value;
+                
+                if (!type || !name) {
+                    groupMembersDiv.style.display = "none";
+                    groupMembersList.innerHTML = "";
+                    return;
+                }
+                
+                const members = groupsList.filter(g => g['loai-nhom'] === type && g['ten-nhom'] === name);
+                if (members.length > 0) {
+                    groupMembersList.innerHTML = "";
+                    members.forEach(m => {
+                        groupMembersList.innerHTML += `<li>${escapeHtml(m['ma-hoc-vien'])} - ${escapeHtml(m['ho-ten'])}</li>`;
+                    });
+                    groupMembersDiv.style.display = "block";
+                } else {
+                    groupMembersDiv.style.display = "none";
+                    groupMembersList.innerHTML = "";
+                }
             });
 
             /* =================================================
@@ -677,7 +700,10 @@
                     setTimeout(() => {
                         groupTypeSelect.value = assignment["loai-nhom"] || "";
                         groupTypeSelect.dispatchEvent(new Event('change'));
-                        setTimeout(() => groupNameSelect.value = assignment["ten-nhom"] || "", 50);
+                        setTimeout(() => {
+                            groupNameSelect.value = assignment["ten-nhom"] || "";
+                            groupNameSelect.dispatchEvent(new Event('change')); // Trigger hiển thị danh sách SV
+                        }, 50);
                     }, 50);
                 } else if (dTuong === "ca-nhan") {
                     setTimeout(() => studentSelect.value = assignment["ma-hoc-vien"] || "", 50);
