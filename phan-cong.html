@@ -56,7 +56,7 @@
         .btn-action-assign.delete:hover { background: #fee2e2; color: #b91c1c; }
 
         /* =========================================
-           THỐNG KÊ TÍN CHỈ
+           THỐNG KÊ TÍN CHỈ (DẠNG THANH NGANG)
         ========================================= */
         .summary-card { background: var(--surface); border: 1px solid var(--primary-light); border-radius: var(--radius-md); padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); display: none; }
         .hk-bar-container { display: flex; align-items: center; margin-bottom: 8px; }
@@ -177,7 +177,7 @@
                     </select>
                 </div>
 
-                <!-- KHUNG CHỌN NHÓM (Bỏ class hidden, xài style trực tiếp) -->
+                <!-- KHUNG CHỌN NHÓM -->
                 <div id="groupTargetDiv" style="display: none; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
                     <div style="display: flex; gap: 1rem;">
                         <div class="form-group" style="flex: 1; margin: 0;">
@@ -198,7 +198,7 @@
                     </div>
                 </div>
 
-                <!-- KHUNG CHỌN CÁ NHÂN (Bỏ class hidden, xài style trực tiếp) -->
+                <!-- KHUNG CHỌN CÁ NHÂN -->
                 <div id="studentTargetDiv" style="display: none; margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
                     <div class="form-group" style="margin: 0;">
                         <label for="studentSelect" style="font-size: 0.8rem;">Chọn Học viên <span class="text-danger">*</span></label>
@@ -291,7 +291,7 @@
             async function loadInitialData() {
                 try {
                     const supabase = window.supabaseClient;
-                    const { data: classData, error: classError } = await supabase.from('lop-hoc').select('*');
+                    const { data: classData, error: classError } = await supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh');
                     if (classError) throw classError;
                     classesList = classData || [];
                     classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
@@ -301,7 +301,7 @@
                         classSelect.appendChild(option);
                     });
 
-                    const { data: instData, error: instError } = await supabase.from('giang-vien').select('*').order('ho-ten', { ascending: true });
+                    const { data: instData, error: instError } = await supabase.from('giang-vien').select('ma-giang-vien, ho-ten').order('ho-ten', { ascending: true });
                     if (instError) throw instError;
                     instructorsList = instData || [];
                     instructorSelect.innerHTML = `<option value="">-- Chọn Giảng viên --</option>`;
@@ -320,7 +320,7 @@
             classSelect.addEventListener("change", () => { specSelect.value = ""; summaryCard.style.display = "none"; loadClassData(false); });
 
             /* =================================================
-               2. TẢI DỮ LIỆU CHƯƠNG TRÌNH & ĐỐI TƯỢNG (HỌC VIÊN/NHÓM)
+               2. TẢI DỮ LIỆU CHƯƠNG TRÌNH & ĐỐI TƯỢNG
             ================================================= */
             async function loadClassData(isSilentReload = false) {
                 const maLop = classSelect.value;
@@ -328,12 +328,14 @@
                     currentSelectedClass = null; curriculumInfo.style.display = "none"; specSelect.disabled = true; specSelect.innerHTML = `<option value="">-- Tất cả chuyên ngành --</option>`;
                     modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center">Vui lòng chọn lớp học.</td></tr>`; return;
                 }
-                currentSelectedClass = classesList.find(c => c["ma-lop"] === maLop);
+                
+                // Kỹ thuật đối chiếu bằng Trim() an toàn
+                const maLopClean = String(maLop).trim();
+                currentSelectedClass = classesList.find(c => String(c["ma-lop"]).trim() === maLopClean);
                 const tableName = currentSelectedClass["chuong-trinh"];
                 if (!tableName) { window.showToast("Lớp học này chưa gán bảng chương trình.", true); return; }
 
                 curriculumNameText.textContent = tableName; curriculumInfo.style.display = "block";
-                
                 if (!isSilentReload) modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>`;
 
                 try {
@@ -344,29 +346,28 @@
                     if (curError) throw curError;
                     currentCurriculumData = curriculumData || [];
 
-                    const { data: assignData, error: assignError } = await supabase.from('phan-cong-giang-day').select('*').eq('ma-lop', maLop);
+                    const { data: assignData, error: assignError } = await supabase.from('phan-cong-giang-day').select('*');
                     if (assignError) throw assignError;
-                    currentAssignmentsData = assignData || [];
+                    currentAssignmentsData = (assignData || []).filter(a => String(a['ma-lop']).trim() === maLopClean);
 
-                    const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('*').eq('ma-lop', maLop);
+                    const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('*');
                     if (semesterError && !semesterError.message.includes("does not exist")) throw semesterError;
                     
                     currentModuleSemesters = {};
                     if (semesterData) { 
-                        semesterData.forEach(item => { 
+                        semesterData.filter(item => String(item['ma-lop']).trim() === maLopClean).forEach(item => { 
                             if(item["ma-hoc-phan"]) currentModuleSemesters[String(item["ma-hoc-phan"]).trim()] = item["hoc-ky"]; 
                         }); 
                     }
 
-                    // Tải Danh sách Học viên bằng SELECT *
-                    const { data: stdData, error: stdError } = await supabase.from('danh-sach-lop').select('*').eq('ma-lop', maLop);
+                    // TẢI TOÀN BỘ RỒI LỌC CLIENT BẰNG TRIM() ĐỂ CHỐNG LỖI KHOẢNG TRẮNG 100%
+                    const { data: stdData, error: stdError } = await supabase.from('danh-sach-lop').select('*');
                     if (stdError) console.error("Lỗi danh-sach-lop:", stdError);
-                    studentsList = stdData || [];
+                    studentsList = (stdData || []).filter(s => String(s['ma-lop'] || '').trim() === maLopClean);
 
-                    // Tải Danh sách Nhóm bằng SELECT *
-                    const { data: grpData, error: grpError } = await supabase.from('danh-sach-nhom').select('*').eq('ma-lop', maLop);
+                    const { data: grpData, error: grpError } = await supabase.from('danh-sach-nhom').select('*');
                     if (grpError) console.error("Lỗi danh-sach-nhom:", grpError);
-                    groupsList = grpData || [];
+                    groupsList = (grpData || []).filter(g => String(g['ma-lop'] || '').trim() === maLopClean);
 
                     updateSpecializationFilter();
                     renderModulesTable();
@@ -580,11 +581,11 @@
 
                 if (val === 'nhom') {
                     groupTargetDiv.style.display = 'flex';
-                    if(groupsList.length === 0) window.showToast("Không có dữ liệu nhóm học viên cho lớp này.", true);
+                    if(groupsList.length === 0) window.showToast("Lớp này chưa có dữ liệu danh sách nhóm.", true);
                     populateGroupTypes();
                 } else if (val === 'ca-nhan') {
                     studentTargetDiv.style.display = 'block';
-                    if(studentsList.length === 0) window.showToast("Không có dữ liệu học viên cho lớp này.", true);
+                    if(studentsList.length === 0) window.showToast("Lớp này chưa có dữ liệu danh sách học viên.", true);
                     populateStudents();
                 }
             });
