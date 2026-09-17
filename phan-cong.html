@@ -91,7 +91,7 @@
         .progress-bar.complete { background-color: #16a34a; } 
         .progress-bar.over { background-color: var(--accent); } 
 
-        /* Danh sách GV & Nút Thao tác */
+        /* Danh sách GV & Nút Thao tác (Đã thu gọn) */
         .assignment-list-inline {
             list-style: none;
             padding: 0; margin: 0;
@@ -183,11 +183,12 @@
                     <table id="modulesTable" style="table-layout: fixed; width: 100%;">
                         <thead>
                             <tr>
-                                <th style="width: 40px;">STT</th>
-                                <th style="width: 25%;">Học phần</th>
-                                <th style="width: 70px;">Học kỳ</th>
-                                <th style="width: 20%;">Tiến độ Phân công</th>
-                                <th style="width: 35%;">Giảng viên & Số buổi</th>
+                                <!-- Chiều rộng các cột được fix cứng, cột Học phần sẽ tự chiếm toàn bộ khoảng trống còn lại -->
+                                <th style="width: 35px; text-align: center;">STT</th>
+                                <th>Học phần</th>
+                                <th style="width: 75px;">Học kỳ</th>
+                                <th style="width: 140px;">Tiến độ</th>
+                                <th style="width: 270px;">GV & Số buổi</th>
                                 <th style="width: 75px;">Thao tác</th>
                             </tr>
                         </thead>
@@ -231,7 +232,7 @@
 
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="assignNote">Ghi chú (Tùy chọn)</label>
-                    <textarea id="assignNote" rows="2" placeholder="Nhập ghi chú... ví dụ: Dạy lớp A1, phòng thực hành..." style="width: 100%; max-width: 100%;"></textarea>
+                    <textarea id="assignNote" rows="2" placeholder="Nhập ghi chú..." style="width: 100%; max-width: 100%;"></textarea>
                 </div>
 
                 <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 10px;">
@@ -341,7 +342,13 @@
                     if (semesterError && !semesterError.message.includes("does not exist")) throw semesterError;
                     
                     currentModuleSemesters = {};
-                    if (semesterData) { semesterData.forEach(item => { currentModuleSemesters[item["ma-hoc-phan"]] = item["hoc-ky"]; }); }
+                    if (semesterData) { 
+                        semesterData.forEach(item => { 
+                            if(item["ma-hoc-phan"]) {
+                                currentModuleSemesters[String(item["ma-hoc-phan"]).trim()] = item["hoc-ky"]; 
+                            }
+                        }); 
+                    }
 
                     updateSpecializationFilter();
                     renderModulesTable();
@@ -349,11 +356,18 @@
             }
 
             function updateSpecializationFilter() {
+                const currentVal = specSelect.value; // Lưu lại giá trị bộ lọc đang chọn
                 const specs = new Set();
-                currentCurriculumData.forEach(mod => { const cn = (mod["chuyen-nganh"] || "").trim(); if (cn && cn.toLowerCase() !== "chung") specs.add(cn); });
+                currentCurriculumData.forEach(mod => { const cn = String(mod["chuyen-nganh"] || "").trim(); if (cn && cn.toLowerCase() !== "chung") specs.add(cn); });
                 specSelect.innerHTML = `<option value="">-- Tất cả chuyên ngành --</option>`;
                 specs.forEach(sp => { const option = document.createElement("option"); option.value = sp; option.textContent = sp; specSelect.appendChild(option); });
                 specSelect.disabled = false;
+                
+                // Khôi phục lại bộ lọc sau khi render
+                if (currentVal) {
+                    const exists = Array.from(specSelect.options).some(opt => opt.value === currentVal);
+                    if (exists) specSelect.value = currentVal;
+                }
             }
 
             specSelect.addEventListener("change", () => { updateSummary(); renderModulesTable(); });
@@ -366,9 +380,10 @@
                 let hkCredits = { 1: 0, 2: 0, 3: 0, 4: 0 };
 
                 currentCurriculumData.forEach(mod => {
-                    const cn = (mod["chuyen-nganh"] || "").trim().toLowerCase();
+                    const cn = String(mod["chuyen-nganh"] || "").trim().toLowerCase();
                     if (cn === filterVal.toLowerCase() || cn === "chung") {
-                        const hk = parseInt(currentModuleSemesters[mod["ma-hoc-phan"]]);
+                        const rawMaHp = String(mod["ma-hoc-phan"] || "").trim();
+                        const hk = parseInt(currentModuleSemesters[rawMaHp]);
                         const tc = parseFloat(mod["tong-tin-chi"]) || 0;
                         if (hk >= 1 && hk <= 4) hkCredits[hk] += tc;
                     }
@@ -378,17 +393,13 @@
                 document.getElementById("hk3-credits").textContent = hkCredits[3]; document.getElementById("hk4-credits").textContent = hkCredits[4];
             }
 
-            window.updateSemester = async function(maHp, newHk) {
+            window.updateSemester = async function(maHpRaw, newHk) {
                 try {
                     const maLop = currentSelectedClass["ma-lop"]; 
                     const supabase = window.supabaseClient;
+                    const maHp = String(maHpRaw).trim(); 
                     
-                    const { data: existingRecords, error: checkError } = await supabase
-                        .from('lop-hoc-phan')
-                        .select('id')
-                        .eq('ma-lop', maLop)
-                        .eq('ma-hoc-phan', maHp);
-                        
+                    const { data: existingRecords, error: checkError } = await supabase.from('lop-hoc-phan').select('id').eq('ma-lop', maLop).eq('ma-hoc-phan', maHp);
                     if (checkError) throw checkError;
 
                     if (existingRecords && existingRecords.length > 0) {
@@ -402,8 +413,7 @@
                         }
                     } else {
                         if (newHk) {
-                            const { error: insErr } = await supabase.from('lop-hoc-phan')
-                                .insert([{ "ma-lop": maLop, "ma-hoc-phan": maHp, "hoc-ky": parseInt(newHk) }]);
+                            const { error: insErr } = await supabase.from('lop-hoc-phan').insert([{ "ma-lop": maLop, "ma-hoc-phan": maHp, "hoc-ky": parseInt(newHk) }]);
                             if (insErr) throw insErr;
                         }
                     }
@@ -423,13 +433,13 @@
                 modulesTableBody.innerHTML = ""; const filterVal = specSelect.value;
                 const filteredMods = currentCurriculumData.filter(mod => {
                     if (!filterVal) return true;
-                    const cn = (mod["chuyen-nganh"] || "").trim().toLowerCase(); return cn === filterVal.toLowerCase() || cn === "chung";
+                    const cn = String(mod["chuyen-nganh"] || "").trim().toLowerCase(); return cn === filterVal.toLowerCase() || cn === "chung";
                 });
 
                 if (filteredMods.length === 0) { modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center">Không có dữ liệu.</td></tr>`; return; }
 
                 const groups = {};
-                filteredMods.forEach(mod => { const groupName = (mod["nhom-hoc-phan"] || "Chưa phân nhóm").trim(); if (!groups[groupName]) groups[groupName] = []; groups[groupName].push(mod); });
+                filteredMods.forEach(mod => { const groupName = String(mod["nhom-hoc-phan"] || "Chưa phân nhóm").trim(); if (!groups[groupName]) groups[groupName] = []; groups[groupName].push(mod); });
 
                 for (const [groupName, mods] of Object.entries(groups)) {
                     const groupTr = document.createElement("tr");
@@ -437,9 +447,16 @@
                     modulesTableBody.appendChild(groupTr);
 
                     mods.forEach(mod => {
-                        const maHp = escapeHtml(mod["ma-hoc-phan"] || ""), tenHp = escapeHtml(mod["ten-hoc-phan"] || ""), tinChi = escapeHtml(mod["tong-tin-chi"] || "0"), hocKy = currentModuleSemesters[mod["ma-hoc-phan"]] || "";
-                        const khLT = parseInt(mod["so-buoi-ly-thuyet"]) || 0, khTH = parseInt(mod["so-buoi-thuc-hanh"]) || 0, khTong = khLT + khTH;
-                        const moduleAssignments = currentAssignmentsData.filter(a => a["ma-hoc-phan"] === mod["ma-hoc-phan"]);
+                        const rawMaHp = String(mod["ma-hoc-phan"] || "").trim();
+                        const tenHp = escapeHtml(mod["ten-hoc-phan"] || "");
+                        const tinChi = escapeHtml(mod["tong-tin-chi"] || "0");
+                        const hocKy = String(currentModuleSemesters[rawMaHp] || "");
+                        
+                        const khLT = parseInt(mod["so-buoi-ly-thuyet"]) || 0;
+                        const khTH = parseInt(mod["so-buoi-thuc-hanh"]) || 0;
+                        const khTong = khLT + khTH;
+
+                        const moduleAssignments = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === rawMaHp);
                         
                         let assignedLT = 0, assignedTH = 0, assignListHtml = `<span class="text-muted" style="font-style:italic;">Chưa phân công</span>`;
                         
@@ -451,13 +468,14 @@
                                 assignedLT += aLT; assignedTH += aTH;
 
                                 let noteHtml = "";
-                                if (aNote) { noteHtml = `<div style="font-size: 0.75rem; color: #d97706; margin-top: 2px; margin-left: 18px;"><i class="fas fa-sticky-note"></i> ${aNote}</div>`; }
+                                if (aNote) { noteHtml = `<div style="font-size: 0.7rem; color: #d97706; margin-top: 2px;"><i class="fas fa-sticky-note"></i> ${aNote}</div>`; }
 
                                 assignListHtml += `
                                     <li>
-                                        <div style="flex: 1;">
-                                            <i class="fas fa-user-tie" style="color:var(--primary); font-size:0.75rem;"></i> <strong>${escapeHtml(getInstructorName(a["ma-giang-vien"]))}</strong><br>
-                                            <span class="text-muted" style="font-size:0.75rem; margin-left:18px;">LT:${aLT} | TH:${aTH}</span>
+                                        <div style="flex: 1; padding-right: 5px; line-height: 1.2;">
+                                            <i class="fas fa-user-tie" style="color:var(--primary); font-size:0.75rem;"></i> 
+                                            <strong>${escapeHtml(getInstructorName(a["ma-giang-vien"]))}</strong> 
+                                            <span class="text-muted" style="font-size:0.7rem;">(LT:${aLT} TH:${aTH})</span>
                                             ${noteHtml}
                                         </div>
                                         <div class="action-group">
@@ -477,25 +495,35 @@
                         if (assignedLT >= khLT && assignedTH >= khTH && khTong > 0) {
                             btnAddState = `disabled style="background: var(--text-muted); cursor: not-allowed; padding: 4px; font-size: 0.75rem; width:100%; border:none; color:#fff;" title="Đã phân đủ số buổi"`;
                         } else {
-                            btnAddState = `class="btn-primary" style="padding: 4px; font-size: 0.75rem; width: 100%; border:none;" onclick="openAssignModal('${maHp}', '${tenHp}', ${khLT}, ${khTH})"`;
+                            btnAddState = `class="btn-primary" style="padding: 4px; font-size: 0.75rem; width: 100%; border:none;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"`;
                         }
 
                         const nameHtml = `
                             <div style="text-align: left;">
                                 <strong style="color: var(--text-dark);">${tenHp}</strong>
                                 <br>
-                                <span class="text-muted" style="font-size: 0.75rem;">${tinChi} TC | C.Ngành: ${escapeHtml(mod["chuyen-nganh"] || "Chung")}</span>
+                                <span class="text-muted" style="font-size: 0.75rem;">${tinChi} TC | ${escapeHtml(mod["chuyen-nganh"] || "Chung")}</span>
                             </div>
                         `;
 
                         const hkSelectHtml = `
-                            <select class="hk-select" onchange="updateSemester('${maHp}', this.value)">
+                            <select class="hk-select" onchange="updateSemester('${rawMaHp}', this.value)">
                                 <option value="">-</option>
-                                <option value="1" ${hocKy == 1 ? 'selected' : ''}>HK1</option>
-                                <option value="2" ${hocKy == 2 ? 'selected' : ''}>HK2</option>
-                                <option value="3" ${hocKy == 3 ? 'selected' : ''}>HK3</option>
-                                <option value="4" ${hocKy == 4 ? 'selected' : ''}>HK4</option>
+                                <option value="1" ${hocKy === '1' ? 'selected' : ''}>HK1</option>
+                                <option value="2" ${hocKy === '2' ? 'selected' : ''}>HK2</option>
+                                <option value="3" ${hocKy === '3' ? 'selected' : ''}>HK3</option>
+                                <option value="4" ${hocKy === '4' ? 'selected' : ''}>HK4</option>
                             </select>
+                        `;
+
+                        const progressHtml = `
+                            <div style="font-size: 0.75rem; margin-bottom: 2px; text-align: left; line-height: 1.1;">
+                                <b>${assignedTong}/${khTong}</b> <span class="text-muted">(LT:${assignedLT}/${khLT} TH:${assignedTH}/${khTH})</span>
+                            </div>
+                            <div class="progress-wrapper">
+                                <div class="progress-container"><div class="progress-bar ${pColor}" style="width: ${Math.min(percent, 100)}%;"></div></div>
+                                <span style="font-size:0.7rem; font-weight:bold; color:var(--text-muted);">${percent}%</span>
+                            </div>
                         `;
 
                         const tr = document.createElement("tr");
@@ -503,15 +531,7 @@
                             <td class="text-center">${escapeHtml(mod["stt"] || "")}</td>
                             <td style="line-height: 1.2;">${nameHtml}</td>
                             <td>${hkSelectHtml}</td>
-                            <td>
-                                <div style="font-size: 0.75rem; margin-bottom: 2px;">
-                                    <b>${assignedTong}/${khTong}</b> <span class="text-muted">(LT:${assignedLT}/${khLT} | TH:${assignedTH}/${khTH})</span>
-                                </div>
-                                <div class="progress-wrapper">
-                                    <div class="progress-container"><div class="progress-bar ${pColor}" style="width: ${Math.min(percent, 100)}%;"></div></div>
-                                    <span style="font-size:0.7rem; font-weight:bold; color:var(--text-muted);">${percent}%</span>
-                                </div>
-                            </td>
+                            <td>${progressHtml}</td>
                             <td style="vertical-align: top;">${assignListHtml}</td>
                             <td style="vertical-align: middle; text-align:center;">
                                 <button ${btnAddState}><i class="fas fa-plus"></i> Thêm</button>
@@ -544,7 +564,7 @@
                 instructorSelect.value = "";
                 assignNote.value = "";
 
-                const assignments = currentAssignmentsData.filter(a => a["ma-hoc-phan"] === maHp);
+                const assignments = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let assignedLT = 0, assignedTH = 0;
                 assignments.forEach(a => { assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0; assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0; });
                 
@@ -559,10 +579,10 @@
             };
 
             window.editAssignment = function(assignId) {
-                const assignment = currentAssignmentsData.find(a => a["id"] === assignId);
+                const assignment = currentAssignmentsData.find(a => String(a["id"]) === String(assignId));
                 if (!assignment) return;
-                const maHp = assignment["ma-hoc-phan"];
-                const mod = currentCurriculumData.find(m => m["ma-hoc-phan"] === maHp);
+                const maHp = String(assignment["ma-hoc-phan"]).trim();
+                const mod = currentCurriculumData.find(m => String(m["ma-hoc-phan"]).trim() === maHp);
                 if(!mod) return;
 
                 editingAssignmentId = assignId;
@@ -573,7 +593,7 @@
                 instructorSelect.value = assignment["ma-giang-vien"];
                 assignNote.value = assignment["ghi-chu"] || "";
 
-                const otherAssigns = currentAssignmentsData.filter(a => a["ma-hoc-phan"] === maHp && a["id"] !== assignId);
+                const otherAssigns = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp && String(a["id"]) !== String(assignId));
                 let otherLT = 0, otherTH = 0;
                 otherAssigns.forEach(a => { otherLT += parseInt(a["so-buoi-ly-thuyet"]) || 0; otherTH += parseInt(a["so-buoi-thuc-hanh"]) || 0; });
 
@@ -615,7 +635,6 @@
                         if (error) throw error;
                         window.showToast("Cập nhật phân công thành công!");
                     } else {
-                        // KHÔNG TRUYỀN `id`, DB SẼ TỰ SINH
                         const { error } = await supabase.from('phan-cong-giang-day').insert([{ 
                             "ma-lop": currentSelectedClass["ma-lop"], "ma-hoc-phan": currentSelectedModule.maHp,
                             "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th, "ghi-chu": note
@@ -633,7 +652,7 @@
             ================================================= */
             function startApp() {
                 let attempts = 0; const timer = setInterval(() => {
-                    attempts++; if (window.supabaseClient) { clearInterval(timer); loadInitialData(); } else if (attempts >= 50) { clearInterval(timer); window.showToast("Không thể tải cơ sở dữ liệu.", true); }
+                    attempts++; if (window.supabaseClient) { clearInterval(timer); loadInitialData(); } else if (attempts >= 50) { clearInterval(timer); window.showToast("Không tải được Database. RLS Policy?", true); }
                 }, 100);
             }
             startApp();
