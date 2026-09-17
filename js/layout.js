@@ -48,12 +48,20 @@
         if (!placeholder) return;
 
         placeholder.innerHTML = `
+            <style>
+                /* Style riêng cho nút Đăng xuất để có màu đỏ cảnh báo */
+                .btn-logout {
+                    background: var(--accent);
+                }
+                .btn-logout:hover {
+                    background: #be123c; /* Đỏ sậm hơn khi hover */
+                }
+            </style>
             <header>
                 <a href="./index.html" class="logo-link" aria-label="Trang chủ">
                     <div class="logo">
                         <img src="./images/logo_Bộ môn.png" alt="Logo Bộ môn" onerror="this.src='./logo.png'">
                     </div>
-                    <!-- Đã xóa phần logo-text (BỘ MÔN PHỤC HỒI CHỨC NĂNG...) theo yêu cầu -->
                 </a>
                 <nav class="nav-links" id="mainNav" aria-label="Điều hướng chính">
                     <a href="./index.html" class="nav-item">Trang chủ</a>
@@ -62,7 +70,16 @@
                     <a href="./luan-van.html" class="nav-item">Luận văn</a>
                     <a href="./tai-nguyen.html" class="nav-item">Tài nguyên</a>
                     <a href="./thong-bao.html" class="nav-item">Thông báo</a>
-                    <a href="./login.html" class="btn-login" id="btnAuthNav">Đăng nhập</a>
+                    
+                    <!-- Nhóm nút Xác thực (Auth) -->
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <a href="./login.html" class="btn-login" id="btnAuthNav">
+                            Đăng nhập
+                        </a>
+                        <a href="#" class="btn-login btn-logout" id="btnLogoutNav" style="display: none;">
+                            <i class="fas fa-sign-out-alt" style="margin-right: 5px;"></i> Đăng xuất
+                        </a>
+                    </div>
                 </nav>
                 <button type="button" class="menu-toggle" id="menuToggle" aria-label="Mở menu" aria-expanded="false">
                     <i class="fas fa-bars"></i>
@@ -119,7 +136,7 @@
     }
 
     /* =====================================================
-       5. QUẢN LÝ TRUY CẬP (ĐÃ ĐƠN GIẢN HÓA)
+       5. QUẢN LÝ TRUY CẬP 
        ===================================================== */
     const PROTECTED_PAGES = [
         "dashboard.html", "quan-ly-giang-vien.html", "quan-ly-sinh-vien.html",
@@ -130,7 +147,6 @@
         return window.location.pathname.split("/").pop().toLowerCase() || "index.html";
     }
 
-    // Vẫn giữ hàm này để lấy tên nếu có, nhưng không ép buộc phải có để truy cập
     async function getProfile(userId) {
         const { data, error } = await supabaseClient
             .from("profiles")
@@ -143,18 +159,25 @@
     }
 
     function updateAuthButton(user, profile) {
-        const button = document.getElementById("btnAuthNav");
-        if (!button) return;
+        const btnAuth = document.getElementById("btnAuthNav");
+        const btnLogout = document.getElementById("btnLogoutNav");
+        if (!btnAuth) return;
 
         if (!user) {
-            button.href = "./login.html";
-            button.textContent = "Đăng nhập";
+            // Khi CHƯA đăng nhập
+            btnAuth.href = "./login.html";
+            btnAuth.innerHTML = "Đăng nhập";
+            if (btnLogout) btnLogout.style.display = "none";
             return;
         }
 
-        // Nếu có tên trong profile thì hiển thị tên, không có thì hiển thị email, hoặc mặc định là "Tài khoản"
-        button.href = "./dashboard.html";
-        button.textContent = profile?.full_name || user.email || "Tài khoản";
+        // Khi ĐÃ đăng nhập
+        const displayName = profile?.full_name || user.email || "Tài khoản";
+        btnAuth.href = "./dashboard.html";
+        btnAuth.innerHTML = `<i class="fas fa-user-circle" style="margin-right: 5px;"></i> ${displayName}`;
+        
+        // Hiển thị nút đăng xuất
+        if (btnLogout) btnLogout.style.display = "inline-flex";
     }
 
     async function logout() {
@@ -168,32 +191,27 @@
     }
 
     function initAuthButton() {
+        // Lắng nghe sự kiện click trên nút Đăng xuất chuyên biệt
         document.addEventListener("click", async (event) => {
-            const button = event.target.closest("#btnAuthNav");
-            if (!button) return;
-
-            if (button.textContent.trim().toLowerCase().includes("đăng xuất")) {
+            const logoutBtn = event.target.closest("#btnLogoutNav");
+            if (logoutBtn) {
                 event.preventDefault();
                 await logout();
             }
         });
     }
 
-    // ĐÃ CHỈNH SỬA: Chỉ cần đăng nhập đúng là vào được trang bảo mật
     async function checkPageAccess(user) {
         const page = getCurrentPage();
         const isProtected = PROTECTED_PAGES.includes(page);
 
-        // Nếu trang không bảo mật -> Cho qua
         if (!isProtected) return true;
 
-        // Nếu trang bảo mật mà CHƯA đăng nhập -> Đá về Login
         if (!user) {
             window.location.replace(`./login.html?redirect=${encodeURIComponent(page)}`);
             return false;
         }
 
-        // Cứ có user là cho qua (Đã loại bỏ cơ chế kiểm tra bảng profiles)
         return true;
     }
 
@@ -214,19 +232,16 @@
 
             updateAuthButton(user, profile);
             
-            // Xử lý logic khóa trang bảo mật
             const allowed = await checkPageAccess(user);
             const mainEl = document.querySelector("main");
 
             if (allowed) {
                 if (user) document.body.classList.add("is-logged-in");
-                // Hiển thị lại thẻ main sau khi đã xác thực xong
                 if (mainEl) mainEl.style.opacity = "1"; 
             } else {
                 document.body.classList.remove("is-logged-in");
             }
 
-            // Theo dõi khi người dùng Đăng nhập/Đăng xuất ở tab khác
             supabaseClient.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'SIGNED_OUT') {
                     const page = getCurrentPage();
@@ -241,7 +256,6 @@
 
         } catch (error) {
             console.error("Lỗi khởi tạo Auth:", error);
-            // Nếu lỗi auth trên trang bảo vệ, đá về login
             if (PROTECTED_PAGES.includes(getCurrentPage())) {
                 window.location.replace("./login.html");
             }
@@ -252,7 +266,6 @@
        7. HÀM CHẠY CHÍNH (INIT)
        ===================================================== */
     async function init() {
-        // Tạm thời ẩn thẻ main nếu đây là trang cần bảo mật (chống chớp màn hình FOUC)
         const page = getCurrentPage();
         const mainEl = document.querySelector("main");
         if (PROTECTED_PAGES.includes(page) && mainEl) {
