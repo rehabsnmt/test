@@ -1,0 +1,38 @@
+[
+  {
+    "title": "Giới thiệu chung",
+    "description": "Tìm hiểu về quá trình hình thành, phát triển và cơ cấu tổ chức của Bộ môn.",
+    "icon": "fas fa-building",
+    "link": "gioi-thieu.html"
+  },
+  {
+    "title": "Tuyển sinh",
+    "description": "Thông tin tuyển sinh các bậc Đại học và Sau đại học ngành Kỹ thuật Phục hồi chức năng.",
+    "icon": "fas fa-user-graduate",
+    "link": "tuyen-sinh.html"
+  },
+  {
+    "title": "Luận văn & Nghiên cứu",
+    "description": "Tra cứu các đề tài nghiên cứu khoa học, luận văn và bài báo cáo của sinh viên, học viên.",
+    "icon": "fas fa-book-medical",
+    "link": "luan-van.html"
+  },
+  {
+    "title": "Tài nguyên học tập",
+    "description": "Hệ thống tài liệu, giáo trình và video hướng dẫn thực hành kỹ năng lâm sàng.",
+    "icon": "fas fa-laptop-medical",
+    "link": "tai-nguyen.html"
+  },
+  {
+    "title": "Thông báo & Sự kiện",
+    "description": "Cập nhật các thông báo mới nhất về lịch học, thi và các sự kiện chuyên môn.",
+    "icon": "fas fa-bullhorn",
+    "link": "thong-bao.html"
+  },
+  {
+    "title": "Khu vực Giảng viên",
+    "description": "Cổng thông tin dành riêng cho giảng viên để quản lý điểm số và lịch phân công.",
+    "icon": "fas fa-chalkboard-teacher",
+    "link": "login.html"
+  }
+]
