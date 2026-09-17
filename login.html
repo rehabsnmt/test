@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Đăng nhập hệ thống Bộ môn Phục hồi chức năng.">
+
+    <!-- Content Security Policy: Cho phép kết nối Supabase và chạy Script -->
+    <meta http-equiv="Content-Security-Policy" content="
+            default-src 'self';
+            connect-src 'self' https://*.supabase.co;
+            img-src 'self' data: https://*.supabase.co;
+            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+            script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+            font-src 'self' https://cdnjs.cloudflare.com;
+        ">
+
+    <title>Đăng nhập - Bộ môn Phục hồi chức năng</title>
+
+    <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
+    
+    <!-- CSS dùng chung -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* CSS tùy chỉnh dành riêng cho khung Đăng nhập */
+        .auth-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Trừ đi chiều cao Header và Footer để căn giữa hoàn hảo */
+            min-height: calc(100vh - 160px); 
+            padding: 2rem 4%;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 2.5rem 2rem;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .auth-btn {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+        .auth-links {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .auth-links a {
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        .auth-links a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.25rem;
+            font-size: 0.85rem;
+            display: none;
+            line-height: 1.5;
+            text-align: left;
+        }
+        .alert-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        .alert-success {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <div id="header-placeholder"></div>
+
+    <!-- MAIN CONTENT -->
+    <main class="auth-container">
+        
+        <div class="card auth-card">
+            
+            <!-- ================================
+                 KHUNG ĐĂNG NHẬP
+            ================================= -->
+            <div id="loginView">
+                <div class="section-title" style="margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.4rem;">Đăng nhập</h2>
+                    <p style="margin-top: 0.5rem; font-size: 0.85rem;">Hệ thống nội bộ Bộ môn PHCN</p>
+                </div>
+
+                <div id="loginAlert" class="alert alert-error"></div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" placeholder="Nhập email của bạn" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Mật khẩu</label>
+                        <input type="password" id="loginPassword" placeholder="Nhập mật khẩu" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn-primary auth-btn" id="btnLoginBtn">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                    </button>
+                </form>
+
+                <div class="auth-links">
+                    <a id="btnShowForgot">Quên mật khẩu?</a>
+                </div>
+            </div>
+
+            <!-- ================================
+                 KHUNG QUÊN MẬT KHẨU
+            ================================= -->
+            <div id="forgotView" class="hidden">
+                <div class="section-title" style="margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.4rem;">Khôi phục mật khẩu</h2>
+                    <p style="margin-top: 0.5rem; font-size: 0.85rem;">Nhập email để nhận liên kết đặt lại</p>
+                </div>
+
+                <div id="forgotAlert" class="alert"></div>
+
+                <form id="forgotForm">
+                    <div class="form-group">
+                        <label for="forgotEmail">Email</label>
+                        <input type="email" id="forgotEmail" placeholder="Nhập email của bạn" required>
+                    </div>
+                    <button type="submit" class="btn-primary auth-btn" id="btnResetBtn">
+                        <i class="fas fa-paper-plane"></i> Gửi liên kết
+                    </button>
+                </form>
+
+                <div class="auth-links">
+                    <a id="btnShowLogin"><i class="fas fa-arrow-left"></i> Quay lại đăng nhập</a>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <div id="footer-placeholder"></div>
+
+    <!-- TẢI GIAO DIỆN CHUNG & AUTH SUPABASE -->
+    <script src="js/layout.js"></script>
+
+    <!-- KỊCH BẢN XỬ LÝ ĐĂNG NHẬP / QUÊN MẬT KHẨU -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // Các Element DOM
+            const loginView = document.getElementById("loginView");
+            const forgotView = document.getElementById("forgotView");
+            
+            const btnShowForgot = document.getElementById("btnShowForgot");
+            const btnShowLogin = document.getElementById("btnShowLogin");
+
+            const loginForm = document.getElementById("loginForm");
+            const loginEmail = document.getElementById("loginEmail");
+            const loginPassword = document.getElementById("loginPassword");
+            const loginAlert = document.getElementById("loginAlert");
+            const btnLoginBtn = document.getElementById("btnLoginBtn");
+
+            const forgotForm = document.getElementById("forgotForm");
+            const forgotEmail = document.getElementById("forgotEmail");
+            const forgotAlert = document.getElementById("forgotAlert");
+            const btnResetBtn = document.getElementById("btnResetBtn");
+
+            // Xử lý Lấy URL Redirect (nếu người dùng bị đá từ trang bảo vệ qua)
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectUrl = urlParams.get('redirect') || 'dashboard.html';
+
+            // Hàm hiển thị thông báo
+            function showAlert(element, message, type = 'error') {
+                element.textContent = message;
+                element.className = `alert alert-${type}`;
+                element.style.display = 'block';
+            }
+
+            function hideAlert(element) {
+                element.style.display = 'none';
+            }
+
+            // Chuyển đổi qua lại giữa 2 khung
+            btnShowForgot.addEventListener("click", () => {
+                loginView.classList.add("hidden");
+                forgotView.classList.remove("hidden");
+                hideAlert(loginAlert);
+                hideAlert(forgotAlert);
+            });
+
+            btnShowLogin.addEventListener("click", () => {
+                forgotView.classList.add("hidden");
+                loginView.classList.remove("hidden");
+                hideAlert(loginAlert);
+                hideAlert(forgotAlert);
+            });
+
+            // Hàm chờ Supabase Init (Bảo vệ trường hợp mạng chậm)
+            async function getSupabase() {
+                return new Promise((resolve) => {
+                    if (window.supabaseClient) {
+                        resolve(window.supabaseClient);
+                        return;
+                    }
+                    const timer = setInterval(() => {
+                        if (window.supabaseClient) {
+                            clearInterval(timer);
+                            resolve(window.supabaseClient);
+                        }
+                    }, 100);
+                });
+            }
+
+            // XỬ LÝ ĐĂNG NHẬP
+            loginForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                hideAlert(loginAlert);
+                
+                const email = loginEmail.value.trim();
+                const password = loginPassword.value;
+
+                if (!email || !password) {
+                    showAlert(loginAlert, "Vui lòng nhập đầy đủ Email và Mật khẩu.");
+                    return;
+                }
+
+                // Hiển thị trạng thái Loading
+                const originalText = btnLoginBtn.innerHTML;
+                btnLoginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+                btnLoginBtn.disabled = true;
+
+                try {
+                    const supabase = await getSupabase();
+                    
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password,
+                    });
+
+                    if (error) {
+                        // Phiên dịch một số lỗi cơ bản của Supabase sang Tiếng Việt
+                        let errorMsg = "Đăng nhập thất bại. Vui lòng thử lại.";
+                        if (error.message.includes("Invalid login credentials")) {
+                            errorMsg = "Email hoặc mật khẩu không chính xác.";
+                        } else if (error.message.includes("Email not confirmed")) {
+                            errorMsg = "Vui lòng xác thực email của bạn trước khi đăng nhập.";
+                        }
+                        throw new Error(errorMsg);
+                    }
+
+                    // Đăng nhập thành công -> Chuyển hướng
+                    window.location.replace(redirectUrl);
+
+                } catch (error) {
+                    showAlert(loginAlert, error.message);
+                    btnLoginBtn.innerHTML = originalText;
+                    btnLoginBtn.disabled = false;
+                }
+            });
+
+            // XỬ LÝ QUÊN MẬT KHẨU
+            forgotForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                hideAlert(forgotAlert);
+                
+                const email = forgotEmail.value.trim();
+
+                if (!email) {
+                    showAlert(forgotAlert, "Vui lòng nhập Email.");
+                    return;
+                }
+
+                const originalText = btnResetBtn.innerHTML;
+                btnResetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+                btnResetBtn.disabled = true;
+
+                try {
+                    const supabase = await getSupabase();
+                    
+                    // Gửi email reset. Tham số redirectTo để điều hướng người dùng sau khi bấm link trong email.
+                    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+                        redirectTo: window.location.origin + '/reset-password.html'
+                    });
+
+                    if (error) throw error;
+
+                    showAlert(forgotAlert, "Thành công! Vui lòng kiểm tra hộp thư email (bao gồm cả mục Spam) để nhận liên kết khôi phục mật khẩu.", "success");
+                    forgotEmail.value = ""; // Xóa trắng ô email
+                    
+                } catch (error) {
+                    showAlert(forgotAlert, "Không thể gửi liên kết. Hãy đảm bảo email này đã được đăng ký trên hệ thống.");
+                } finally {
+                    btnResetBtn.innerHTML = originalText;
+                    btnResetBtn.disabled = false;
+                }
+            });
+
+            // Chặn người dùng nếu họ ĐÃ đăng nhập mà vẫn cố vào link login.html
+            async function checkAlreadyLoggedIn() {
+                const supabase = await getSupabase();
+                const { data } = await supabase.auth.getSession();
+                if (data?.session?.user) {
+                    // Nếu đã đăng nhập, đá thẳng vào Dashboard
+                    window.location.replace(redirectUrl);
+                }
+            }
+            checkAlreadyLoggedIn();
+        });
+    </script>
+</body>
+</html>
