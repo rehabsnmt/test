@@ -423,14 +423,19 @@
                 btnSaveAssignment.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang lưu...`;
                 btnSaveAssignment.disabled = true;
 
+                // TẠO MÃ PHÂN CÔNG (Primary Key) ĐỘC NHẤT
+                // Cách tạo: "PC_" + Số miliseconds hiện tại (Ví dụ: PC_1714523689123)
+                const maPhanCongMoi = "PC_" + new Date().getTime();
+
                 try {
                     const supabase = window.supabaseClient;
 
-                    // Thực hiện Insert (hoặc Upsert nếu bạn đã setup Primary Key kết hợp)
+                    // Thực hiện Insert có truyền thêm 'ma-phan-cong'
                     const { data, error } = await supabase
                         .from('phan-cong-giang-day')
                         .insert([
                             { 
+                                "ma-phan-cong": maPhanCongMoi,
                                 "ma-lop": currentSelectedClass["ma-lop"],
                                 "ma-hoc-phan": currentSelectedModule.maHp,
                                 "ma-giang-vien": maGiangVien,
