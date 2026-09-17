@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bảng điều khiển - Hệ thống quản lý Bộ môn Phục hồi chức năng.">
+
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+            default-src 'self';
+            connect-src 'self' https://*.supabase.co;
+            img-src 'self' data: https://*.supabase.co;
+            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+            script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+            font-src 'self' https://cdnjs.cloudflare.com;
+        ">
+
+    <title>Bảng điều khiển - Bộ môn Phục hồi chức năng</title>
+
+    <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
+    <link rel="apple-touch-icon" href="images/logo_Bộ môn.png">
+
+    <!-- CSS dùng chung -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <div id="header-placeholder"></div>
+
+    <!-- MAIN CONTENT -->
+    <main style="opacity: 0; transition: opacity 0.3s ease;"> <!-- Opacity 0 để layout.js xử lý chống nháy trang -->
+        
+        <div class="section-title" style="margin-top: 1rem;">
+            <h1>Hệ thống <span class="title-break">Quản lý Nội bộ</span></h1>
+            <div class="section-divider"></div>
+            <p>Dành riêng cho Giảng viên và Cán bộ Quản lý Bộ môn</p>
+        </div>
+
+        <!-- KHU VỰC HIỂN THỊ CÁC CHỨC NĂNG (Lấy từ JSON) -->
+        <section class="container">
+            <div id="dashboardCardsContainer" class="quick-links">
+                <!-- Vùng hiển thị trạng thái đang tải -->
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-muted);">
+                    <i class="fas fa-spinner fa-spin fa-2x" style="margin-bottom: 1rem;"></i>
+                    <p>Đang tải danh mục chức năng...</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <div id="footer-placeholder"></div>
+
+    <!-- TẢI GIAO DIỆN CHUNG & PHÂN QUYỀN SUPABASE -->
+    <script src="js/layout.js"></script>
+
+    <!-- SCRIPT TẢI DỮ LIỆU TỪ JSON -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const container = document.getElementById("dashboardCardsContainer");
+
+            function escapeHtml(value) {
+                if (value == null) return "";
+                return String(value)
+                    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            }
+
+            fetch("json/dashboard.json")
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Lỗi HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    container.innerHTML = "";
+
+                    if (!data || data.length === 0) {
+                        container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center;">Chưa có chức năng nào được cấp phép.</div>`;
+                        return;
+                    }
+
+                    data.forEach(item => {
+                        const linkUrl = escapeHtml(item.link || "#");
+                        const iconClass = escapeHtml(item.icon || "fas fa-folder");
+                        const title = escapeHtml(item.title || "Chức năng");
+                        const desc = escapeHtml(item.description || "");
+
+                        const cardHtml = `
+                            <a href="${linkUrl}" class="quick-card">
+                                <div class="icon-wrapper">
+                                    <i class="${iconClass}"></i>
+                                </div>
+                                <h3>${title}</h3>
+                                <p>${desc}</p>
+                            </a>
+                        `;
+                        
+                        container.insertAdjacentHTML('beforeend', cardHtml);
+                    });
+                })
+                .catch(error => {
+                    console.error("Lỗi khi tải json/dashboard.json:", error);
+                    container.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; color: var(--accent);">
+                            <i class="fas fa-exclamation-triangle fa-2x" style="margin-bottom: 1rem;"></i>
+                            <p>Không thể tải dữ liệu bảng điều khiển.<br><small>${error.message}</small></p>
+                        </div>
+                    `;
+                });
+        });
+    </script>
+</body>
+</html>
