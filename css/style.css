@@ -1,7 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* =========================================================
+   BỘ MÔN PHỤC HỒI CHỨC NĂNG - GLOBAL STYLE
+   ========================================================= */
 
 /* =========================================================
-   1. GLOBAL
+   1. FONT
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+
+/* =========================================================
+   2. VARIABLES
    ========================================================= */
 
 :root {
@@ -14,7 +23,10 @@
 
   --text-dark: #0f172a;
   --text-body: #475569;
+  --text-muted: #64748b;
+
   --border: #e2e8f0;
+  --border-light: #f1f5f9;
 
   --bg-page: #f8fafc;
   --surface: #ffffff;
@@ -25,13 +37,17 @@
 
   --radius-sm: 6px;
   --radius-md: 12px;
+  --radius-lg: 16px;
   --radius-pill: 50px;
 
   --transition: all .2s cubic-bezier(.4, 0, .2, 1);
+
+  --content-width: 1200px;
 }
 
+
 /* =========================================================
-   2. RESET
+   3. RESET
    ========================================================= */
 
 * {
@@ -42,19 +58,24 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: 16px;
 }
 
 body {
   min-height: 100vh;
 
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+
   font-size: 14px;
+  font-weight: 400;
   line-height: 1.5;
 
   color: var(--text-body);
   background: var(--bg-page);
 
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button,
@@ -69,13 +90,62 @@ img {
   display: block;
 }
 
-/* Nội dung thông thường không tự ngắt */
+a {
+  color: inherit;
+}
+
 h1,
 h2,
 h3,
 h4,
 h5,
-h6,
+h6 {
+  margin: 0;
+
+  color: var(--text-dark);
+
+  font-weight: 700;
+  line-height: 1.35;
+
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+h2 {
+  font-size: 1.35rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+}
+
+h4 {
+  font-size: 1rem;
+}
+
+h5,
+h6 {
+  font-size: .9rem;
+}
+
+p {
+  margin: 0 0 1rem;
+
+  font-size: .9rem;
+  line-height: 1.6;
+
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
 label,
 button,
 a,
@@ -88,14 +158,9 @@ td,
   word-break: normal;
 }
 
-/* Các đoạn văn mới được phép xuống dòng */
-p {
-  overflow-wrap: break-word;
-  word-break: normal;
-}
 
 /* =========================================================
-   3. HEADER
+   4. HEADER
    ========================================================= */
 
 header {
@@ -108,11 +173,14 @@ header {
   justify-content: space-between;
 
   width: 100%;
-  gap: 1rem;
-  padding: .8rem 4%;
+  min-height: 64px;
 
-  background: rgba(255, 255, 255, .95);
-  border-bottom: 1px solid rgba(0, 0, 0, .03);
+  gap: 1rem;
+  padding: .7rem 4%;
+
+  background: rgba(255, 255, 255, .96);
+
+  border-bottom: 1px solid rgba(226, 232, 240, .8);
 
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -120,8 +188,13 @@ header {
   transition: var(--transition);
 }
 
+header.scrolled {
+  box-shadow: var(--shadow-sm);
+}
+
+
 /* =========================================================
-   4. LOGO
+   5. LOGO
    ========================================================= */
 
 .logo-link {
@@ -129,7 +202,10 @@ header {
   align-items: center;
 
   min-width: 0;
+
+  flex: 0 1 auto;
   flex-shrink: 1;
+
   gap: 10px;
 
   color: inherit;
@@ -139,12 +215,13 @@ header {
 .logo {
   display: flex;
   align-items: center;
+
   flex-shrink: 0;
 }
 
 .logo img {
   width: auto;
-  height: clamp(28px, 3.5vw, 42px);
+  height: clamp(30px, 3.5vw, 42px);
 
   object-fit: contain;
 }
@@ -155,6 +232,8 @@ header {
   justify-content: center;
 
   min-width: 0;
+
+  line-height: 1.1;
 }
 
 .logo-text div {
@@ -168,7 +247,8 @@ header {
 
 #logo-line-1 {
   color: var(--text-dark);
-  font-size: clamp(.8rem, 1.1vw, .95rem);
+
+  font-size: clamp(.78rem, 1.1vw, .95rem);
   font-weight: 700;
 }
 
@@ -176,7 +256,8 @@ header {
   margin-top: .2em;
 
   color: var(--text-body);
-  font-size: clamp(.6rem, .85vw, .75rem);
+
+  font-size: clamp(.58rem, .85vw, .75rem);
   font-weight: 600;
 }
 
@@ -184,19 +265,21 @@ header {
   margin-top: .1em;
 
   color: var(--text-body);
-  font-size: clamp(.55rem, .75vw, .65rem);
+
+  font-size: clamp(.53rem, .75vw, .65rem);
   font-weight: 500;
 }
 
+
 /* =========================================================
-   5. NAVIGATION
+   6. NAVIGATION
    ========================================================= */
 
 .nav-links {
   display: flex;
   align-items: center;
 
-  gap: clamp(.8rem, 1.5vw, 2rem);
+  gap: clamp(.75rem, 1.5vw, 2rem);
 
   flex-shrink: 0;
 }
@@ -204,10 +287,14 @@ header {
 .nav-item {
   position: relative;
 
+  display: inline-flex;
+  align-items: center;
+
   padding: .4rem 0;
 
   color: var(--text-body);
-  font-size: clamp(.75rem, 1vw, .85rem);
+
+  font-size: clamp(.73rem, 1vw, .85rem);
   font-weight: 500;
 
   text-decoration: none;
@@ -232,30 +319,36 @@ header {
   transition: var(--transition);
 }
 
-.nav-item:hover {
+.nav-item:hover,
+.nav-item.active {
   color: var(--text-dark);
 }
 
-.nav-item:hover::after {
+.nav-item:hover::after,
+.nav-item.active::after {
   width: 100%;
 }
 
 .menu-toggle {
   display: none;
 
+  flex-shrink: 0;
+
   padding: .4rem;
 
   border: 0;
-  background: transparent;
 
+  background: transparent;
   color: var(--text-dark);
+
   font-size: 1.2rem;
 
   cursor: pointer;
 }
 
+
 /* =========================================================
-   6. BUTTONS
+   7. BUTTONS
    ========================================================= */
 
 .btn-login,
@@ -265,6 +358,7 @@ header {
   justify-content: center;
 
   min-width: max-content;
+
   padding: .5rem 1rem;
 
   border: 0;
@@ -273,7 +367,7 @@ header {
   background: var(--primary);
   color: var(--surface);
 
-  font-size: clamp(.75rem, 1vw, .85rem);
+  font-size: clamp(.73rem, 1vw, .85rem);
   font-weight: 500;
 
   text-decoration: none;
@@ -289,7 +383,10 @@ header {
 .btn-login:hover,
 .btn-primary:hover {
   background: var(--primary-hover);
-  box-shadow: 0 4px 10px rgba(2, 132, 199, .15);
+
+  box-shadow:
+    0 4px 10px rgba(2, 132, 199, .15);
+
   transform: translateY(-1px);
 }
 
@@ -298,19 +395,22 @@ header {
   transform: translateY(0);
 }
 
+
 /* =========================================================
-   7. MAIN
+   8. MAIN
    ========================================================= */
 
 main {
   width: 100%;
-  max-width: 1200px;
+  max-width: var(--content-width);
 
   margin: 0 auto;
-  padding: 0 4% 3rem;
+
+  padding: 2rem 4% 3rem;
+
+  flex: 1;
 }
 
-/* Các nội dung khối chính căn giữa */
 main > section,
 main > .card,
 main > .quick-links {
@@ -318,8 +418,73 @@ main > .quick-links {
   margin-right: auto;
 }
 
+
 /* =========================================================
-   8. QUICK LINKS
+   9. COMMON CONTAINER
+   ========================================================= */
+
+.container {
+  width: 100%;
+  max-width: var(--content-width);
+
+  margin: 0 auto;
+
+  padding-left: 4%;
+  padding-right: 4%;
+}
+
+
+/* =========================================================
+   10. SECTION TITLE
+   ========================================================= */
+
+.section-title {
+  width: 100%;
+
+  margin-bottom: 2rem;
+
+  text-align: center;
+}
+
+.section-title h1,
+.section-title h2 {
+  margin: 0;
+
+  color: var(--text-dark);
+
+  font-size: 1.5rem;
+  font-weight: 700;
+
+  line-height: 1.35;
+
+  text-transform: uppercase;
+}
+
+.section-title p {
+  max-width: 650px;
+
+  margin: .75rem auto 0;
+
+  color: var(--text-body);
+
+  font-size: .9rem;
+  line-height: 1.6;
+}
+
+.section-divider {
+  width: 50px;
+  height: 3px;
+
+  margin: .75rem auto 0;
+
+  background: var(--primary);
+
+  border-radius: 2px;
+}
+
+
+/* =========================================================
+   11. QUICK LINKS
    ========================================================= */
 
 .quick-links {
@@ -333,19 +498,22 @@ main > .quick-links {
 
 .quick-card {
   position: relative;
-  overflow: hidden;
 
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 
   min-width: 0;
+
+  overflow: hidden;
+
   padding: 2rem 1.5rem;
 
   border: 1px solid rgba(0, 0, 0, .02);
   border-radius: var(--radius-md);
 
   background: var(--surface);
+
   box-shadow: var(--shadow-card);
 
   text-decoration: none;
@@ -405,6 +573,7 @@ main > .quick-links {
 .quick-card:hover .icon-wrapper {
   background: var(--primary);
   color: var(--surface);
+
   transform: scale(1.05);
 }
 
@@ -412,6 +581,7 @@ main > .quick-links {
   margin-bottom: .5rem;
 
   color: var(--text-dark);
+
   font-size: 1.05rem;
   font-weight: 600;
 
@@ -419,15 +589,19 @@ main > .quick-links {
 }
 
 .quick-card p {
+  margin-bottom: 0;
+
   color: var(--text-body);
+
   font-size: .85rem;
   line-height: 1.5;
 
   text-align: justify;
 }
 
+
 /* =========================================================
-   9. CARD
+   12. CARD
    ========================================================= */
 
 .card {
@@ -436,14 +610,17 @@ main > .quick-links {
   margin-bottom: 1.5rem;
   padding: 1.5rem;
 
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
 
   background: var(--surface);
+
   box-shadow: var(--shadow-card);
 }
 
+
 /* =========================================================
-   10. TABLE
+   13. TABLE
    ========================================================= */
 
 .table-responsive {
@@ -478,6 +655,7 @@ td {
   font-size: .85rem;
 
   white-space: nowrap;
+
   vertical-align: middle;
 }
 
@@ -490,12 +668,13 @@ th {
   font-weight: 600;
 
   letter-spacing: .03em;
-  text-transform: uppercase;
 
   text-align: center;
+  text-transform: uppercase;
 }
 
 td {
+  color: var(--text-body);
   text-align: center;
 }
 
@@ -503,31 +682,36 @@ tr:last-child td {
   border-bottom: 0;
 }
 
-/* Cột cần chứa văn bản dài có thể cho xuống dòng */
 td.text-long,
 td.description,
 td.note,
 .text-long {
-  white-space: normal;
   min-width: 220px;
 
+  white-space: normal;
+
   text-align: justify;
+
   overflow-wrap: break-word;
 }
 
+
 /* =========================================================
-   11. FORM
+   14. FORM
    ========================================================= */
 
 input[type='number'],
 input[type='text'],
 input[type='password'],
 input[type='email'],
+input[type='date'],
+input[type='time'],
+input[type='search'],
 select,
 textarea {
   width: 100%;
 
-  padding: .5rem;
+  padding: .5rem .65rem;
 
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -542,6 +726,7 @@ textarea {
 
 input[type='number'] {
   max-width: 70px;
+
   text-align: center;
 }
 
@@ -554,62 +739,65 @@ textarea:focus {
 
   background: var(--surface);
 
-  box-shadow: 0 0 0 2px rgba(2, 132, 199, .15);
+  box-shadow:
+    0 0 0 2px rgba(2, 132, 199, .15);
 }
 
 textarea {
   min-height: 100px;
+
   resize: vertical;
 
   line-height: 1.5;
 }
 
-/* =========================================================
-   12. FOOTER
-   ========================================================= */
-
-footer {
-  margin-top: auto;
-  padding: 1.5rem 1rem;
-
-  overflow: hidden;
-
-  border-top: 1px solid var(--border);
-
-  background: var(--surface);
-  color: var(--text-body);
-
-  text-align: center;
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8;
 }
 
-footer p {
-  margin: 0;
-
-  overflow: hidden;
-
-  font-size: clamp(.55rem, 2.5vw, .8rem);
-
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
 
 /* =========================================================
-   13. COMMON COMPONENTS
+   15. COMMON TEXT
    ========================================================= */
 
-.author-info {
-  display: none !important;
+.text-center {
+  text-align: center !important;
 }
 
-body.is-logged-in .author-info {
-  display: flex !important;
-  align-items: center;
-  gap: 6px;
+.text-left {
+  text-align: left !important;
 }
+
+.text-right {
+  text-align: right !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-primary {
+  color: var(--primary) !important;
+}
+
+.text-danger {
+  color: var(--accent) !important;
+}
+
+.text-success {
+  color: #16a34a !important;
+}
+
+
+/* =========================================================
+   16. ACTION BUTTONS
+   ========================================================= */
 
 .action-buttons {
   display: flex;
   align-items: center;
+
   gap: 8px;
 
   margin-top: 8px;
@@ -625,6 +813,7 @@ body.is-logged-in .author-info {
   justify-content: center;
 
   min-width: max-content;
+
   padding: 5px 10px;
 
   border: 0;
@@ -663,8 +852,26 @@ body.is-logged-in .author-info {
   cursor: not-allowed;
 }
 
+
 /* =========================================================
-   14. MODAL
+   17. AUTHOR / USER INFO
+   ========================================================= */
+
+.author-info {
+  display: none !important;
+}
+
+body.is-logged-in .author-info {
+  display: flex !important;
+
+  align-items: center;
+
+  gap: 6px;
+}
+
+
+/* =========================================================
+   18. MODAL
    ========================================================= */
 
 .modal-overlay {
@@ -695,6 +902,7 @@ body.is-logged-in .author-info {
   border-radius: var(--radius-md);
 
   background: var(--surface);
+
   box-shadow: var(--shadow-hover);
 
   text-align: center;
@@ -732,40 +940,558 @@ body.is-logged-in .author-info {
   display: none !important;
 }
 
+
 /* =========================================================
-   15. RESPONSIVE
+   19. FOOTER
+   ========================================================= */
+
+footer {
+  width: 100%;
+
+  margin-top: auto;
+  padding: 1.5rem 1rem;
+
+  overflow: hidden;
+
+  border-top: 1px solid var(--border);
+
+  background: var(--surface);
+  color: var(--text-body);
+
+  text-align: center;
+}
+
+footer p {
+  margin: 0;
+
+  overflow: hidden;
+
+  color: var(--text-body);
+
+  font-size: clamp(.58rem, 2vw, .8rem);
+  line-height: 1.5;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   20. TRANG GIỚI THIỆU
+   ========================================================= */
+
+.intro-container {
+  width: 100%;
+  max-width: var(--content-width);
+
+  margin: 0 auto;
+
+  padding: .5rem 0 0;
+}
+
+.intro-section {
+  width: 100%;
+}
+
+.faculty-section {
+  margin-top: 4rem;
+}
+
+
+/* =========================================================
+   21. HISTORY
+   ========================================================= */
+
+.history-wrapper {
+  position: relative;
+
+  width: 100%;
+
+  overflow: hidden;
+
+  padding: 2rem 2.25rem;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+
+  background: var(--surface);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.history-wrapper::before {
+  content: "\f19d";
+
+  position: absolute;
+
+  top: -20px;
+  right: -15px;
+
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+
+  font-size: 9rem;
+
+  color: var(--primary-light);
+
+  opacity: .35;
+
+  transform: rotate(-15deg);
+
+  pointer-events: none;
+}
+
+.history-content {
+  position: relative;
+  z-index: 1;
+
+  color: var(--text-body);
+
+  font-size: .9rem;
+  line-height: 1.7;
+
+  text-align: justify;
+}
+
+.history-content p {
+  margin-bottom: 1rem;
+
+  color: var(--text-body);
+
+  font-size: .9rem;
+  line-height: 1.7;
+}
+
+.history-content p:last-child {
+  margin-bottom: 0;
+}
+
+.history-content strong {
+  color: var(--text-dark);
+  font-weight: 700;
+}
+
+.highlight {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   22. FACULTY GRID
+   ========================================================= */
+
+.faculty-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 1.5rem;
+
+  align-items: stretch;
+}
+
+
+/* =========================================================
+   23. FACULTY CARD
+   ========================================================= */
+
+.faculty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+
+  padding: 2rem 1.25rem;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+
+  background: var(--surface);
+
+  box-shadow: var(--shadow-sm);
+
+  text-align: center;
+
+  cursor: pointer;
+
+  transition: var(--transition);
+}
+
+.faculty-card:hover {
+  border-color: var(--primary);
+
+  box-shadow: var(--shadow-hover);
+
+  transform: translateY(-4px);
+}
+
+
+/* =========================================================
+   24. FACULTY AVATAR
+   ========================================================= */
+
+.faculty-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 110px;
+  height: 110px;
+
+  flex: 0 0 110px;
+
+  overflow: hidden;
+
+  margin-bottom: 1rem;
+
+  border: 3px solid var(--surface);
+  border-radius: 50%;
+
+  background: var(--bg-page);
+  color: #cbd5e1;
+
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, .12);
+}
+
+.faculty-avatar img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.faculty-avatar i {
+  font-size: 2.75rem;
+}
+
+
+/* =========================================================
+   25. FACULTY DEGREE
+   ========================================================= */
+
+.faculty-degree {
+  min-height: 1.25rem;
+
+  margin-bottom: .25rem;
+
+  color: var(--primary);
+
+  font-size: .8rem;
+  font-weight: 700;
+
+  line-height: 1.4;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   26. FACULTY NAME
+   ========================================================= */
+
+.faculty-name {
+  width: 100%;
+
+  margin: 0 0 .35rem;
+
+  color: var(--text-dark);
+
+  font-size: 1.05rem;
+  font-weight: 700;
+
+  line-height: 1.4;
+
+  white-space: normal;
+}
+
+
+/* =========================================================
+   27. FACULTY POSITION
+   ========================================================= */
+
+.faculty-position {
+  min-height: 1.25rem;
+
+  margin-bottom: .75rem;
+
+  color: var(--text-body);
+
+  font-size: .85rem;
+  font-weight: 600;
+
+  line-height: 1.4;
+}
+
+.pos-head {
+  color: #dc2626 !important;
+  font-weight: 700 !important;
+}
+
+.pos-admin {
+  color: #16a34a !important;
+  font-weight: 700 !important;
+}
+
+
+/* =========================================================
+   28. FACULTY MAJOR
+   ========================================================= */
+
+.faculty-major {
+  max-width: 100%;
+
+  margin-bottom: 1rem;
+  padding: .3rem .7rem;
+
+  border-radius: 999px;
+
+  font-size: .75rem;
+  font-weight: 700;
+
+  line-height: 1.4;
+
+  white-space: nowrap;
+}
+
+.major-vltl {
+  background: #e0f2fe;
+  color: #0369a1;
+
+  border: 1px solid #7dd3fc;
+}
+
+.major-hdtl {
+  background: #ffedd5;
+  color: #c2410c;
+
+  border: 1px solid #fdba74;
+}
+
+.major-nntl {
+  background: #dcfce7;
+  color: #15803d;
+
+  border: 1px solid #86efac;
+}
+
+.major-default {
+  background: #f1f5f9;
+  color: #475569;
+
+  border: 1px solid #cbd5e1;
+}
+
+
+/* =========================================================
+   29. FACULTY EMAIL
+   ========================================================= */
+
+.faculty-email {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-width: 0;
+
+  gap: .4rem;
+
+  margin-top: auto;
+
+  color: var(--text-body);
+
+  font-size: .78rem;
+  line-height: 1.4;
+}
+
+.faculty-email i {
+  flex: 0 0 auto;
+
+  color: var(--primary);
+}
+
+.faculty-email a {
+  min-width: 0;
+
+  color: inherit;
+
+  text-decoration: none;
+
+  overflow-wrap: anywhere;
+}
+
+.faculty-email a:hover {
+  color: var(--primary);
+
+  text-decoration: underline;
+}
+
+.faculty-email-empty {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+
+/* =========================================================
+   30. FACULTY LOADING / ERROR
+   ========================================================= */
+
+.faculty-loading,
+.faculty-error {
+  grid-column: 1 / -1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 100px;
+
+  text-align: center;
+
+  font-size: .9rem;
+}
+
+.faculty-loading {
+  gap: .5rem;
+
+  color: var(--text-body);
+}
+
+.faculty-error {
+  flex-direction: column;
+
+  gap: .35rem;
+
+  padding: 1.5rem;
+
+  color: #dc2626;
+
+  background: #fef2f2;
+
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+}
+
+.faculty-error small {
+  max-width: 100%;
+
+  color: #b91c1c;
+
+  font-size: .8rem;
+
+  overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   31. TOAST
+   ========================================================= */
+
+.toast-container {
+  position: fixed;
+
+  top: 80px;
+  right: 20px;
+
+  z-index: 9999;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: .6rem;
+
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+
+  min-width: 250px;
+  max-width: 380px;
+
+  gap: .75rem;
+
+  padding: .8rem 1rem;
+
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+
+  background: var(--surface);
+
+  box-shadow: var(--shadow-hover);
+
+  color: var(--text-body);
+
+  font-size: .85rem;
+  font-weight: 600;
+
+  opacity: 0;
+
+  transform: translateX(120%);
+
+  transition: .4s ease;
+}
+
+.toast i {
+  flex: 0 0 auto;
+
+  color: #f59e0b;
+}
+
+.toast.show {
+  opacity: 1;
+
+  transform: translateX(0);
+}
+
+
+/* =========================================================
+   32. RESPONSIVE - TABLET
    ========================================================= */
 
 @media (max-width: 900px) {
 
   header {
+    min-height: 60px;
+
     gap: .8rem;
-    padding: .8rem 4%;
+
+    padding: .7rem 4%;
   }
 
   .menu-toggle {
     display: block;
-    flex-shrink: 0;
   }
 
   .nav-links {
     position: absolute;
+
     top: 100%;
     left: 0;
-
-    width: 100%;
 
     display: flex;
     flex-direction: column;
     align-items: stretch;
 
+    width: 100%;
+
     gap: 0;
+
     padding: .5rem 0;
 
     border-top: 1px solid var(--border);
 
     background: var(--surface);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, .05);
+
+    box-shadow:
+      0 10px 15px rgba(0, 0, 0, .05);
 
     opacity: 0;
     visibility: hidden;
@@ -778,6 +1504,7 @@ body.is-logged-in .author-info {
   .nav-links.active {
     opacity: 1;
     visibility: visible;
+
     transform: translateY(0);
   }
 
@@ -785,6 +1512,7 @@ body.is-logged-in .author-info {
     display: block;
 
     width: 100%;
+
     padding: .8rem 1.5rem;
 
     font-size: .85rem;
@@ -801,21 +1529,124 @@ body.is-logged-in .author-info {
 
     margin: .5rem 1.5rem;
   }
-}
-
-/* =========================================================
-   16. SMALL MOBILE
-   ========================================================= */
-
-@media (max-width: 480px) {
 
   main {
-    padding-left: 3%;
-    padding-right: 3%;
+    padding-top: 1.75rem;
+  }
+
+  .faculty-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .history-wrapper {
+    padding: 1.75rem;
+  }
+
+  .faculty-card {
+    padding: 1.75rem 1rem;
+  }
+}
+
+
+/* =========================================================
+   33. RESPONSIVE - MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  body {
+    font-size: 13px;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1rem;
+  }
+
+  p {
+    font-size: .85rem;
+  }
+
+  main {
+    padding: 1.5rem 4% 2.5rem;
+  }
+
+  .container {
+    padding-left: 4%;
+    padding-right: 4%;
+  }
+
+  .section-title {
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title h1,
+  .section-title h2 {
+    font-size: 1.25rem;
+  }
+
+  .section-title p {
+    font-size: .85rem;
+  }
+
+  .intro-container {
+    padding-top: 0;
+  }
+
+  .title-break {
+    display: block;
+  }
+
+  .history-wrapper {
+    padding: 1.25rem;
+  }
+
+  .history-content,
+  .history-content p {
+    font-size: .85rem;
+    line-height: 1.65;
+  }
+
+  .faculty-section {
+    margin-top: 3rem;
+  }
+
+  .faculty-grid {
+    grid-template-columns: 1fr;
+
+    gap: 1rem;
+  }
+
+  .faculty-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .faculty-avatar {
+    width: 100px;
+    height: 100px;
+
+    flex-basis: 100px;
+  }
+
+  .faculty-name {
+    font-size: 1rem;
+  }
+
+  .faculty-email {
+    font-size: .75rem;
   }
 
   .quick-links {
     grid-template-columns: 1fr;
+
     gap: 1rem;
   }
 
@@ -840,6 +1671,77 @@ body.is-logged-in .author-info {
     font-size: .8rem;
   }
 
+  .toast-container {
+    top: 70px;
+
+    left: 15px;
+    right: 15px;
+  }
+
+  .toast {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+
+    box-sizing: border-box;
+  }
+}
+
+
+/* =========================================================
+   34. RESPONSIVE - SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+  header {
+    padding-left: 3%;
+    padding-right: 3%;
+  }
+
+  .logo-link {
+    gap: 7px;
+  }
+
+  .logo img {
+    height: 32px;
+  }
+
+  #logo-line-1 {
+    font-size: .72rem;
+  }
+
+  #logo-line-2 {
+    font-size: .55rem;
+  }
+
+  #logo-line-3 {
+    font-size: .5rem;
+  }
+
+  main {
+    padding-left: 3%;
+    padding-right: 3%;
+  }
+
+  .container {
+    padding-left: 3%;
+    padding-right: 3%;
+  }
+
+  .history-wrapper {
+    padding: 1rem;
+  }
+
+  .history-content,
+  .history-content p {
+    font-size: .82rem;
+  }
+
+  .faculty-major {
+    font-size: .72rem;
+  }
+
   th,
   td {
     padding: .5rem;
@@ -847,5 +1749,13 @@ body.is-logged-in .author-info {
     font-size: .75rem;
 
     white-space: nowrap;
+  }
+
+  footer {
+    padding: 1.25rem .75rem;
+  }
+
+  footer p {
+    font-size: .58rem;
   }
 }
