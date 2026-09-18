@@ -49,14 +49,23 @@
         .assignment-list-inline li { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed var(--border-light); }
         .assignment-list-inline li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         
-        .action-group { display: flex; gap: 4px; flex-shrink: 0; }
+        .action-group { display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
         .btn-action-assign { background: none; border: none; cursor: pointer; padding: 3px 5px; border-radius: 4px; transition: all 0.2s ease; font-size: 0.85rem; }
         .btn-action-assign.edit { color: #0284c7; }
         .btn-action-assign.edit:hover { background: #e0f2fe; color: #0369a1; }
         .btn-action-assign.delete { color: #ef4444; }
         .btn-action-assign.delete:hover { background: #fee2e2; color: #b91c1c; }
-        .btn-action-assign.approve { color: #16a34a; }
-        .btn-action-assign.approve:hover { background: #dcfce7; color: #15803d; }
+        
+        /* Cải tiến Nút Duyệt bằng chữ */
+        .btn-action-assign.approve { 
+            color: #16a34a; 
+            background: #f0fdf4; 
+            border: 1px solid #86efac; 
+            font-weight: bold; 
+            font-size: 0.75rem; 
+            padding: 3px 8px; 
+        }
+        .btn-action-assign.approve:hover { background: #dcfce7; color: #15803d; border-color: #22c55e; }
 
         /* Badges trạng thái */
         .badge { padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; margin-left: 6px; vertical-align: middle; }
@@ -109,12 +118,10 @@
                 </div>
             </div>
 
-            <!-- BẢNG THỐNG KÊ -->
             <div id="summaryCard" class="summary-card">
                 <h3 style="margin-bottom: 0.8rem; font-size: 1rem;"><i class="fas fa-chart-pie" style="color:var(--primary); margin-right:5px;"></i> Tổng quan Tín chỉ</h3>
                 
                 <div id="specTotalsDiv" style="margin-bottom: 1rem; font-size: 0.8rem; display: flex; flex-wrap: wrap; gap: 8px;">
-                    <!-- Render by JS -->
                 </div>
 
                 <div id="hkBreakdownDiv" style="display: none; border-top: 1px dashed var(--border); padding-top: 1rem;">
@@ -122,26 +129,10 @@
                     <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">* Đã cộng gộp học phần nhóm <strong>"Chung"</strong>.</p>
                     
                     <div id="hkBarsContainer">
-                        <div class="hk-bar-container">
-                            <div class="hk-bar-label">Học kỳ 1</div>
-                            <div class="hk-bar-track"><div id="bar-hk1" class="hk-bar-fill" style="width: 0%;"></div></div>
-                            <div class="hk-bar-value" id="val-hk1">0 TC</div>
-                        </div>
-                        <div class="hk-bar-container">
-                            <div class="hk-bar-label">Học kỳ 2</div>
-                            <div class="hk-bar-track"><div id="bar-hk2" class="hk-bar-fill" style="width: 0%;"></div></div>
-                            <div class="hk-bar-value" id="val-hk2">0 TC</div>
-                        </div>
-                        <div class="hk-bar-container">
-                            <div class="hk-bar-label">Học kỳ 3</div>
-                            <div class="hk-bar-track"><div id="bar-hk3" class="hk-bar-fill" style="width: 0%;"></div></div>
-                            <div class="hk-bar-value" id="val-hk3">0 TC</div>
-                        </div>
-                        <div class="hk-bar-container">
-                            <div class="hk-bar-label">Học kỳ 4</div>
-                            <div class="hk-bar-track"><div id="bar-hk4" class="hk-bar-fill" style="width: 0%;"></div></div>
-                            <div class="hk-bar-value" id="val-hk4">0 TC</div>
-                        </div>
+                        <div class="hk-bar-container"><div class="hk-bar-label">Học kỳ 1</div><div class="hk-bar-track"><div id="bar-hk1" class="hk-bar-fill" style="width: 0%;"></div></div><div class="hk-bar-value" id="val-hk1">0 TC</div></div>
+                        <div class="hk-bar-container"><div class="hk-bar-label">Học kỳ 2</div><div class="hk-bar-track"><div id="bar-hk2" class="hk-bar-fill" style="width: 0%;"></div></div><div class="hk-bar-value" id="val-hk2">0 TC</div></div>
+                        <div class="hk-bar-container"><div class="hk-bar-label">Học kỳ 3</div><div class="hk-bar-track"><div id="bar-hk3" class="hk-bar-fill" style="width: 0%;"></div></div><div class="hk-bar-value" id="val-hk3">0 TC</div></div>
+                        <div class="hk-bar-container"><div class="hk-bar-label">Học kỳ 4</div><div class="hk-bar-track"><div id="bar-hk4" class="hk-bar-fill" style="width: 0%;"></div></div><div class="hk-bar-value" id="val-hk4">0 TC</div></div>
                     </div>
                 </div>
                 <div id="hkBreakdownEmpty" style="font-size: 0.8rem; color: var(--text-muted); font-style: italic; border-top: 1px dashed var(--border); padding-top: 0.8rem;">
@@ -265,7 +256,7 @@
                 toast.innerHTML = `<i class="${iconClass}" style="color: ${iconColor};"></i><span>${message}</span>`;
                 container.appendChild(toast);
                 requestAnimationFrame(() => toast.classList.add("show"));
-                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
+                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 4000);
             };
 
             function escapeHtml(value) {
@@ -343,7 +334,6 @@
                 if (!tableName) { window.showToast("Lớp học này chưa gán bảng chương trình.", true); return; }
 
                 curriculumNameText.textContent = tableName; curriculumInfo.style.display = "block";
-                
                 if (!isSilentReload) modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>`;
 
                 try {
@@ -353,7 +343,6 @@
                     if (curError) throw curError;
                     currentCurriculumData = curriculumData || [];
 
-                    // BẢNG: de-xuat-phan-cong
                     const { data: assignData, error: assignError } = await supabase.from('de-xuat-phan-cong').select('*');
                     if (assignError) throw assignError;
                     currentAssignmentsData = (assignData || []).filter(a => String(a['ma-lop']).trim() === maLopClean);
@@ -469,9 +458,6 @@
                 } catch (err) { window.showToast("Lỗi cập nhật bảng lop-hoc-phan: " + err.message, true); loadClassData(true); }
             };
 
-            /* =================================================
-               4. RENDER BẢNG ĐỀ XUẤT
-            ================================================= */
             function renderModulesTable() {
                 modulesTableBody.innerHTML = ""; const filterVal = specSelect.value;
                 const filteredMods = currentCurriculumData.filter(mod => {
@@ -524,7 +510,7 @@
 
                                 let approveBtnHtml = "";
                                 if (trangThai !== "Đã duyệt") {
-                                    approveBtnHtml = `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')" title="Duyệt chuyển sang Phân công"><i class="fas fa-check"></i></button>`;
+                                    approveBtnHtml = `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')" title="Duyệt và cập nhật sang bảng Phân công">Duyệt</button>`;
                                 }
 
                                 assignListHtml += `
@@ -680,9 +666,8 @@
                6. THÊM, SỬA, XÓA, DUYỆT ĐỀ XUẤT
             ================================================= */
 
-            // CHỨC NĂNG MỚI: DUYỆT ĐỀ XUẤT -> PHÂN CÔNG
             window.approveAssignment = async function(assignId) {
-                if (!confirm("Bạn có chắc chắn muốn DUYỆT đề xuất này và chuyển sang bảng Phân công chính thức?")) return;
+                if (!confirm("Bạn có chắc chắn muốn DUYỆT đề xuất này và cập nhật sang bảng Phân công chính thức?")) return;
                 
                 const assignment = currentAssignmentsData.find(a => String(a["id"]) === String(assignId));
                 if (!assignment) return;
@@ -692,7 +677,6 @@
                 try {
                     const supabase = window.supabaseClient;
                     
-                    // 1. Chèn vào bảng phan-cong-giang-day
                     const pcPayload = {
                         "ma-lop": assignment["ma-lop"],
                         "ma-hoc-phan": assignment["ma-hoc-phan"],
@@ -704,16 +688,38 @@
                         "loai-nhom": assignment["loai-nhom"],
                         "ten-nhom": assignment["ten-nhom"],
                         "ma-hoc-vien": assignment["ma-hoc-vien"],
-                        "ho-ten": assignment["ho-ten"]
+                        "ho-ten": assignment["ho-ten"],
+                        "id_de_xuat": assignId // Liên kết để nhận diện Cập nhật
                     };
-                    const { error: insErr } = await supabase.from('phan-cong-giang-day').insert([pcPayload]);
-                    if (insErr) throw insErr;
 
-                    // 2. Cập nhật trạng thái bảng de-xuat-phan-cong thành "Đã duyệt"
+                    // Kiểm tra xem đề xuất này đã từng được duyệt (tồn tại trong bảng phân công) chưa
+                    const { data: existingPC, error: checkErr } = await supabase
+                        .from('phan-cong-giang-day')
+                        .select('id')
+                        .eq('id_de_xuat', assignId);
+                    
+                    if (checkErr && !checkErr.message.includes("column id_de_xuat does not exist")) throw checkErr;
+
+                    if (existingPC && existingPC.length > 0) {
+                        // Nếu đã có -> UPDATE
+                        const { error: updPcErr } = await supabase.from('phan-cong-giang-day').update(pcPayload).eq('id', existingPC[0].id);
+                        if (updPcErr) throw updPcErr;
+                    } else {
+                        // Nếu chưa có -> INSERT
+                        const { error: insErr } = await supabase.from('phan-cong-giang-day').insert([pcPayload]);
+                        if (insErr) {
+                            if (insErr.message.includes("id_de_xuat")) {
+                                throw new Error("Vui lòng thêm cột 'id_de_xuat' vào bảng 'phan-cong-giang-day' trên Supabase để thực hiện chức năng này.");
+                            }
+                            throw insErr;
+                        }
+                    }
+
+                    // Cập nhật trạng thái bảng de-xuat-phan-cong
                     const { error: updErr } = await supabase.from('de-xuat-phan-cong').update({ "trang-thai": "Đã duyệt" }).eq('id', assignId);
                     if (updErr) throw updErr;
 
-                    window.showToast("Đã duyệt đề xuất thành công!");
+                    window.showToast("Đã duyệt và đồng bộ phân công thành công!");
                     reloadAndFocus(maHp);
 
                 } catch (err) {
@@ -842,7 +848,7 @@
                     const payload = {
                         "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th, "ghi-chu": note,
                         "doi-tuong": doiTuong, "loai-nhom": loaiNhom, "ten-nhom": tenNhom, "ma-hoc-vien": maHv, "ho-ten": hoTenHv,
-                        "trang-thai": "Chờ duyệt" // Luôn lưu trạng thái chờ duyệt khi thêm/sửa
+                        "trang-thai": "Chờ duyệt" // Luôn đưa về trạng thái chờ duyệt khi có sự chỉnh sửa
                     };
 
                     if (editingAssignmentId) {
