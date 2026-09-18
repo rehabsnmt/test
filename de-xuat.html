@@ -81,27 +81,6 @@
         .hk-bar-value { width: 45px; font-size: 0.85rem; font-weight: bold; color: var(--primary); text-align: right; }
         
         .highlight-row { background-color: var(--primary-light) !important; transition: background-color 0.5s ease; }
-
-        /* Hiệu ứng trạng thái Realtime (Góc dưới phải) */
-        #realtime-status {
-            position: fixed; bottom: 20px; right: 20px;
-            background: #dcfce7; color: #16a34a;
-            padding: 5px 12px; border-radius: 20px;
-            font-size: 0.8rem; font-weight: bold;
-            display: flex; align-items: center; gap: 6px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 9999; opacity: 0; transition: opacity 0.5s ease-in-out;
-            pointer-events: none;
-        }
-        .pulse-dot {
-            width: 8px; height: 8px; background: #16a34a; border-radius: 50%;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse { 
-            0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); } 
-            70% { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); } 
-            100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); } 
-        }
     </style>
 </head>
 
@@ -109,7 +88,6 @@
 
     <div id="header-placeholder"></div>
     <div id="toastContainer" class="toast-container"></div>
-    <div id="realtime-status"><div class="pulse-dot"></div>Đồng bộ Realtime</div>
 
     <main style="opacity: 0; transition: opacity 0.3s ease;">
         
@@ -293,27 +271,27 @@
             let editingAssignmentId = null;
             let isEditingOfficial = false;
 
-            // DOM ELEMENTS
             const classSelect = document.getElementById("classSelect"), specSelect = document.getElementById("specSelect");
             const curriculumInfo = document.getElementById("curriculumInfo"), curriculumNameText = document.getElementById("curriculumNameText");
             const modulesTableBody = document.getElementById("modulesTableBody");
+            
             const summaryCard = document.getElementById("summaryCard");
             const summaryMajorName = document.getElementById("summaryMajorName");
             const specTotalsDiv = document.getElementById("specTotalsDiv");
             const hkBreakdownDiv = document.getElementById("hkBreakdownDiv");
             const hkBreakdownEmpty = document.getElementById("hkBreakdownEmpty");
+
             const assignModal = document.getElementById("assignModal"), assignForm = document.getElementById("assignForm");
             const instructorSelect = document.getElementById("instructorSelect"), theorySessions = document.getElementById("theorySessions"), practiceSessions = document.getElementById("practiceSessions");
             const assignNote = document.getElementById("assignNote"), hintLT = document.getElementById("hintLT"), hintTH = document.getElementById("hintTH");
+            
             const targetTypeSelect = document.getElementById("targetTypeSelect");
             const groupTargetDiv = document.getElementById("groupTargetDiv"), groupTypeSelect = document.getElementById("groupTypeSelect"), groupNameSelect = document.getElementById("groupNameSelect");
             const groupMembersDiv = document.getElementById("groupMembersDiv"), groupMembersList = document.getElementById("groupMembersList");
             const studentTargetDiv = document.getElementById("studentTargetDiv"), studentSelect = document.getElementById("studentSelect");
+
             const btnCloseModal = document.getElementById("btnCloseModal"), btnCancelModal = document.getElementById("btnCancelModal"), btnSaveAssignment = document.getElementById("btnSaveAssignment");
 
-            /* =================================================
-               1. TẢI DỮ LIỆU BAN ĐẦU & CÀI ĐẶT REALTIME
-            ================================================= */
             async function loadInitialData() {
                 try {
                     const supabase = window.supabaseClient;
@@ -342,51 +320,11 @@
                         option.textContent = `${inst["ho-ten"]}`; 
                         instructorSelect.appendChild(option);
                     });
-
-                    setupRealtime();
                 } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
             }
 
             function getInstructorName(maGv) {
                 const gv = instructorsList.find(i => i["ma-giang-vien"] === maGv); return gv ? gv["ho-ten"] : maGv;
-            }
-
-            /* HÀM LẮNG NGHE REALTIME TỪ SUPABASE */
-            let realtimeSubscription = null;
-            let realtimeDebounceTimer = null;
-
-            function setupRealtime() {
-                const supabase = window.supabaseClient;
-                if (!supabase) return;
-
-                if (realtimeSubscription) {
-                    supabase.removeChannel(realtimeSubscription);
-                }
-
-                realtimeSubscription = supabase.channel('phan-cong-sync')
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'de-xuat-phan-cong' }, handleRealtimeEvent)
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'phan-cong-giang-day' }, handleRealtimeEvent)
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'lop-hoc-phan' }, handleRealtimeEvent)
-                    .subscribe((status) => {
-                        if (status === 'SUBSCRIBED') {
-                            document.getElementById('realtime-status').style.opacity = '1';
-                        }
-                    });
-            }
-
-            function handleRealtimeEvent(payload) {
-                if (!currentSelectedClass) return;
-                const record = (payload.new && Object.keys(payload.new).length > 0) ? payload.new : payload.old;
-                if (record && record['ma-lop']) {
-                    // Nếu sự thay đổi xảy ra trên Lớp đang xem
-                    if (String(record['ma-lop']).trim() === String(currentSelectedClass['ma-lop']).trim()) {
-                        clearTimeout(realtimeDebounceTimer);
-                        realtimeDebounceTimer = setTimeout(() => {
-                            // Load lại dữ liệu ngầm không F5
-                            loadClassData(true);
-                        }, 500);
-                    }
-                }
             }
 
             classSelect.addEventListener("change", () => { specSelect.value = ""; summaryCard.style.display = "none"; loadClassData(false); });
@@ -554,7 +492,7 @@
             };
 
             /* =================================================
-               4. RENDER BẢNG (KẾT HỢP CHÍNH THỨC & ĐỀ XUẤT CHỜ DUYỆT)
+               4. RENDER BẢNG
             ================================================= */
             function renderModulesTable() {
                 modulesTableBody.innerHTML = ""; const filterVal = specSelect.value;
@@ -717,8 +655,8 @@
                 }
             }
 
+            // Reload ngầm màn hình cục bộ khi thao tác
             async function reloadAndFocus(maHpRaw) {
-                // Tắt cảnh báo Loading, load ngầm
                 await loadClassData(true); 
                 const rowId = `row-${btoa(maHpRaw).replace(/=/g, '')}`;
                 const targetRow = document.getElementById(rowId);
@@ -794,6 +732,7 @@
                6. GIAO THỨC DUYỆT / SỬA / XÓA ĐỒNG BỘ
             ================================================= */
             
+            // Hủy Yêu cầu Xóa
             window.cancelDeleteProposal = async function(assignId) {
                 if (!confirm("Bạn muốn hủy yêu cầu xóa và khôi phục phân công chính thức này?")) return;
                 const assignment = currentAssignmentsData.find(a => !a.isOfficial && String(a._proposalId) === String(assignId));
@@ -806,6 +745,7 @@
                 } catch (err) { window.showToast("Lỗi: " + err.message, true); }
             };
 
+            // Nút Duyệt Chính
             window.approveAssignment = async function(assignId) {
                 const proposal = currentAssignmentsData.find(a => !a.isOfficial && String(a._proposalId) === String(assignId));
                 if (!proposal) return;
@@ -907,8 +847,7 @@
                             }
                         }
                     }
-                    // Bỏ reload tự kích hoạt vì có Realtime xử lý ngầm rồi, nhưng có thể gọi fallback nếu cần.
-                    // reloadAndFocus(maHp); 
+                    reloadAndFocus(maHp); 
                 } catch (err) { window.showToast("Lỗi xóa dữ liệu: " + err.message, true); }
             };
 
@@ -1020,6 +959,7 @@
 
                 const origText = btnSaveAssignment.innerHTML;
                 btnSaveAssignment.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang lưu...`; btnSaveAssignment.disabled = true;
+                const savedMaHp = currentSelectedModule.maHp;
 
                 try {
                     const supabase = window.supabaseClient;
@@ -1040,8 +980,8 @@
                         if (error) throw error;
                         window.showToast("Đã thêm đề xuất mới!");
                     }
-                    closeModal();
-                    // Realtime sẽ tự động nhận và tải lại bảng, nhưng chúng ta vẫn có thể ẩn form luôn.
+                    closeModal(); 
+                    reloadAndFocus(savedMaHp);
                 } catch (error) { window.showToast("Lỗi: " + error.message, true);
                 } finally { btnSaveAssignment.innerHTML = origText; btnSaveAssignment.disabled = false; }
             });
