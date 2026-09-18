@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Quản lý Thời khóa biểu - Bộ môn Phục hồi chức năng.">
+
+    <meta http-equiv="Content-Security-Policy" content="
+            default-src 'self';
+            connect-src 'self' https://*.supabase.co;
+            img-src 'self' data: https://*.supabase.co;
+            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+            script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+            font-src 'self' https://cdnjs.cloudflare.com;
+        ">
+
+    <title>Xếp Thời khóa biểu - Bộ môn Phục hồi chức năng</title>
+
+    <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* =========================================
+           ÉP BUỘC GIAO DIỆN FULL MÀN HÌNH VÀ BỐ CỤC
+        ========================================= */
+        main { max-width: 100% !important; padding: 1rem 2% 2rem !important; }
+        .container { max-width: 100% !important; padding: 0 !important; }
+        
+        .filter-section { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1rem; flex-wrap: wrap; }
+        .filter-section .form-group { margin-bottom: 0; flex: 1; min-width: 200px; }
+
+        /* BỐ CỤC DRAG & DROP: 2 CỘT */
+        .schedule-layout {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+
+        /* CỘT TRÁI: DANH SÁCH THẺ CHƯA XẾP */
+        .pool-column {
+            width: 280px;
+            flex-shrink: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-sm);
+        }
+        .pool-header {
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 0.8rem;
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        #unassignedPool {
+            min-height: 400px;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+            padding-right: 5px;
+            background: var(--bg-page);
+            border-radius: 4px;
+            padding: 10px;
+            border: 2px dashed transparent;
+            transition: all 0.3s ease;
+        }
+        #unassignedPool.dragover {
+            border-color: var(--primary);
+            background: #e0f2fe;
+        }
+
+        /* CỘT PHẢI: KHUNG LỊCH (GRID) */
+        .calendar-column {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            box-shadow: var(--shadow-sm);
+            overflow-x: auto;
+        }
+        
+        .calendar-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            min-width: 800px;
+        }
+        .calendar-table th, .calendar-table td {
+            border: 1px solid var(--border);
+            padding: 0;
+            vertical-align: top;
+        }
+        .calendar-table th {
+            background: var(--primary-light);
+            color: var(--primary-hover);
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .calendar-table td.time-col {
+            background: #f8fafc;
+            font-weight: bold;
+            text-align: center;
+            vertical-align: middle;
+            color: var(--text-muted);
+            width: 80px;
+        }
+        
+        /* KHU VỰC THẢ (DROPZONE) */
+        .dropzone {
+            min-height: 120px;
+            height: 100%;
+            padding: 8px;
+            background: #fff;
+            transition: background 0.2s ease;
+        }
+        .dropzone.dragover {
+            background: #f0fdf4 !important;
+            box-shadow: inset 0 0 0 2px #22c55e;
+        }
+
+        /* THẺ HỌC PHẦN (DRAGGABLE CARD) */
+        .class-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 8px;
+            cursor: grab;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 0.75rem;
+            line-height: 1.4;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            position: relative;
+        }
+        .class-card:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+        .class-card:active { cursor: grabbing; }
+        .class-card.dragging { opacity: 0.5; }
+
+        /* Đổi màu viền dựa theo loại (Lý thuyết / Thực hành) */
+        .class-card.type-lt { border-left-color: #0ea5e9; } /* Xanh dương cho Lý thuyết */
+        .class-card.type-th { border-left-color: #10b981; } /* Xanh lá cho Thực hành */
+
+        .cc-title { font-weight: bold; color: var(--text-dark); margin-bottom: 4px; font-size: 0.8rem; }
+        .cc-info { display: flex; align-items: flex-start; margin-bottom: 2px; color: var(--text-muted); }
+        .cc-info i { width: 14px; margin-top: 3px; color: var(--primary); }
+        .cc-target { color: #d97706; font-weight: 600; }
+        .cc-type-badge {
+            position: absolute; top: 8px; right: 8px;
+            font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; font-weight: bold;
+        }
+        .type-lt .cc-type-badge { background: #e0f2fe; color: #0369a1; }
+        .type-th .cc-type-badge { background: #dcfce7; color: #15803d; }
+        .cc-note { margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--border-light); font-style: italic; color: #64748b; }
+
+        /* Custom Scrollbar for Pool */
+        #unassignedPool::-webkit-scrollbar { width: 6px; }
+        #unassignedPool::-webkit-scrollbar-track { background: transparent; }
+        #unassignedPool::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        #unassignedPool::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+
+<body>
+
+    <div id="header-placeholder"></div>
+    <div id="toastContainer" class="toast-container"></div>
+
+    <main style="opacity: 0; transition: opacity 0.3s ease;">
+        <div class="section-title" style="margin-top: 0; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <h1 style="font-size: 1.3rem;">Xếp Lịch Thời khóa biểu</h1>
+            <button class="btn-primary" onclick="window.showToast('Lịch đã được lưu cục bộ trên giao diện. (Tính năng lưu CSDL đang chờ tích hợp)')">
+                <i class="fas fa-save"></i> Lưu Lịch
+            </button>
+        </div>
+
+        <div class="container">
+            <div class="card" style="margin-bottom: 1rem; padding: 1rem 1.5rem;">
+                <div class="filter-section">
+                    <div class="form-group">
+                        <label for="classSelect">1. Chọn Lớp học để lấy phân công</label>
+                        <select id="classSelect">
+                            <option value="">-- Đang tải danh sách lớp --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="schedule-layout">
+                <!-- CỘT TRÁI: POOL -->
+                <div class="pool-column">
+                    <div class="pool-header">
+                        <span>Học phần cần xếp</span>
+                        <span class="badge" id="poolCount" style="background:var(--primary); color:#fff; padding: 2px 8px; border-radius: 10px;">0</span>
+                    </div>
+                    <div id="unassignedPool" class="dropzone" data-day="pool" data-session="none">
+                        <div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;" id="emptyPoolMsg">
+                            Vui lòng chọn lớp học...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CỘT PHẢI: CALENDAR GRID -->
+                <div class="calendar-column">
+                    <table class="calendar-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">Ca học</th>
+                                <th>Thứ 2</th>
+                                <th>Thứ 3</th>
+                                <th>Thứ 4</th>
+                                <th>Thứ 5</th>
+                                <th>Thứ 6</th>
+                                <th>Thứ 7</th>
+                                <th>Chủ Nhật</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dòng: Sáng -->
+                            <tr>
+                                <td class="time-col">Sáng<br><span style="font-size:0.7rem; font-weight:normal;">07:30 - 11:30</span></td>
+                                <td><div class="dropzone" data-day="2" data-session="Sáng"></div></td>
+                                <td><div class="dropzone" data-day="3" data-session="Sáng"></div></td>
+                                <td><div class="dropzone" data-day="4" data-session="Sáng"></div></td>
+                                <td><div class="dropzone" data-day="5" data-session="Sáng"></div></td>
+                                <td><div class="dropzone" data-day="6" data-session="Sáng"></div></td>
+                                <td><div class="dropzone" data-day="7" data-session="Sáng"></div></td>
+                                <td><div class="dropzone" data-day="CN" data-session="Sáng"></div></td>
+                            </tr>
+                            <!-- Dòng: Chiều -->
+                            <tr>
+                                <td class="time-col">Chiều<br><span style="font-size:0.7rem; font-weight:normal;">13:30 - 17:30</span></td>
+                                <td><div class="dropzone" data-day="2" data-session="Chiều"></div></td>
+                                <td><div class="dropzone" data-day="3" data-session="Chiều"></div></td>
+                                <td><div class="dropzone" data-day="4" data-session="Chiều"></div></td>
+                                <td><div class="dropzone" data-day="5" data-session="Chiều"></div></td>
+                                <td><div class="dropzone" data-day="6" data-session="Chiều"></div></td>
+                                <td><div class="dropzone" data-day="7" data-session="Chiều"></div></td>
+                                <td><div class="dropzone" data-day="CN" data-session="Chiều"></div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-placeholder"></div>
+    <script src="js/layout.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            window.showToast = function (message, isError = false) {
+                const container = document.getElementById("toastContainer");
+                if (!container) return;
+                const toast = document.createElement("div");
+                toast.className = "toast";
+                if (isError) toast.style.borderLeftColor = "var(--accent)";
+                const iconClass = isError ? "fas fa-exclamation-circle" : "fas fa-check-circle";
+                const iconColor = isError ? "var(--accent)" : "#16a34a";
+                toast.innerHTML = `<i class="${iconClass}" style="color: ${iconColor};"></i><span>${message}</span>`;
+                container.appendChild(toast);
+                requestAnimationFrame(() => toast.classList.add("show"));
+                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
+            };
+
+            function escapeHtml(value) {
+                if (value == null) return "";
+                return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            }
+
+            // DATA STATES
+            let classesList = [];
+            let instructorsList = [];
+            let currentCurriculumData = [];
+            let currentAssignmentsData = [];
+            
+            // DOM
+            const classSelect = document.getElementById("classSelect");
+            const unassignedPool = document.getElementById("unassignedPool");
+            const emptyPoolMsg = document.getElementById("emptyPoolMsg");
+            const poolCount = document.getElementById("poolCount");
+
+            /* =================================================
+               1. KHỞI TẠO VÀ TẢI DANH SÁCH LỚP
+            ================================================= */
+            async function loadInitialData() {
+                try {
+                    const supabase = window.supabaseClient;
+                    
+                    // Lấy Lớp học
+                    const { data: classData, error: classError } = await supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh');
+                    if (classError) throw classError;
+                    classesList = classData || [];
+                    classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
+                    classesList.forEach(cls => {
+                        const option = document.createElement("option"); option.value = cls["ma-lop"]; 
+                        option.textContent = `${cls["ten-lop"]}`; 
+                        classSelect.appendChild(option);
+                    });
+
+                    // Lấy Giảng viên
+                    const { data: instData, error: instError } = await supabase.from('giang-vien').select('ma-giang-vien, ho-ten');
+                    if (instError) throw instError;
+                    instructorsList = instData || [];
+                    
+                } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
+            }
+
+            function getInstructorName(maGv) {
+                const gv = instructorsList.find(i => i["ma-giang-vien"] === maGv); return gv ? gv["ho-ten"] : maGv;
+            }
+
+            classSelect.addEventListener("change", loadClassAssignments);
+
+            /* =================================================
+               2. TẢI PHÂN CÔNG CỦA LỚP VÀ SINH THẺ (CARDS)
+            ================================================= */
+            async function loadClassAssignments() {
+                const maLop = classSelect.value;
+                if (!maLop) {
+                    unassignedPool.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;">Vui lòng chọn lớp học...</div>`;
+                    poolCount.textContent = "0";
+                    clearCalendarGrid();
+                    return;
+                }
+                
+                const maLopClean = String(maLop).trim();
+                const selectedClass = classesList.find(c => String(c["ma-lop"]).trim() === maLopClean);
+                const tableName = selectedClass["chuong-trinh"];
+                
+                unassignedPool.innerHTML = `<div style="text-align: center; margin-top: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>`;
+                clearCalendarGrid();
+
+                try {
+                    const supabase = window.supabaseClient;
+
+                    // 1. Tải chương trình để lấy tên môn
+                    const { data: curData, error: curError } = await supabase.from(tableName).select('ma-hoc-phan, ten-hoc-phan');
+                    if (curError) throw curError;
+                    currentCurriculumData = curData || [];
+
+                    // 2. Tải bảng phan-cong-giang-day CHÍNH THỨC
+                    const { data: pcData, error: pcError } = await supabase.from('phan-cong-giang-day').select('*');
+                    if (pcError) throw pcError;
+                    
+                    currentAssignmentsData = (pcData || []).filter(a => String(a['ma-lop']).trim() === maLopClean);
+
+                    generateCards();
+
+                } catch (error) { 
+                    unassignedPool.innerHTML = `<div style="text-align: center; color: var(--accent); margin-top: 2rem;">Lỗi tải dữ liệu.</div>`;
+                    window.showToast("Lỗi: " + error.message, true); 
+                }
+            }
+
+            function getModuleName(maHp) {
+                const mod = currentCurriculumData.find(m => String(m["ma-hoc-phan"]).trim() === String(maHp).trim());
+                return mod ? mod["ten-hoc-phan"] : maHp;
+            }
+
+            function getClassName(maLop) {
+                const cls = classesList.find(c => String(c["ma-lop"]).trim() === String(maLop).trim());
+                return cls ? cls["ten-lop"] : maLop;
+            }
+
+            /* =================================================
+               3. RENDER THẺ TỪ DỮ LIỆU PHÂN CÔNG
+            ================================================= */
+            function generateCards() {
+                unassignedPool.innerHTML = "";
+                let cardCounter = 0;
+
+                currentAssignmentsData.forEach(a => {
+                    const tenHp = escapeHtml(getModuleName(a["ma-hoc-phan"]));
+                    const tenLop = escapeHtml(getClassName(a["ma-lop"]));
+                    const tenGv = escapeHtml(getInstructorName(a["ma-giang-vien"]));
+                    const ghiChu = escapeHtml(a["ghi-chu"] || "");
+                    
+                    // Xử lý Đối tượng
+                    let targetText = "Cả lớp";
+                    if (a["doi-tuong"] === "nhom") targetText = `Nhóm: ${escapeHtml(a["ten-nhom"])} (${escapeHtml(a["loai-nhom"])})`;
+                    else if (a["doi-tuong"] === "ca-nhan") targetText = `HV: ${escapeHtml(a["ho-ten"])}`;
+
+                    const ltCount = parseInt(a["so-buoi-ly-thuyet"]) || 0;
+                    const thCount = parseInt(a["so-buoi-thuc-hanh"]) || 0;
+
+                    // Sinh thẻ Lý thuyết
+                    for (let i = 1; i <= ltCount; i++) {
+                        const cardId = `card-${a.id}-LT-${i}`;
+                        const cardHtml = createCardElement(cardId, a.id, 'LT', tenHp, tenLop, tenGv, targetText, ghiChu, i, ltCount);
+                        unassignedPool.insertAdjacentHTML('beforeend', cardHtml);
+                        cardCounter++;
+                    }
+
+                    // Sinh thẻ Thực hành
+                    for (let i = 1; i <= thCount; i++) {
+                        const cardId = `card-${a.id}-TH-${i}`;
+                        const cardHtml = createCardElement(cardId, a.id, 'TH', tenHp, tenLop, tenGv, targetText, ghiChu, i, thCount);
+                        unassignedPool.insertAdjacentHTML('beforeend', cardHtml);
+                        cardCounter++;
+                    }
+                });
+
+                if (cardCounter === 0) {
+                    unassignedPool.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;">Lớp này chưa có phân công nào.</div>`;
+                }
+                
+                poolCount.textContent = cardCounter;
+                setupDragAndDrop();
+            }
+
+            function createCardElement(cardId, assignId, type, tenHp, tenLop, tenGv, targetText, ghiChu, sessionNum, totalSessions) {
+                const typeClass = type === 'LT' ? 'type-lt' : 'type-th';
+                const typeName = type === 'LT' ? 'Lý thuyết' : 'Thực hành';
+                const noteHtml = ghiChu ? `<div class="cc-note"><i class="fas fa-sticky-note" style="margin-right:4px;"></i>${ghiChu}</div>` : '';
+
+                return `
+                    <div class="class-card ${typeClass}" draggable="true" id="${cardId}" data-assign-id="${assignId}" data-type="${type}">
+                        <div class="cc-type-badge">${type} ${sessionNum}/${totalSessions}</div>
+                        <div class="cc-title">${tenHp}</div>
+                        <div class="cc-info"><i class="fas fa-users"></i> <span><b>Lớp:</b> ${tenLop}</span></div>
+                        <div class="cc-info"><i class="fas fa-user-tie"></i> <span><b>GV:</b> ${tenGv}</span></div>
+                        <div class="cc-info"><i class="fas fa-bullseye"></i> <span><b>ĐT:</b> <span class="cc-target">${targetText}</span></span></div>
+                        ${noteHtml}
+                    </div>
+                `;
+            }
+
+            function clearCalendarGrid() {
+                const dropzones = document.querySelectorAll('.calendar-table .dropzone');
+                dropzones.forEach(dz => dz.innerHTML = '');
+            }
+
+            /* =================================================
+               4. LOGIC DRAG AND DROP (KÉO THẢ)
+            ================================================= */
+            function setupDragAndDrop() {
+                const cards = document.querySelectorAll('.class-card');
+                const dropzones = document.querySelectorAll('.dropzone');
+
+                let draggedCard = null;
+
+                cards.forEach(card => {
+                    card.addEventListener('dragstart', function(e) {
+                        draggedCard = this;
+                        setTimeout(() => this.classList.add('dragging'), 0);
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+
+                    card.addEventListener('dragend', function() {
+                        this.classList.remove('dragging');
+                        draggedCard = null;
+                        dropzones.forEach(dz => dz.classList.remove('dragover'));
+                        updatePoolCount();
+                    });
+                });
+
+                dropzones.forEach(zone => {
+                    // Ngăn chặn hành vi mặc định để cho phép Drop
+                    zone.addEventListener('dragover', function(e) {
+                        e.preventDefault();
+                        this.classList.add('dragover');
+                    });
+
+                    zone.addEventListener('dragleave', function(e) {
+                        this.classList.remove('dragover');
+                    });
+
+                    zone.addEventListener('drop', function(e) {
+                        e.preventDefault();
+                        this.classList.remove('dragover');
+                        if (draggedCard) {
+                            // Chuyển thẻ vào vùng mới
+                            this.appendChild(draggedCard);
+                        }
+                    });
+                });
+            }
+
+            function updatePoolCount() {
+                const cardsInPool = unassignedPool.querySelectorAll('.class-card').length;
+                poolCount.textContent = cardsInPool;
+            }
+
+            /* =================================================
+               KHỞI ĐỘNG
+            ================================================= */
+            function startApp() {
+                let attempts = 0; const timer = setInterval(() => {
+                    attempts++; if (window.supabaseClient) { clearInterval(timer); loadInitialData(); } else if (attempts >= 50) { clearInterval(timer); window.showToast("Không tải được Database.", true); }
+                }, 100);
+            }
+            startApp();
+        });
+    </script>
+</body>
+</html>
