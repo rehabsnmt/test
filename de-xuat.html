@@ -689,16 +689,16 @@
                         "ten-nhom": assignment["ten-nhom"],
                         "ma-hoc-vien": assignment["ma-hoc-vien"],
                         "ho-ten": assignment["ho-ten"],
-                        "id_de_xuat": assignId // Liên kết để nhận diện Cập nhật
+                        "id-de-xuat": assignId // Liên kết để nhận diện Cập nhật
                     };
 
                     // Kiểm tra xem đề xuất này đã từng được duyệt (tồn tại trong bảng phân công) chưa
                     const { data: existingPC, error: checkErr } = await supabase
                         .from('phan-cong-giang-day')
                         .select('id')
-                        .eq('id_de_xuat', assignId);
+                        .eq('id-de-xuat', assignId);
                     
-                    if (checkErr && !checkErr.message.includes("column id_de_xuat does not exist")) throw checkErr;
+                    if (checkErr && !checkErr.message.includes("column id-de-xuat does not exist")) throw checkErr;
 
                     if (existingPC && existingPC.length > 0) {
                         // Nếu đã có -> UPDATE
@@ -708,8 +708,8 @@
                         // Nếu chưa có -> INSERT
                         const { error: insErr } = await supabase.from('phan-cong-giang-day').insert([pcPayload]);
                         if (insErr) {
-                            if (insErr.message.includes("id_de_xuat")) {
-                                throw new Error("Vui lòng thêm cột 'id_de_xuat' vào bảng 'phan-cong-giang-day' trên Supabase để thực hiện chức năng này.");
+                            if (insErr.message.includes("id-de-xuat")) {
+                                throw new Error("Vui lòng thêm cột 'id-de-xuat' vào bảng 'phan-cong-giang-day' trên Supabase để thực hiện chức năng này.");
                             }
                             throw insErr;
                         }
