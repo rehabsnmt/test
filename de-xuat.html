@@ -81,6 +81,11 @@
         .hk-bar-value { width: 45px; font-size: 0.85rem; font-weight: bold; color: var(--primary); text-align: right; }
         
         .highlight-row { background-color: var(--primary-light) !important; transition: background-color 0.5s ease; }
+        
+        /* Hiệu ứng trạng thái Realtime (mạng) */
+        #realtimeStatus { position: fixed; bottom: 15px; left: 15px; font-size: 0.75rem; color: #16a34a; background: #dcfce7; padding: 4px 10px; border-radius: 12px; display: none; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 1000; }
+        .realtime-dot { width: 8px; height: 8px; background-color: #16a34a; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
     </style>
 </head>
 
@@ -88,6 +93,9 @@
 
     <div id="header-placeholder"></div>
     <div id="toastContainer" class="toast-container"></div>
+    
+    <!-- Hiển thị kết nối Realtime -->
+    <div id="realtimeStatus"><span class="realtime-dot"></span> Tự động đồng bộ</div>
 
     <main style="opacity: 0; transition: opacity 0.3s ease;">
         
@@ -296,7 +304,6 @@
                 try {
                     const supabase = window.supabaseClient;
                     
-                    // Lấy thông tin User hiện tại
                     const { data: authData } = await supabase.auth.getUser();
                     if (authData && authData.user) {
                         currentUserId = authData.user.id;
@@ -321,6 +328,10 @@
                         option.textContent = `${inst["ho-ten"]}`; 
                         instructorSelect.appendChild(option);
                     });
+                    
+                    // Thiết lập kết nối Realtime
+                    setupRealtime();
+                    
                 } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
             }
 
@@ -329,6 +340,43 @@
             }
 
             classSelect.addEventListener("change", () => { specSelect.value = ""; summaryCard.style.display = "none"; loadClassData(false); });
+
+            /* =================================================
+               CƠ CHẾ REALTIME SUPABASE
+            ================================================= */
+            let realtimeTimeout = null;
+            function handleRealtimeEvent(payload) {
+                if (!currentSelectedClass) return;
+                
+                // Trích xuất bản ghi (mới hoặc cũ tùy thuộc loại event INSERT, UPDATE, DELETE)
+                const record = (payload.new && Object.keys(payload.new).length > 0) ? payload.new : payload.old;
+                
+                if (record && record['ma-lop']) {
+                    // Nếu bản ghi có sự thay đổi trùng với lớp đang mở
+                    if (String(record['ma-lop']).trim() === String(currentSelectedClass['ma-lop']).trim()) {
+                        // Kỹ thuật Debounce để tránh load liên tục nếu có nhiều record update cùng lúc
+                        clearTimeout(realtimeTimeout);
+                        realtimeTimeout = setTimeout(() => {
+                            loadClassData(true); // Load ngầm mượt mà
+                        }, 400); 
+                    }
+                }
+            }
+
+            function setupRealtime() {
+                const supabase = window.supabaseClient;
+                if (!supabase) return;
+
+                supabase.channel('quan-ly-phan-cong-realtime')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'de-xuat-phan-cong' }, handleRealtimeEvent)
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'phan-cong-giang-day' }, handleRealtimeEvent)
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'lop-hoc-phan' }, handleRealtimeEvent)
+                    .subscribe((status) => {
+                        if (status === 'SUBSCRIBED') {
+                            document.getElementById('realtimeStatus').style.display = 'flex';
+                        }
+                    });
+            }
 
             /* =================================================
                2. TẢI VÀ GỘP DỮ LIỆU TỪ CẢ 2 BẢNG (BUFFER)
@@ -364,17 +412,15 @@
 
                     currentAssignmentsData = [];
 
-                    // Nạp dữ liệu Chính thức vào mảng hiển thị
                     if (pcData) {
                         pcData.filter(a => String(a['ma-lop']).trim() === maLopClean).forEach(pc => {
                             pc.isOfficial = true;
-                            pc._proposalId = pc['id-de-xuat']; // Quan trọng: Liên kết
+                            pc._proposalId = pc['id-de-xuat']; 
                             pc.trangThaiDisplay = "Chính thức";
                             currentAssignmentsData.push(pc);
                         });
                     }
 
-                    // Nạp dữ liệu Đề xuất (Chỉ lấy những cái chưa duyệt)
                     if (dxData) {
                         dxData.filter(a => String(a['ma-lop']).trim() === maLopClean && a['trang-thai'] !== 'Đã duyệt').forEach(dx => {
                             dx.isOfficial = false;
@@ -495,7 +541,7 @@
             };
 
             /* =================================================
-               4. RENDER BẢNG: KẾT HỢP CHÍNH THỨC VÀ ĐỀ XUẤT
+               4. RENDER BẢNG
             ================================================= */
             function renderModulesTable() {
                 modulesTableBody.innerHTML = ""; const filterVal = specSelect.value;
@@ -660,15 +706,18 @@
 
             async function reloadAndFocus(maHpRaw) {
                 await loadClassData(true); 
+                // Do thao tác Realtime sẽ vẽ lại bảng, tránh scroll nhảy liên tục nếu tự mình bấm
                 const rowId = `row-${btoa(maHpRaw).replace(/=/g, '')}`;
                 const targetRow = document.getElementById(rowId);
                 if (targetRow) {
-                    targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     targetRow.classList.add('highlight-row');
                     setTimeout(() => targetRow.classList.remove('highlight-row'), 1500);
                 }
             }
 
+            /* =================================================
+               5. SỰ KIỆN CHỌN ĐỐI TƯỢNG TRONG MODAL
+            ================================================= */
             targetTypeSelect.addEventListener('change', () => {
                 const val = targetTypeSelect.value;
                 groupTargetDiv.style.display = 'none';
@@ -727,6 +776,10 @@
                 }
             });
 
+            /* =================================================
+               6. GIAO THỨC DUYỆT / SỬA / XÓA ĐỒNG BỘ
+            ================================================= */
+            
             // Hủy Yêu cầu Xóa
             window.cancelDeleteProposal = async function(assignId) {
                 if (!confirm("Bạn muốn hủy yêu cầu xóa và khôi phục phân công chính thức này?")) return;
@@ -740,7 +793,7 @@
                 } catch (err) { window.showToast("Lỗi: " + err.message, true); }
             };
 
-            // Nút Duyệt Chính (Cập nhật Logic đồng bộ bằng cột id-de-xuat)
+            // Nút Duyệt Chính
             window.approveAssignment = async function(assignId) {
                 const proposal = currentAssignmentsData.find(a => !a.isOfficial && String(a._proposalId) === String(assignId));
                 if (!proposal) return;
@@ -802,9 +855,7 @@
                         window.showToast("Đã duyệt và đồng bộ phân công thành công!");
                         reloadAndFocus(maHp);
                     }
-                } catch (err) {
-                    window.showToast("Lỗi khi duyệt: " + err.message, true);
-                }
+                } catch (err) { window.showToast("Lỗi khi duyệt: " + err.message, true); }
             };
 
             window.deleteAssignment = async function(assignId, isOfficialParam) {
@@ -881,8 +932,7 @@
 
             window.editAssignment = function(assignId, isOfficialParam) {
                 if (isOfficialParam && (!assignId || assignId === 'null' || assignId === 'undefined')) {
-                    window.showToast("Phân công này thiếu liên kết (id-de-xuat) nên không thể sửa bằng quy trình Đề xuất. Bạn cần thao tác trên CSDL.", true);
-                    return;
+                    window.showToast("Lỗi dữ liệu: Phân công này thiếu liên kết (id-de-xuat).", true); return;
                 }
 
                 const assignment = currentAssignmentsData.find(a => a.isOfficial === isOfficialParam && String(a._proposalId) === String(assignId));
