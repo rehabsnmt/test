@@ -116,7 +116,6 @@
                 </div>
             </div>
 
-            <!-- BẢNG THỐNG KÊ -->
             <div id="summaryCard" class="summary-card">
                 <h3 style="margin-bottom: 0.8rem; font-size: 1rem;"><i class="fas fa-chart-pie" style="color:var(--primary); margin-right:5px;"></i> Tổng quan Tín chỉ</h3>
                 
@@ -254,7 +253,7 @@
                 toast.innerHTML = `<i class="${iconClass}" style="color: ${iconColor};"></i><span>${message}</span>`;
                 container.appendChild(toast);
                 requestAnimationFrame(() => toast.classList.add("show"));
-                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 4000);
+                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
             };
 
             function escapeHtml(value) {
@@ -266,7 +265,6 @@
             let currentSelectedClass = null, currentSelectedModule = null; 
             let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {}; 
             let editingAssignmentId = null;
-            let isEditingOfficial = false;
 
             const classSelect = document.getElementById("classSelect"), specSelect = document.getElementById("specSelect");
             const curriculumInfo = document.getElementById("curriculumInfo"), curriculumNameText = document.getElementById("curriculumNameText");
@@ -320,9 +318,6 @@
 
             classSelect.addEventListener("change", () => { specSelect.value = ""; summaryCard.style.display = "none"; loadClassData(false); });
 
-            /* =================================================
-               2. TẢI VÀ GỘP DỮ LIỆU TỪ CẢ 2 BẢNG (BUFFER)
-            ================================================= */
             async function loadClassData(isSilentReload = false) {
                 const maLop = classSelect.value;
                 if (!maLop) {
@@ -344,27 +339,27 @@
                     if (curError) throw curError;
                     currentCurriculumData = curriculumData || [];
 
-                    // 1. Tải bảng Chính thức (phan-cong-giang-day)
+                    // 1. Tải bảng Chính thức
                     const { data: pcData, error: pcError } = await supabase.from('phan-cong-giang-day').select('*');
                     if (pcError) throw pcError;
 
-                    // 2. Tải bảng Đệm/Đề xuất (de-xuat-phan-cong)
+                    // 2. Tải bảng Đề xuất
                     const { data: dxData, error: dxError } = await supabase.from('de-xuat-phan-cong').select('*');
                     if (dxError) throw dxError;
 
                     currentAssignmentsData = [];
 
-                    // Nạp dữ liệu Chính thức vào mảng hiển thị
+                    // Nạp Chính thức (để hiện, tính tiến độ, và Sửa/Xóa)
                     if (pcData) {
                         pcData.filter(a => String(a['ma-lop']).trim() === maLopClean).forEach(pc => {
                             pc.isOfficial = true;
-                            pc._proposalId = pc['id-de-xuat']; // Quan trọng: Liên kết
+                            pc._proposalId = pc['id-de-xuat']; // Sợi dây liên kết
                             pc.trangThaiDisplay = "Chính thức";
                             currentAssignmentsData.push(pc);
                         });
                     }
 
-                    // Nạp dữ liệu Đề xuất (Chỉ lấy những cái chưa duyệt)
+                    // Nạp Đề xuất (Chỉ hiển thị những dòng Chờ duyệt hoặc Chờ xóa)
                     if (dxData) {
                         dxData.filter(a => String(a['ma-lop']).trim() === maLopClean && a['trang-thai'] !== 'Đã duyệt').forEach(dx => {
                             dx.isOfficial = false;
@@ -374,7 +369,6 @@
                         });
                     }
 
-                    // Các dữ liệu khác...
                     const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('*');
                     if (semesterError && !semesterError.message.includes("does not exist")) throw semesterError;
                     currentModuleSemesters = {};
@@ -403,6 +397,7 @@
                 specSelect.innerHTML = `<option value="">-- Tất cả chuyên ngành --</option>`;
                 specs.forEach(sp => { const option = document.createElement("option"); option.value = sp; option.textContent = sp; specSelect.appendChild(option); });
                 specSelect.disabled = false;
+                
                 if (currentVal && Array.from(specSelect.options).some(opt => opt.value === currentVal)) specSelect.value = currentVal;
             }
 
@@ -486,7 +481,7 @@
             };
 
             /* =================================================
-               4. RENDER BẢNG: KẾT HỢP CHÍNH THỨC VÀ ĐỀ XUẤT
+               4. RENDER BẢNG (KẾT HỢP CHÍNH THỨC & ĐỀ XUẤT CHỜ DUYỆT)
             ================================================= */
             function renderModulesTable() {
                 modulesTableBody.innerHTML = ""; const filterVal = specSelect.value;
@@ -517,18 +512,16 @@
 
                         const moduleAssignments = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === rawMaHp);
                         
-                        let assignedLT = 0, assignedTH = 0, assignListHtml = `<span class="text-muted" style="font-style:italic;">Chưa có phân công/đề xuất</span>`;
+                        let assignedLT = 0, assignedTH = 0, assignListHtml = `<span class="text-muted" style="font-style:italic;">Chưa có phân công</span>`;
                         
                         if (moduleAssignments.length > 0) {
                             assignListHtml = `<ul class="assignment-list-inline">`;
-                            
-                            // Lặp qua tất cả (Chính thức + Đề xuất)
                             moduleAssignments.forEach(a => {
                                 const isOfficial = a.isOfficial;
                                 const trangThai = a.trangThaiDisplay;
                                 const assignId = a._proposalId; 
                                 
-                                // Tiến độ CHỈ CỘNG những cái Chính thức (tránh dội số liệu khi đang chờ duyệt)
+                                // CHỈ TÍNH TIẾN ĐỘ DỰA TRÊN BẢN CHÍNH THỨC
                                 if (isOfficial) {
                                     assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0;
                                     assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0;
@@ -544,36 +537,30 @@
                                 let noteHtml = "";
                                 if (aNote) { noteHtml = `<div style="font-size: 0.75rem; color: #d97706; margin-top: 2px;"><i class="fas fa-sticky-note"></i> Ghi chú: ${aNote}</div>`; }
 
-                                // 1. Render Badge
                                 let badgeHtml = "";
-                                if (trangThai === "Chính thức") {
-                                    badgeHtml = `<span class="badge official">Chính thức</span>`;
-                                } else if (trangThai === "Chờ xóa") {
-                                    badgeHtml = `<span class="badge pending-delete">Chờ xóa</span>`;
-                                } else {
-                                    badgeHtml = `<span class="badge pending">Chờ duyệt</span>`;
-                                }
+                                if (trangThai === "Chính thức") badgeHtml = `<span class="badge official">Chính thức</span>`;
+                                else if (trangThai === "Chờ xóa") badgeHtml = `<span class="badge pending-delete">Chờ xóa</span>`;
+                                else badgeHtml = `<span class="badge pending">Chờ duyệt</span>`;
 
-                                // 2. Render Nút Thao tác
+                                // Logic Hiển thị Nút (Bảo vệ dữ liệu chính thức khỏi bị đè khi đang chờ duyệt)
                                 let actionButtons = "";
-                                // Kiểm tra xem bản Chính thức này có đang nằm trong 1 Đề xuất chờ nào khác không?
                                 const hasPending = isOfficial && moduleAssignments.some(other => !other.isOfficial && String(other._proposalId) === String(assignId));
 
                                 if (isOfficial) {
                                     if (hasPending) {
-                                        actionButtons = `<span style="font-size: 0.7rem; color: #f59e0b; font-style: italic;">Đang có đề xuất thay đổi...</span>`;
+                                        actionButtons = `<span style="font-size: 0.7rem; color: #f59e0b; font-style: italic;">Đang chờ duyệt sửa/xóa...</span>`;
                                     } else {
-                                        actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Tạo Đề xuất)"><i class="fas fa-pen"></i></button>`;
-                                        actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Tạo Đề xuất Xóa)"><i class="fas fa-trash-alt"></i></button>`;
+                                        actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Sẽ đưa vào hàng đợi Chờ duyệt)"><i class="fas fa-pen"></i></button>`;
+                                        actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Sẽ đưa vào hàng đợi Chờ xóa)"><i class="fas fa-trash-alt"></i></button>`;
                                     }
                                 } else {
                                     if (trangThai === "Chờ xóa") {
-                                        actionButtons += `<button class="btn-action-assign approve-delete" onclick="approveAssignment('${assignId}')" title="Duyệt Xóa (Xóa khỏi Phân công)">Duyệt Xóa</button>`;
+                                        actionButtons += `<button class="btn-action-assign approve-delete" onclick="approveAssignment('${assignId}')" title="Duyệt Xóa (Xóa mất hoàn toàn)">Duyệt Xóa</button>`;
                                         actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')" title="Hủy yêu cầu xóa"><i class="fas fa-undo"></i> Hủy</button>`;
                                     } else { // Chờ duyệt
-                                        actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')" title="Duyệt và Cập nhật sang bảng Chính thức">Duyệt</button>`;
-                                        actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)" title="Sửa Đề xuất"><i class="fas fa-pen"></i></button>`;
-                                        actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)" title="Hủy Đề xuất này"><i class="fas fa-times"></i></button>`;
+                                        actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')" title="Duyệt (Cập nhật sang bảng Chính thức)">Duyệt</button>`;
+                                        actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)" title="Sửa lại Đề xuất này"><i class="fas fa-pen"></i></button>`;
+                                        actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)" title="Xóa/Hủy đề xuất này"><i class="fas fa-times"></i></button>`;
                                     }
                                 }
 
@@ -652,6 +639,7 @@
                 }
             }
 
+            // Reload ngầm màn hình không load lại trang
             async function reloadAndFocus(maHpRaw) {
                 await loadClassData(true); 
                 const rowId = `row-${btoa(maHpRaw).replace(/=/g, '')}`;
@@ -730,7 +718,7 @@
             
             // Hủy Yêu cầu Xóa
             window.cancelDeleteProposal = async function(assignId) {
-                if (!confirm("Bạn muốn hủy yêu cầu xóa và giữ lại phân công này?")) return;
+                if (!confirm("Bạn muốn hủy yêu cầu xóa và khôi phục phân công chính thức này?")) return;
                 const assignment = currentAssignmentsData.find(a => !a.isOfficial && String(a._proposalId) === String(assignId));
                 if (!assignment) return;
                 try {
@@ -741,7 +729,7 @@
                 } catch (err) { window.showToast("Lỗi: " + err.message, true); }
             };
 
-            // Nút Duyệt Chính (Cập nhật Logic đồng bộ bằng cột id-de-xuat)
+            // Nút Duyệt Chính (Đồng bộ bằng id-de-xuat)
             window.approveAssignment = async function(assignId) {
                 const proposal = currentAssignmentsData.find(a => !a.isOfficial && String(a._proposalId) === String(assignId));
                 if (!proposal) return;
@@ -803,36 +791,48 @@
                         window.showToast("Đã duyệt và đồng bộ phân công thành công!");
                         reloadAndFocus(maHp);
                     }
-                } catch (err) {
-                    window.showToast("Lỗi khi duyệt: " + err.message, true);
-                }
+                } catch (err) { window.showToast("Lỗi khi duyệt: " + err.message, true); }
             };
 
-            window.deleteAssignment = async function(assignId, isOfficial) {
-                if (isOfficial && (!assignId || assignId === 'null' || assignId === 'undefined')) {
-                    window.showToast("Phân công này quá cũ và thiếu liên kết (id-de-xuat). Vui lòng thao tác trên bảng CSDL.", true);
-                    return;
-                }
-
-                const assignment = currentAssignmentsData.find(a => a.isOfficial === isOfficial && String(a._proposalId) === String(assignId));
-                if (!assignment) return;
+            // Bảo vệ Dữ liệu: Hoàn tác nếu hủy thay đổi, tạo yêu cầu chờ xóa nếu xóa bản chính thức
+            window.deleteAssignment = async function(assignId, isOfficialParam) {
+                const assignIdStr = String(assignId);
+                const hasOfficial = currentAssignmentsData.some(a => a.isOfficial && String(a._proposalId) === assignIdStr);
+                const targetRecord = currentAssignmentsData.find(a => a.isOfficial === isOfficialParam && String(a._proposalId) === assignIdStr);
+                if (!targetRecord) return;
                 
-                const maHp = String(assignment["ma-hoc-phan"]).trim();
+                const maHp = String(targetRecord["ma-hoc-phan"]).trim();
 
                 try {
-                    if (isOfficial) {
+                    const supabase = window.supabaseClient;
+                    if (isOfficialParam) {
                         if (!confirm("Bạn muốn ĐỀ XUẤT XÓA phân công chính thức này? Yêu cầu sẽ được đưa vào hàng đợi duyệt.")) return;
-                        const { error } = await window.supabaseClient.from('de-xuat-phan-cong').update({ "trang-thai": "Chờ xóa" }).eq('id', assignId);
+                        const { error } = await supabase.from('de-xuat-phan-cong').update({ "trang-thai": "Chờ xóa" }).eq('id', assignId);
                         if (error) throw error;
                         window.showToast("Đã gửi đề xuất xóa!");
-                        reloadAndFocus(maHp);
                     } else {
-                        if (!confirm("Bạn có chắc chắn muốn hủy/xóa vĩnh viễn đề xuất này không?")) return;
-                        const { error } = await window.supabaseClient.from('de-xuat-phan-cong').delete().eq('id', assignId);
-                        if (error) throw error;
-                        window.showToast("Đã hủy đề xuất!"); 
-                        reloadAndFocus(maHp);
+                        const trangThai = targetRecord["trang-thai"] || "Chờ duyệt";
+                        if (trangThai === "Chờ duyệt") {
+                            if (hasOfficial) {
+                                if (!confirm("Đây là bản đề xuất chỉnh sửa. Bạn có muốn HỦY thay đổi và hoàn tác về bản Chính thức không?")) return;
+                                const pc = currentAssignmentsData.find(a => a.isOfficial && String(a._proposalId) === assignIdStr);
+                                const revertPayload = {
+                                    "ma-giang-vien": pc["ma-giang-vien"], "so-buoi-ly-thuyet": pc["so-buoi-ly-thuyet"], "so-buoi-thuc-hanh": pc["so-buoi-thuc-hanh"],
+                                    "ghi-chu": pc["ghi-chu"], "doi-tuong": pc["doi-tuong"], "loai-nhom": pc["loai-nhom"], "ten-nhom": pc["ten-nhom"],
+                                    "ma-hoc-vien": pc["ma-hoc-vien"], "ho-ten": pc["ho-ten"], "trang-thai": "Đã duyệt"
+                                };
+                                const { error } = await supabase.from('de-xuat-phan-cong').update(revertPayload).eq('id', assignId);
+                                if (error) throw error;
+                                window.showToast("Đã hủy thay đổi, khôi phục bản chính thức!");
+                            } else {
+                                if (!confirm("Bạn có chắc chắn muốn xóa vĩnh viễn đề xuất mới này?")) return;
+                                const { error } = await supabase.from('de-xuat-phan-cong').delete().eq('id', assignId);
+                                if (error) throw error;
+                                window.showToast("Đã xóa đề xuất!"); 
+                            }
+                        }
                     }
+                    reloadAndFocus(maHp);
                 } catch (err) { window.showToast("Lỗi xóa dữ liệu: " + err.message, true); }
             };
 
@@ -840,7 +840,6 @@
                 if (!currentSelectedClass) return;
                 const maHp = String(maHpRaw).trim();
                 editingAssignmentId = null;
-                isEditingOfficial = false;
                 currentSelectedModule = { maHp, tenHp, khLT, khTH };
                 
                 document.getElementById("modalTitle").textContent = "Thêm Đề xuất Mới";
@@ -848,7 +847,6 @@
                 instructorSelect.value = ""; assignNote.value = "";
                 targetTypeSelect.value = "ca-lop"; targetTypeSelect.dispatchEvent(new Event('change'));
 
-                // Tính toán số buổi còn lại DỰA TRÊN CÁC BẢN GHI CHÍNH THỨC
                 const officialAssigns = currentAssignmentsData.filter(a => a.isOfficial && String(a["ma-hoc-phan"]).trim() === maHp);
                 let assignedLT = 0, assignedTH = 0;
                 officialAssigns.forEach(a => { assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0; assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0; });
@@ -865,8 +863,7 @@
 
             window.editAssignment = function(assignId, isOfficialParam) {
                 if (isOfficialParam && (!assignId || assignId === 'null' || assignId === 'undefined')) {
-                    window.showToast("Phân công này thiếu liên kết (id-de-xuat) nên không thể sửa bằng quy trình Đề xuất. Bạn cần thao tác trên CSDL.", true);
-                    return;
+                    window.showToast("Lỗi dữ liệu: Phân công này thiếu liên kết (id-de-xuat).", true); return;
                 }
 
                 const assignment = currentAssignmentsData.find(a => a.isOfficial === isOfficialParam && String(a._proposalId) === String(assignId));
@@ -877,7 +874,6 @@
                 if(!mod) return;
 
                 editingAssignmentId = assignId;
-                isEditingOfficial = isOfficialParam; // Ghi nhớ cờ này để update lúc Submit
                 currentSelectedModule = { maHp, tenHp: mod["ten-hoc-phan"], khLT: parseInt(mod["so-buoi-ly-thuyet"]) || 0, khTH: parseInt(mod["so-buoi-thuc-hanh"]) || 0 };
 
                 document.getElementById("modalTitle").textContent = "Chỉnh sửa Đề xuất";
@@ -953,21 +949,19 @@
                     const payload = {
                         "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th, "ghi-chu": note,
                         "doi-tuong": doiTuong, "loai-nhom": loaiNhom, "ten-nhom": tenNhom, "ma-hoc-vien": maHv, "ho-ten": hoTenHv,
-                        "trang-thai": "Chờ duyệt" // Luôn đưa về trạng thái chờ duyệt
+                        "trang-thai": "Chờ duyệt" 
                     };
 
                     if (editingAssignmentId) {
-                        // Cập nhật đè lên bảng đề xuất
                         const { error } = await supabase.from('de-xuat-phan-cong').update(payload).eq('id', editingAssignmentId);
                         if (error) throw error;
-                        window.showToast("Cập nhật đề xuất thành công!");
+                        window.showToast("Đã lưu đề xuất thay đổi!");
                     } else {
-                        // Thêm đề xuất mới tinh
                         payload["ma-lop"] = currentSelectedClass["ma-lop"];
                         payload["ma-hoc-phan"] = currentSelectedModule.maHp;
                         const { error } = await supabase.from('de-xuat-phan-cong').insert([payload]);
                         if (error) throw error;
-                        window.showToast("Đã thêm đề xuất thành công!");
+                        window.showToast("Đã thêm đề xuất mới!");
                     }
                     closeModal(); reloadAndFocus(savedMaHp);
                 } catch (error) { window.showToast("Lỗi: " + error.message, true);
