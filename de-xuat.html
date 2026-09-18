@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Quản lý Đề xuất phân công - Bộ môn Phục hồi chức năng.">
+
+    <meta http-equiv="Content-Security-Policy" content="
+            default-src 'self';
+            connect-src 'self' https://*.supabase.co;
+            img-src 'self' data: https://*.supabase.co;
+            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+            script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+            font-src 'self' https://cdnjs.cloudflare.com;
+        ">
+
+    <title>Đề xuất Phân công - Bộ môn Phục hồi chức năng</title>
+
+    <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* =========================================
+           ÉP BUỘC GIAO DIỆN FULL MÀN HÌNH
+        ========================================= */
+        main { max-width: 100% !important; padding: 1rem 2% 2rem !important; }
+        .container { max-width: 100% !important; padding: 0 !important; }
+        #modulesTable th, #modulesTable td { padding: 0.5rem 0.4rem; font-size: 0.82rem; vertical-align: middle; white-space: normal !important; overflow-wrap: break-word; line-height: 1.4; }
+
+        /* =========================================
+           CÁC STYLE CƠ BẢN
+        ========================================= */
+        .filter-section { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 0.5rem; flex-wrap: wrap; }
+        .filter-section .form-group { margin-bottom: 0; flex: 1; min-width: 200px; }
+        .modal-overlay { z-index: 9999; }
+        .hk-select { padding: 4px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-page); font-size: 0.8rem; width: 100%; cursor: pointer; transition: var(--transition); }
+        .hk-select:focus { border-color: var(--primary); outline: none; }
+
+        /* Thanh tiến độ bảng */
+        .progress-wrapper { display: flex; align-items: center; gap: 5px; margin-top: 3px; }
+        .progress-container { flex: 1; background-color: var(--border); border-radius: var(--radius-pill); height: 6px; overflow: hidden; margin: 0; }
+        .progress-bar { height: 100%; background-color: var(--primary); transition: width 0.3s ease; }
+        .progress-bar.complete { background-color: #16a34a; } 
+        .progress-bar.over { background-color: var(--accent); } 
+
+        /* Danh sách GV & Nút Thao tác */
+        .assignment-list-inline { list-style: none; padding: 0; margin: 0; font-size: 0.8rem; text-align: left; }
+        .assignment-list-inline li { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-light); }
+        .assignment-list-inline li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .action-group { display: flex; gap: 4px; flex-shrink: 0; }
+        .btn-action-assign { background: none; border: none; cursor: pointer; padding: 3px 5px; border-radius: 4px; transition: all 0.2s ease; font-size: 0.85rem; }
+        .btn-action-assign.edit { color: #0284c7; }
+        .btn-action-assign.edit:hover { background: #e0f2fe; color: #0369a1; }
+        .btn-action-assign.delete { color: #ef4444; }
+        .btn-action-assign.delete:hover { background: #fee2e2; color: #b91c1c; }
+
+        /* =========================================
+           THỐNG KÊ TÍN CHỈ
+        ========================================= */
+        .summary-card { background: var(--surface); border: 1px solid var(--primary-light); border-radius: var(--radius-md); padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); display: none; }
+        .hk-bar-container { display: flex; align-items: center; margin-bottom: 8px; }
+        .hk-bar-label { width: 70px; font-size: 0.85rem; font-weight: 600; color: var(--text-dark); }
+        .hk-bar-track { flex: 1; background: var(--border-light); height: 14px; border-radius: 8px; margin: 0 10px; overflow: hidden; }
+        .hk-bar-fill { background: var(--primary); height: 100%; border-radius: 8px; transition: width 0.5s ease; }
+        .hk-bar-value { width: 45px; font-size: 0.85rem; font-weight: bold; color: var(--primary); text-align: right; }
+        
+        .highlight-row { background-color: var(--primary-light) !important; transition: background-color 0.5s ease; }
+    </style>
+</head>
+
+<body>
+
+    <div id="header-placeholder"></div>
+    <div id="toastContainer" class="toast-container"></div>
+
+    <main style="opacity: 0; transition: opacity 0.3s ease;">
+        
+        <div class="section-title" style="margin-top: 0; margin-bottom: 1rem;">
+            <h1 style="font-size: 1.3rem;">Đề xuất Phân công</h1>
+        </div>
+
+        <div class="container">
+            <div class="card" style="margin-bottom: 1rem; padding: 1rem 1.5rem;">
+                <div class="filter-section">
+                    <div class="form-group">
+                        <label for="classSelect">1. Chọn Lớp học</label>
+                        <select id="classSelect">
+                            <option value="">-- Đang tải danh sách lớp --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="specSelect">2. Lọc Chuyên ngành (Xem Tín chỉ)</label>
+                        <select id="specSelect" disabled>
+                            <option value="">-- Tất cả chuyên ngành --</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="curriculumInfo" style="margin-top: 5px; font-size: 0.8rem; color: var(--text-muted); display: none;">
+                    CTĐT: <strong id="curriculumNameText">...</strong>
+                </div>
+            </div>
+
+            <!-- BẢNG THỐNG KÊ -->
+            <div id="summaryCard" class="summary-card">
+                <h3 style="margin-bottom: 0.8rem; font-size: 1rem;"><i class="fas fa-chart-pie" style="color:var(--primary); margin-right:5px;"></i> Tổng quan Tín chỉ</h3>
+                
+                <div id="specTotalsDiv" style="margin-bottom: 1rem; font-size: 0.8rem; display: flex; flex-wrap: wrap; gap: 8px;">
+                    <!-- Render by JS -->
+                </div>
+
+                <div id="hkBreakdownDiv" style="display: none; border-top: 1px dashed var(--border); padding-top: 1rem;">
+                    <h4 style="margin-bottom: 0.2rem; font-size: 0.9rem;">Phân bổ 4 Học kỳ: <span id="summaryMajorName" style="color: var(--primary);"></span></h4>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">* Đã cộng gộp học phần nhóm <strong>"Chung"</strong>.</p>
+                    
+                    <div id="hkBarsContainer">
+                        <div class="hk-bar-container">
+                            <div class="hk-bar-label">Học kỳ 1</div>
+                            <div class="hk-bar-track"><div id="bar-hk1" class="hk-bar-fill" style="width: 0%;"></div></div>
+                            <div class="hk-bar-value" id="val-hk1">0 TC</div>
+                        </div>
+                        <div class="hk-bar-container">
+                            <div class="hk-bar-label">Học kỳ 2</div>
+                            <div class="hk-bar-track"><div id="bar-hk2" class="hk-bar-fill" style="width: 0%;"></div></div>
+                            <div class="hk-bar-value" id="val-hk2">0 TC</div>
+                        </div>
+                        <div class="hk-bar-container">
+                            <div class="hk-bar-label">Học kỳ 3</div>
+                            <div class="hk-bar-track"><div id="bar-hk3" class="hk-bar-fill" style="width: 0%;"></div></div>
+                            <div class="hk-bar-value" id="val-hk3">0 TC</div>
+                        </div>
+                        <div class="hk-bar-container">
+                            <div class="hk-bar-label">Học kỳ 4</div>
+                            <div class="hk-bar-track"><div id="bar-hk4" class="hk-bar-fill" style="width: 0%;"></div></div>
+                            <div class="hk-bar-value" id="val-hk4">0 TC</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="hkBreakdownEmpty" style="font-size: 0.8rem; color: var(--text-muted); font-style: italic; border-top: 1px dashed var(--border); padding-top: 0.8rem;">
+                    Vui lòng chọn 1 chuyên ngành ở bộ lọc để xem chi tiết phân bổ theo từng học kỳ.
+                </div>
+            </div>
+
+            <div class="card" style="padding: 1rem;">
+                <div class="table-responsive" style="margin-top: 0; overflow-x: auto;">
+                    <table id="modulesTable" style="table-layout: fixed; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th style="width: 35px; text-align: center;">STT</th>
+                                <th style="width: 28%;">Học phần</th>
+                                <th style="width: 75px;">Học kỳ</th>
+                                <th style="width: 140px;">Tiến độ</th>
+                                <th style="width: auto;">Chi tiết Đề xuất</th>
+                                <th style="width: 80px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modulesTableBody">
+                            <tr><td colspan="6" class="text-center">Vui lòng chọn lớp học để xem chương trình.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL ĐỀ XUẤT -->
+    <div id="assignModal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 500px; text-align: left; padding: 1.5rem;">
+            <button class="modal-close" id="btnCloseModal" aria-label="Đóng"><i class="fas fa-times"></i></button>
+            <h3 id="modalTitle" style="margin-bottom: 0.5rem; text-align: center; font-size: 1.2rem;">Đề xuất Giảng viên</h3>
+            <p id="modalModuleInfo" style="text-align: center; color: var(--primary); font-weight: 600; font-size: 0.9rem; margin-bottom: 1.2rem;"></p>
+
+            <form id="assignForm">
+                <div class="form-group">
+                    <label for="instructorSelect">Chọn Giảng viên <span class="text-danger">*</span></label>
+                    <select id="instructorSelect" required>
+                        <option value="">-- Đang tải giảng viên --</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="targetTypeSelect">Đối tượng giảng dạy</label>
+                    <select id="targetTypeSelect" style="border-color: var(--primary);">
+                        <option value="ca-lop">Cả lớp</option>
+                        <option value="nhom">Nhóm học viên</option>
+                        <option value="ca-nhan">Từng học viên</option>
+                    </select>
+                </div>
+
+                <div id="groupTargetDiv" style="display: none; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
+                    <div style="display: flex; gap: 1rem;">
+                        <div class="form-group" style="flex: 1; margin: 0;">
+                            <label for="groupTypeSelect" style="font-size: 0.8rem;">Loại nhóm <span class="text-danger">*</span></label>
+                            <select id="groupTypeSelect"><option value="">- Loại -</option></select>
+                        </div>
+                        <div class="form-group" style="flex: 1; margin: 0;">
+                            <label for="groupNameSelect" style="font-size: 0.8rem;">Tên nhóm <span class="text-danger">*</span></label>
+                            <select id="groupNameSelect"><option value="">- Tên -</option></select>
+                        </div>
+                    </div>
+                    <div id="groupMembersDiv" style="margin-top: 5px; font-size: 0.8rem; display: none;">
+                        <strong style="color: var(--text-dark);">Danh sách học viên nhóm:</strong>
+                        <ul id="groupMembersList" style="margin: 5px 0 0 0; padding-left: 20px; color: var(--text-muted); max-height: 100px; overflow-y: auto;">
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="studentTargetDiv" style="display: none; margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
+                    <div class="form-group" style="margin: 0;">
+                        <label for="studentSelect" style="font-size: 0.8rem;">Chọn Học viên <span class="text-danger">*</span></label>
+                        <select id="studentSelect"><option value="">- Học viên -</option></select>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="theorySessions">Lý thuyết (LT) <span class="text-danger">*</span></label>
+                        <input type="number" id="theorySessions" min="0" value="0" required>
+                        <small id="hintLT" class="text-muted" style="display: block; margin-top: 4px; font-weight: 600; color: var(--primary);">Còn lại: 0</small>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="practiceSessions">Thực hành (TH) <span class="text-danger">*</span></label>
+                        <input type="number" id="practiceSessions" min="0" value="0" required>
+                        <small id="hintTH" class="text-muted" style="display: block; margin-top: 4px; font-weight: 600; color: var(--primary);">Còn lại: 0</small>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="assignNote">Ghi chú (Tùy chọn)</label>
+                    <textarea id="assignNote" rows="2" placeholder="Ghi chú đề xuất..." style="width: 100%; max-width: 100%;"></textarea>
+                </div>
+
+                <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn-warning" id="btnCancelModal" style="color: #fff; background: var(--text-muted); padding: 8px 12px;">Hủy</button>
+                    <button type="submit" class="btn-primary" id="btnSaveAssignment" style="padding: 8px 12px;">
+                        <i class="fas fa-save"></i> Lưu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+    <script src="js/layout.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            window.showToast = function (message, isError = false) {
+                const container = document.getElementById("toastContainer");
+                if (!container) return;
+                const toast = document.createElement("div");
+                toast.className = "toast";
+                if (isError) toast.style.borderLeftColor = "var(--accent)";
+                const iconClass = isError ? "fas fa-exclamation-circle" : "fas fa-check-circle";
+                const iconColor = isError ? "var(--accent)" : "#16a34a";
+                toast.innerHTML = `<i class="${iconClass}" style="color: ${iconColor};"></i><span>${message}</span>`;
+                container.appendChild(toast);
+                requestAnimationFrame(() => toast.classList.add("show"));
+                setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
+            };
+
+            function escapeHtml(value) {
+                if (value == null) return "";
+                return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            }
+
+            let classesList = [], instructorsList = [], studentsList = [], groupsList = [];
+            let currentSelectedClass = null, currentSelectedModule = null; 
+            let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {}; 
+            let editingAssignmentId = null;
+
+            const classSelect = document.getElementById("classSelect"), specSelect = document.getElementById("specSelect");
+            const curriculumInfo = document.getElementById("curriculumInfo"), curriculumNameText = document.getElementById("curriculumNameText");
+            const modulesTableBody = document.getElementById("modulesTableBody");
+            
+            const summaryCard = document.getElementById("summaryCard");
+            const summaryMajorName = document.getElementById("summaryMajorName");
+            const specTotalsDiv = document.getElementById("specTotalsDiv");
+            const hkBreakdownDiv = document.getElementById("hkBreakdownDiv");
+            const hkBreakdownEmpty = document.getElementById("hkBreakdownEmpty");
+
+            const assignModal = document.getElementById("assignModal"), assignForm = document.getElementById("assignForm");
+            const instructorSelect = document.getElementById("instructorSelect"), theorySessions = document.getElementById("theorySessions"), practiceSessions = document.getElementById("practiceSessions");
+            const assignNote = document.getElementById("assignNote"), hintLT = document.getElementById("hintLT"), hintTH = document.getElementById("hintTH");
+            
+            const targetTypeSelect = document.getElementById("targetTypeSelect");
+            const groupTargetDiv = document.getElementById("groupTargetDiv"), groupTypeSelect = document.getElementById("groupTypeSelect"), groupNameSelect = document.getElementById("groupNameSelect");
+            const groupMembersDiv = document.getElementById("groupMembersDiv"), groupMembersList = document.getElementById("groupMembersList");
+            const studentTargetDiv = document.getElementById("studentTargetDiv"), studentSelect = document.getElementById("studentSelect");
+
+            const btnCloseModal = document.getElementById("btnCloseModal"), btnCancelModal = document.getElementById("btnCancelModal"), btnSaveAssignment = document.getElementById("btnSaveAssignment");
+
+            async function loadInitialData() {
+                try {
+                    const supabase = window.supabaseClient;
+                    const { data: classData, error: classError } = await supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh');
+                    if (classError) throw classError;
+                    classesList = classData || [];
+                    classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
+                    classesList.forEach(cls => {
+                        const option = document.createElement("option"); option.value = cls["ma-lop"]; 
+                        option.textContent = `${cls["ten-lop"]}`; 
+                        classSelect.appendChild(option);
+                    });
+
+                    const { data: instData, error: instError } = await supabase.from('giang-vien').select('ma-giang-vien, ho-ten').order('ho-ten', { ascending: true });
+                    if (instError) throw instError;
+                    instructorsList = instData || [];
+                    instructorSelect.innerHTML = `<option value="">-- Chọn Giảng viên --</option>`;
+                    instructorsList.forEach(inst => {
+                        const option = document.createElement("option"); option.value = inst["ma-giang-vien"]; 
+                        option.textContent = `${inst["ho-ten"]}`; 
+                        instructorSelect.appendChild(option);
+                    });
+                } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
+            }
+
+            function getInstructorName(maGv) {
+                const gv = instructorsList.find(i => i["ma-giang-vien"] === maGv); return gv ? gv["ho-ten"] : maGv;
+            }
+
+            classSelect.addEventListener("change", () => { specSelect.value = ""; summaryCard.style.display = "none"; loadClassData(false); });
+
+            async function loadClassData(isSilentReload = false) {
+                const maLop = classSelect.value;
+                if (!maLop) {
+                    currentSelectedClass = null; curriculumInfo.style.display = "none"; specSelect.disabled = true; specSelect.innerHTML = `<option value="">-- Tất cả chuyên ngành --</option>`;
+                    modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center">Vui lòng chọn lớp học.</td></tr>`; return;
+                }
+                
+                const maLopClean = String(maLop).trim();
+                currentSelectedClass = classesList.find(c => String(c["ma-lop"]).trim() === maLopClean);
+                const tableName = currentSelectedClass["chuong-trinh"];
+                if (!tableName) { window.showToast("Lớp học này chưa gán bảng chương trình.", true); return; }
+
+                curriculumNameText.textContent = tableName; curriculumInfo.style.display = "block";
+                
+                if (!isSilentReload) modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>`;
+
+                try {
+                    const supabase = window.supabaseClient;
+
+                    const { data: curriculumData, error: curError } = await supabase.from(tableName).select('*').order('stt', { ascending: true });
+                    if (curError) throw curError;
+                    currentCurriculumData = curriculumData || [];
+
+                    // ĐỔI BẢNG LƯU: de-xuat-phan-cong
+                    const { data: assignData, error: assignError } = await supabase.from('de-xuat-phan-cong').select('*');
+                    if (assignError) throw assignError;
+                    currentAssignmentsData = (assignData || []).filter(a => String(a['ma-lop']).trim() === maLopClean);
+
+                    const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('*');
+                    if (semesterError && !semesterError.message.includes("does not exist")) throw semesterError;
+                    
+                    currentModuleSemesters = {};
+                    if (semesterData) { 
+                        semesterData.filter(item => String(item['ma-lop']).trim() === maLopClean).forEach(item => { 
+                            if(item["ma-hoc-phan"]) currentModuleSemesters[String(item["ma-hoc-phan"]).trim()] = item["hoc-ky"]; 
+                        }); 
+                    }
+
+                    const { data: stdData } = await supabase.from('danh-sach-lop').select('*');
+                    studentsList = (stdData || []).filter(s => String(s['ma-lop'] || '').trim() === maLopClean);
+
+                    const { data: grpData } = await supabase.from('danh-sach-nhom').select('*');
+                    groupsList = (grpData || []).filter(g => String(g['ma-lop'] || '').trim() === maLopClean);
+
+                    updateSpecializationFilter();
+                    updateSummary(); 
+                    renderModulesTable();
+                } catch (error) { modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu. Bảng "${escapeHtml(tableName)}" có thể chưa tạo. Lỗi: ${escapeHtml(error.message || "")}</td></tr>`; }
+            }
+
+            function updateSpecializationFilter() {
+                const currentVal = specSelect.value;
+                const specs = new Set();
+                currentCurriculumData.forEach(mod => { const cn = String(mod["chuyen-nganh"] || "").trim(); if (cn && cn.toLowerCase() !== "chung") specs.add(cn); });
+                specSelect.innerHTML = `<option value="">-- Tất cả chuyên ngành --</option>`;
+                specs.forEach(sp => { const option = document.createElement("option"); option.value = sp; option.textContent = sp; specSelect.appendChild(option); });
+                specSelect.disabled = false;
+                
+                if (currentVal && Array.from(specSelect.options).some(opt => opt.value === currentVal)) specSelect.value = currentVal;
+            }
+
+            specSelect.addEventListener("change", () => { updateSummary(); renderModulesTable(); });
+
+            function updateSummary() {
+                if (currentCurriculumData.length === 0) {
+                    summaryCard.style.display = "none";
+                    return;
+                }
+                summaryCard.style.display = "block";
+
+                let chungCredits = 0;
+                const pureSpecTotals = {};
+                const specsList = new Set();
+
+                currentCurriculumData.forEach(mod => {
+                    const cn = String(mod["chuyen-nganh"] || "").trim();
+                    const tc = parseFloat(mod["tong-tin-chi"]) || 0;
+                    if (cn.toLowerCase() === "chung" || cn === "") {
+                        chungCredits += tc;
+                    } else {
+                        specsList.add(cn);
+                        if (!pureSpecTotals[cn]) pureSpecTotals[cn] = 0;
+                        pureSpecTotals[cn] += tc;
+                    }
+                });
+
+                specTotalsDiv.innerHTML = `<span style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; color: #334155;">Chung: <b>${chungCredits}</b> TC</span>`;
+                specsList.forEach(sp => {
+                    const total = (pureSpecTotals[sp] || 0) + chungCredits;
+                    specTotalsDiv.innerHTML += `<span style="background: var(--primary-light); color: var(--primary-hover); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--primary-light);">CN ${escapeHtml(sp)}: <b>${total}</b> TC</span>`;
+                });
+
+                const filterVal = specSelect.value;
+                if (!filterVal) { 
+                    hkBreakdownDiv.style.display = "none";
+                    hkBreakdownEmpty.style.display = "block";
+                    return; 
+                }
+
+                hkBreakdownDiv.style.display = "block";
+                hkBreakdownEmpty.style.display = "none";
+                summaryMajorName.textContent = filterVal;
+                let hkCredits = { 1: 0, 2: 0, 3: 0, 4: 0 };
+
+                currentCurriculumData.forEach(mod => {
+                    const cn = String(mod["chuyen-nganh"] || "").trim().toLowerCase();
+                    if (cn === filterVal.toLowerCase() || cn === "chung") {
+                        const rawMaHp = String(mod["ma-hoc-phan"] || "").trim();
+                        const hk = parseInt(currentModuleSemesters[rawMaHp]);
+                        const tc = parseFloat(mod["tong-tin-chi"]) || 0;
+                        if (hk >= 1 && hk <= 4) hkCredits[hk] += tc;
+                    }
+                });
+
+                const maxCredit = Math.max(hkCredits[1], hkCredits[2], hkCredits[3], hkCredits[4], 1); 
+                for(let i=1; i<=4; i++) {
+                    document.getElementById(`val-hk${i}`).textContent = hkCredits[i] + " TC";
+                    const percentage = (hkCredits[i] / maxCredit) * 100;
+                    document.getElementById(`bar-hk${i}`).style.width = percentage + "%";
+                }
+            }
+
+            window.updateSemester = async function(maHpRaw, newHk) {
+                try {
+                    const maLop = currentSelectedClass["ma-lop"]; const supabase = window.supabaseClient; const maHp = String(maHpRaw).trim(); 
+                    const { data: existingRecords, error: checkError } = await supabase.from('lop-hoc-phan').select('id').eq('ma-lop', maLop).eq('ma-hoc-phan', maHp);
+                    if (checkError) throw checkError;
+
+                    if (existingRecords && existingRecords.length > 0) {
+                        const recordId = existingRecords[0].id;
+                        if (newHk) await supabase.from('lop-hoc-phan').update({ 'hoc-ky': parseInt(newHk) }).eq('id', recordId);
+                        else await supabase.from('lop-hoc-phan').delete().eq('id', recordId);
+                    } else {
+                        if (newHk) await supabase.from('lop-hoc-phan').insert([{ "ma-lop": maLop, "ma-hoc-phan": maHp, "hoc-ky": parseInt(newHk) }]);
+                    }
+                    currentModuleSemesters[maHp] = newHk ? parseInt(newHk) : null;
+                    window.showToast("Cập nhật học kỳ thành công!"); updateSummary();
+                } catch (err) { window.showToast("Lỗi cập nhật bảng lop-hoc-phan: " + err.message, true); loadClassData(true); }
+            };
+
+            function renderModulesTable() {
+                modulesTableBody.innerHTML = ""; const filterVal = specSelect.value;
+                const filteredMods = currentCurriculumData.filter(mod => {
+                    if (!filterVal) return true;
+                    const cn = String(mod["chuyen-nganh"] || "").trim().toLowerCase(); return cn === filterVal.toLowerCase() || cn === "chung";
+                });
+
+                if (filteredMods.length === 0) { modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center">Không có dữ liệu.</td></tr>`; return; }
+
+                const groups = {};
+                filteredMods.forEach(mod => { const groupName = String(mod["nhom-hoc-phan"] || "Chưa phân nhóm").trim(); if (!groups[groupName]) groups[groupName] = []; groups[groupName].push(mod); });
+
+                for (const [groupName, mods] of Object.entries(groups)) {
+                    const groupTr = document.createElement("tr");
+                    groupTr.innerHTML = `<td colspan="6" class="text-left" style="background-color: var(--primary-light); color: var(--primary-hover); padding: 0.5rem 0.6rem;"><i class="fas fa-layer-group" style="margin-right: 5px;"></i> <strong>${escapeHtml(groupName)}</strong></td>`;
+                    modulesTableBody.appendChild(groupTr);
+
+                    mods.forEach(mod => {
+                        const rawMaHp = String(mod["ma-hoc-phan"] || "").trim();
+                        const tenHp = escapeHtml(mod["ten-hoc-phan"] || "");
+                        const tinChi = escapeHtml(mod["tong-tin-chi"] || "0");
+                        const hocKy = String(currentModuleSemesters[rawMaHp] || "");
+                        
+                        const khLT = parseInt(mod["so-buoi-ly-thuyet"]) || 0;
+                        const khTH = parseInt(mod["so-buoi-thuc-hanh"]) || 0;
+                        const khTong = khLT + khTH;
+
+                        const moduleAssignments = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === rawMaHp);
+                        
+                        let assignedLT = 0, assignedTH = 0, assignListHtml = `<span class="text-muted" style="font-style:italic;">Chưa có đề xuất</span>`;
+                        
+                        if (moduleAssignments.length > 0) {
+                            assignListHtml = `<ul class="assignment-list-inline">`;
+                            moduleAssignments.forEach(a => {
+                                const aLT = parseInt(a["so-buoi-ly-thuyet"]) || 0, aTH = parseInt(a["so-buoi-thuc-hanh"]) || 0, assignId = escapeHtml(a["id"] || "");
+                                const aNote = escapeHtml(a["ghi-chu"] || "");
+                                
+                                let targetText = "Cả lớp";
+                                if (a["doi-tuong"] === "nhom") targetText = `Nhóm: ${escapeHtml(a["ten-nhom"])} (${escapeHtml(a["loai-nhom"])})`;
+                                else if (a["doi-tuong"] === "ca-nhan") targetText = `HV: ${escapeHtml(a["ho-ten"])}`;
+
+                                assignedLT += aLT; assignedTH += aTH;
+
+                                let noteHtml = "";
+                                if (aNote) { noteHtml = `<div style="font-size: 0.75rem; color: #d97706; margin-top: 2px;"><i class="fas fa-sticky-note"></i> Ghi chú: ${aNote}</div>`; }
+
+                                assignListHtml += `
+                                    <li>
+                                        <div style="flex: 1; padding-right: 5px; line-height: 1.3;">
+                                            <i class="fas fa-user-tie" style="color:var(--primary); font-size:0.8rem;"></i> 
+                                            <strong>${escapeHtml(getInstructorName(a["ma-giang-vien"]))}</strong> 
+                                            <span class="text-muted" style="font-size:0.75rem; display:block; margin-left:18px;">
+                                                LT:${aLT} | TH:${aTH} | <span style="color:var(--accent); font-weight:500;">${targetText}</span>
+                                            </span>
+                                            ${noteHtml}
+                                        </div>
+                                        <div class="action-group">
+                                            <button class="btn-action-assign edit" onclick="editAssignment('${assignId}')" title="Sửa"><i class="fas fa-pen"></i></button>
+                                            <button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}')" title="Xóa"><i class="fas fa-trash-alt"></i></button>
+                                        </div>
+                                    </li>`;
+                            });
+                            assignListHtml += `</ul>`;
+                        }
+
+                        const assignedTong = assignedLT + assignedTH;
+                        let percent = 0; if (khTong > 0) percent = Math.round((assignedTong / khTong) * 100); else if (assignedTong > 0) percent = 100;
+                        let pColor = percent === 100 ? "complete" : (percent > 100 ? "over" : "");
+
+                        let btnAddState = "";
+                        if (assignedLT >= khLT && assignedTH >= khTH && khTong > 0) {
+                            btnAddState = `disabled style="background: var(--text-muted); cursor: not-allowed; padding: 5px; font-size: 0.8rem; width:100%; border:none; color:#fff;" title="Đã đề xuất đủ số buổi"`;
+                        } else {
+                            btnAddState = `class="btn-primary" style="padding: 5px; font-size: 0.8rem; width: 100%; border:none;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"`;
+                        }
+
+                        const nameHtml = `
+                            <div style="text-align: left; padding-right: 5px;">
+                                <strong style="color: var(--text-dark); font-size: 0.9rem;">${tenHp}</strong>
+                                <br>
+                                <span class="text-muted" style="font-size: 0.8rem;">${tinChi} TC | ${escapeHtml(mod["chuyen-nganh"] || "Chung")}</span>
+                            </div>
+                        `;
+
+                        const hkSelectHtml = `
+                            <select class="hk-select" onchange="updateSemester('${rawMaHp}', this.value)">
+                                <option value="">-</option>
+                                <option value="1" ${hocKy === '1' ? 'selected' : ''}>HK1</option>
+                                <option value="2" ${hocKy === '2' ? 'selected' : ''}>HK2</option>
+                                <option value="3" ${hocKy === '3' ? 'selected' : ''}>HK3</option>
+                                <option value="4" ${hocKy === '4' ? 'selected' : ''}>HK4</option>
+                            </select>
+                        `;
+
+                        const progressHtml = `
+                            <div style="font-size: 0.8rem; margin-bottom: 2px; text-align: left; line-height: 1.2;">
+                                <b>${assignedTong}/${khTong}</b> <span class="text-muted">(LT:${assignedLT}/${khLT} TH:${assignedTH}/${khTH})</span>
+                            </div>
+                            <div class="progress-wrapper">
+                                <div class="progress-container"><div class="progress-bar ${pColor}" style="width: ${Math.min(percent, 100)}%;"></div></div>
+                                <span style="font-size:0.75rem; font-weight:bold; color:var(--text-muted);">${percent}%</span>
+                            </div>
+                        `;
+
+                        const tr = document.createElement("tr");
+                        tr.id = `row-${btoa(rawMaHp).replace(/=/g, '')}`; 
+                        tr.innerHTML = `
+                            <td class="text-center">${escapeHtml(mod["stt"] || "")}</td>
+                            <td>${nameHtml}</td>
+                            <td>${hkSelectHtml}</td>
+                            <td>${progressHtml}</td>
+                            <td style="vertical-align: top;">${assignListHtml}</td>
+                            <td style="vertical-align: middle; text-align:center;">
+                                <button ${btnAddState}><i class="fas fa-plus"></i> Thêm</button>
+                            </td>
+                        `;
+                        modulesTableBody.appendChild(tr);
+                    });
+                }
+            }
+
+            async function reloadAndFocus(maHpRaw) {
+                await loadClassData(true); 
+                const rowId = `row-${btoa(maHpRaw).replace(/=/g, '')}`;
+                const targetRow = document.getElementById(rowId);
+                if (targetRow) {
+                    targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    targetRow.classList.add('highlight-row');
+                    setTimeout(() => targetRow.classList.remove('highlight-row'), 1500);
+                }
+            }
+
+            targetTypeSelect.addEventListener('change', () => {
+                const val = targetTypeSelect.value;
+                groupTargetDiv.style.display = 'none';
+                studentTargetDiv.style.display = 'none';
+                groupMembersDiv.style.display = "none";
+                groupMembersList.innerHTML = "";
+
+                if (val === 'nhom') {
+                    groupTargetDiv.style.display = 'flex';
+                    if(groupsList.length === 0) window.showToast("Lớp này chưa có dữ liệu danh sách nhóm.", true);
+                    populateGroupTypes();
+                } else if (val === 'ca-nhan') {
+                    studentTargetDiv.style.display = 'block';
+                    if(studentsList.length === 0) window.showToast("Lớp này chưa có dữ liệu danh sách học viên.", true);
+                    populateStudents();
+                }
+            });
+
+            function populateStudents() {
+                studentSelect.innerHTML = '<option value="">- Chọn học viên -</option>';
+                studentsList.forEach(s => {
+                    studentSelect.innerHTML += `<option value="${escapeHtml(s['ma-hoc-vien'])}">${escapeHtml(s['ma-hoc-vien'])} - ${escapeHtml(s['ho-ten'])}</option>`;
+                });
+            }
+
+            function populateGroupTypes() {
+                const uniqueTypes = [...new Set(groupsList.map(g => g['loai-nhom'] ? String(g['loai-nhom']).trim() : "").filter(Boolean))];
+                groupTypeSelect.innerHTML = '<option value="">- Loại -</option>';
+                uniqueTypes.forEach(t => groupTypeSelect.innerHTML += `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`);
+                groupNameSelect.innerHTML = '<option value="">- Tên -</option>';
+            }
+
+            groupTypeSelect.addEventListener('change', () => {
+                const type = groupTypeSelect.value;
+                const uniqueNames = [...new Set(groupsList.filter(g => (g['loai-nhom'] ? String(g['loai-nhom']).trim() : "") === type).map(g => g['ten-nhom'] ? String(g['ten-nhom']).trim() : "").filter(Boolean))];
+                groupNameSelect.innerHTML = '<option value="">- Tên -</option>';
+                uniqueNames.forEach(n => groupNameSelect.innerHTML += `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`);
+                groupMembersDiv.style.display = "none";
+                groupMembersList.innerHTML = "";
+            });
+
+            groupNameSelect.addEventListener('change', () => {
+                const type = groupTypeSelect.value;
+                const name = groupNameSelect.value;
+                if (!type || !name) { groupMembersDiv.style.display = "none"; groupMembersList.innerHTML = ""; return; }
+                
+                const members = groupsList.filter(g => (g['loai-nhom'] ? String(g['loai-nhom']).trim() : "") === type && (g['ten-nhom'] ? String(g['ten-nhom']).trim() : "") === name);
+
+                if (members.length > 0) {
+                    groupMembersList.innerHTML = "";
+                    members.forEach(m => { groupMembersList.innerHTML += `<li>${escapeHtml(m['ma-hoc-vien'])} - ${escapeHtml(m['ho-ten'])}</li>`; });
+                    groupMembersDiv.style.display = "block";
+                } else {
+                    groupMembersDiv.style.display = "none";
+                    groupMembersList.innerHTML = "";
+                }
+            });
+
+            /* ĐỔI BẢNG LƯU TRỮ SANG de-xuat-phan-cong */
+            window.deleteAssignment = async function(assignId) {
+                if (!confirm("Bạn có chắc chắn muốn xóa đề xuất này không?")) return;
+                const assignment = currentAssignmentsData.find(a => String(a["id"]) === String(assignId));
+                const maHp = assignment ? String(assignment["ma-hoc-phan"]).trim() : null;
+
+                try {
+                    const { error } = await window.supabaseClient.from('de-xuat-phan-cong').delete().eq('id', assignId);
+                    if (error) throw error;
+                    window.showToast("Đã xóa đề xuất!"); 
+                    if (maHp) reloadAndFocus(maHp); else loadClassData(true);
+                } catch (err) { window.showToast("Lỗi xóa dữ liệu: " + err.message, true); }
+            };
+
+            window.openAssignModal = function(maHpRaw, tenHp, khLT, khTH) {
+                if (!currentSelectedClass) return;
+                const maHp = String(maHpRaw).trim();
+                editingAssignmentId = null;
+                currentSelectedModule = { maHp, tenHp, khLT, khTH };
+                
+                document.getElementById("modalTitle").textContent = "Thêm Đề xuất Mới";
+                modalModuleInfo.textContent = `${tenHp}`; 
+                instructorSelect.value = ""; assignNote.value = "";
+                targetTypeSelect.value = "ca-lop"; targetTypeSelect.dispatchEvent(new Event('change'));
+
+                const assignments = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
+                let assignedLT = 0, assignedTH = 0;
+                assignments.forEach(a => { assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0; assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0; });
+                
+                let remainLT = Math.max(0, khLT - assignedLT);
+                let remainTH = Math.max(0, khTH - assignedTH);
+
+                theorySessions.max = remainLT; theorySessions.value = 0;
+                practiceSessions.max = remainTH; practiceSessions.value = 0;
+                hintLT.textContent = `Còn lại: ${remainLT}`; hintTH.textContent = `Còn lại: ${remainTH}`;
+
+                assignModal.classList.remove("hidden");
+            };
+
+            window.editAssignment = function(assignId) {
+                const assignment = currentAssignmentsData.find(a => String(a["id"]) === String(assignId));
+                if (!assignment) return;
+                const maHp = String(assignment["ma-hoc-phan"]).trim();
+                const mod = currentCurriculumData.find(m => String(m["ma-hoc-phan"]).trim() === maHp);
+                if(!mod) return;
+
+                editingAssignmentId = assignId;
+                currentSelectedModule = { maHp, tenHp: mod["ten-hoc-phan"], khLT: parseInt(mod["so-buoi-ly-thuyet"]) || 0, khTH: parseInt(mod["so-buoi-thuc-hanh"]) || 0 };
+
+                document.getElementById("modalTitle").textContent = "Chỉnh sửa Đề xuất";
+                modalModuleInfo.textContent = `${mod["ten-hoc-phan"]}`; 
+                instructorSelect.value = assignment["ma-giang-vien"];
+                assignNote.value = assignment["ghi-chu"] || "";
+
+                const dTuong = assignment["doi-tuong"] || "ca-lop";
+                targetTypeSelect.value = dTuong;
+                targetTypeSelect.dispatchEvent(new Event('change'));
+                
+                if (dTuong === "nhom") {
+                    setTimeout(() => {
+                        groupTypeSelect.value = assignment["loai-nhom"] || "";
+                        groupTypeSelect.dispatchEvent(new Event('change'));
+                        setTimeout(() => {
+                            groupNameSelect.value = assignment["ten-nhom"] || "";
+                            groupNameSelect.dispatchEvent(new Event('change')); 
+                        }, 50);
+                    }, 50);
+                } else if (dTuong === "ca-nhan") {
+                    setTimeout(() => studentSelect.value = assignment["ma-hoc-vien"] || "", 50);
+                }
+
+                const otherAssigns = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp && String(a["id"]) !== String(assignId));
+                let otherLT = 0, otherTH = 0;
+                otherAssigns.forEach(a => { otherLT += parseInt(a["so-buoi-ly-thuyet"]) || 0; otherTH += parseInt(a["so-buoi-thuc-hanh"]) || 0; });
+
+                let remainLT = Math.max(0, currentSelectedModule.khLT - otherLT);
+                let remainTH = Math.max(0, currentSelectedModule.khTH - otherTH);
+
+                theorySessions.max = remainLT; theorySessions.value = assignment["so-buoi-ly-thuyet"];
+                practiceSessions.max = remainTH; practiceSessions.value = assignment["so-buoi-thuc-hanh"];
+                hintLT.textContent = `Tối đa: ${remainLT}`; hintTH.textContent = `Tối đa: ${remainTH}`;
+
+                assignModal.classList.remove("hidden");
+            };
+
+            function closeModal() { assignModal.classList.add("hidden"); currentSelectedModule = null; editingAssignmentId = null; }
+            btnCloseModal.addEventListener("click", closeModal); btnCancelModal.addEventListener("click", closeModal);
+
+            assignForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                if (!currentSelectedClass || !currentSelectedModule) return;
+
+                const maGv = instructorSelect.value;
+                const lt = parseInt(theorySessions.value) || 0; const th = parseInt(practiceSessions.value) || 0;
+                const maxLT = parseInt(theorySessions.max) || 0; const maxTH = parseInt(practiceSessions.max) || 0;
+                const note = assignNote.value.trim();
+
+                const doiTuong = targetTypeSelect.value;
+                let loaiNhom = null, tenNhom = null, maHv = null, hoTenHv = null;
+
+                if (doiTuong === 'nhom') {
+                    loaiNhom = groupTypeSelect.value; tenNhom = groupNameSelect.value;
+                    if(!loaiNhom || !tenNhom) { window.showToast("Vui lòng chọn Loại và Tên nhóm.", true); return; }
+                } else if (doiTuong === 'ca-nhan') {
+                    maHv = studentSelect.value;
+                    if(!maHv) { window.showToast("Vui lòng chọn học viên.", true); return; }
+                    hoTenHv = studentSelect.options[studentSelect.selectedIndex].text.split(' - ')[1];
+                }
+
+                if (!maGv) { window.showToast("Vui lòng chọn giảng viên.", true); return; }
+                if (lt === 0 && th === 0) { window.showToast("Nhập số buổi LT hoặc TH > 0.", true); return; }
+                if (lt > maxLT || th > maxTH) { window.showToast("Số buổi đề xuất vượt quá số buổi còn lại cho phép!", true); return; }
+
+                const origText = btnSaveAssignment.innerHTML;
+                btnSaveAssignment.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang lưu...`; btnSaveAssignment.disabled = true;
+                const savedMaHp = currentSelectedModule.maHp;
+
+                try {
+                    const supabase = window.supabaseClient;
+                    const payload = {
+                        "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th, "ghi-chu": note,
+                        "doi-tuong": doiTuong, "loai-nhom": loaiNhom, "ten-nhom": tenNhom, "ma-hoc-vien": maHv, "ho-ten": hoTenHv
+                    };
+
+                    // ĐỔI BẢNG LƯU: de-xuat-phan-cong
+                    if (editingAssignmentId) {
+                        const { error } = await supabase.from('de-xuat-phan-cong').update(payload).eq('id', editingAssignmentId);
+                        if (error) throw error;
+                        window.showToast("Cập nhật đề xuất thành công!");
+                    } else {
+                        payload["ma-lop"] = currentSelectedClass["ma-lop"];
+                        payload["ma-hoc-phan"] = currentSelectedModule.maHp;
+                        const { error } = await supabase.from('de-xuat-phan-cong').insert([payload]);
+                        if (error) throw error;
+                        window.showToast("Đã thêm đề xuất thành công!");
+                    }
+                    closeModal(); reloadAndFocus(savedMaHp);
+                } catch (error) { window.showToast("Lỗi: " + error.message, true);
+                } finally { btnSaveAssignment.innerHTML = origText; btnSaveAssignment.disabled = false; }
+            });
+
+            function startApp() {
+                let attempts = 0; const timer = setInterval(() => {
+                    attempts++; if (window.supabaseClient) { clearInterval(timer); loadInitialData(); } else if (attempts >= 50) { clearInterval(timer); window.showToast("Không tải được Database.", true); }
+                }, 100);
+            }
+            startApp();
+        });
+    </script>
+</body>
+</html>
