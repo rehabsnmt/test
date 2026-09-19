@@ -26,7 +26,7 @@
         
         .pool-header { font-weight: bold; color: var(--text-dark); margin-bottom: 0.8rem; padding-bottom: 0.5rem; display: flex; justify-content: space-between; }
         #unassignedPool { min-height: 400px; max-height: calc(100vh - 280px); overflow-y: auto; padding-right: 5px; background: var(--bg-page); border-radius: 4px; padding: 10px; border: 2px dashed transparent; transition: all 0.3s ease; }
-        #unassignedPool.dragover { border-color: var(--accent); background: #fee2e2; } 
+        #unassignedPool.dragover { border-color: var(--accent); background: #fee2e2; } /* Đỏ để ám chỉ kéo về là Xóa khỏi lịch */
 
         /* CỘT PHẢI: KHUNG LỊCH (GRID) */
         .calendar-column { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; box-shadow: var(--shadow-sm); overflow-x: auto; }
@@ -98,10 +98,10 @@
                     </div>
 
                     <div class="pool-header">
-                        <span>Học phần cần xếp</span>
+                        <span>Hàng đợi chờ xếp lịch</span>
                         <span class="badge" id="poolCount" style="background:var(--primary); color:#fff; padding: 2px 8px; border-radius: 10px;">0</span>
                     </div>
-                    <!-- Kéo thả vào đây để HỦY lịch (Xóa khỏi DB) -->
+                    <!-- Kéo thả vào đây để HỦY xếp lịch (Đưa về trạng thái Null) -->
                     <div id="unassignedPool" class="dropzone" data-action="pool">
                         <div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;" id="emptyPoolMsg">
                             Vui lòng chọn lớp học...
@@ -146,12 +146,10 @@
     <div id="scheduleModal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 400px; text-align: left; padding: 1.5rem;">
             <button class="modal-close" id="btnCloseModal"><i class="fas fa-times"></i></button>
-            <h3 style="margin-bottom: 1rem; text-align: center; font-size: 1.2rem;">Chi tiết Lịch học</h3>
+            <h3 style="margin-bottom: 1rem; text-align: center; font-size: 1.2rem;">Cập nhật Lịch học</h3>
             
             <form id="scheduleForm">
                 <input type="hidden" id="schCardId">
-                <input type="hidden" id="schAssignId">
-                <input type="hidden" id="schLoaiBuoi">
 
                 <div class="form-group">
                     <label>Ngày học <span class="text-danger">*</span></label>
@@ -187,7 +185,7 @@
                 <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 10px;">
                     <button type="button" class="btn-warning" id="btnCancelModal" style="color: #fff; background: var(--text-muted); padding: 8px 12px;">Hủy</button>
                     <button type="submit" class="btn-primary" id="btnSaveSchedule" style="padding: 8px 12px;">
-                        <i class="fas fa-save"></i> Lưu lịch
+                        <i class="fas fa-save"></i> Ghi nhận
                     </button>
                 </div>
             </form>
@@ -222,10 +220,10 @@
             // --- TRẠNG THÁI DỮ LIỆU ---
             let classesList = [], instructorsList = [], roomsList = [], hospitalsList = [];
             let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {};
-            let schedulesData = []; 
+            let schedulesData = []; // Toàn bộ dữ liệu bảng thoi-khoa-bieu
             
             let currentWeekStart = new Date();
-            let draggedCardInfo = null; // Lưu thông tin thẻ đang kéo
+            let draggedCardInfo = null;
 
             // --- DOM ELEMENTS ---
             const classSelect = document.getElementById("classSelect");
@@ -259,8 +257,6 @@
                     });
                     calendarGridBody.appendChild(tr);
                 }
-                
-                // KÍCH HOẠT NHẬN DIỆN KÉO THẢ CHO CÁC DROPZONE 1 LẦN DUY NHẤT SAU KHI TẠO
                 initDropzones();
             }
 
@@ -314,12 +310,11 @@
             });
 
             /* =================================================
-               2. LẤY DỮ LIỆU CSDL VÀ HÀM BỔ TRỢ
+               2. LẤY DỮ LIỆU CSDL & HÀM BỔ TRỢ
             ================================================= */
             async function loadInitialData() {
                 try {
                     const supabase = window.supabaseClient;
-                    
                     const [resClass, resInst, resRoom, resHosp] = await Promise.all([
                         supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh'),
                         supabase.from('giang-vien').select('ma-giang-vien, ho-ten'),
@@ -350,18 +345,9 @@
                 }
             });
 
-            function getModuleName(maHp) { 
-                const mod = currentCurriculumData.find(m => String(m["ma-hoc-phan"]).trim() === String(maHp).trim()); 
-                return mod ? mod["ten-hoc-phan"] : maHp; 
-            }
-            function getClassName(maLop) { 
-                const cls = classesList.find(c => String(c["ma-lop"]).trim() === String(maLop).trim()); 
-                return cls ? cls["ten-lop"] : maLop; 
-            }
-            function getInstructorName(maGv) { 
-                const gv = instructorsList.find(i => String(i["ma-giang-vien"]).trim() === String(maGv).trim()); 
-                return gv ? gv["ho-ten"] : maGv; 
-            }
+            function getModuleName(maHp) { const mod = currentCurriculumData.find(m => String(m["ma-hoc-phan"]).trim() === String(maHp).trim()); return mod ? mod["ten-hoc-phan"] : maHp; }
+            function getClassName(maLop) { const cls = classesList.find(c => String(c["ma-lop"]).trim() === String(maLop).trim()); return cls ? cls["ten-lop"] : maLop; }
+            function getInstructorName(maGv) { const gv = instructorsList.find(i => String(i["ma-giang-vien"]).trim() === String(maGv).trim()); return gv ? gv["ho-ten"] : maGv; }
             function getLocName(type, id) {
                 if(type === 'phong') { const r = roomsList.find(x => String(x['ma-phong-hoc']) === String(id)); return r ? r['ten-phong-hoc'] : id; }
                 if(type === 'vien') { const h = hospitalsList.find(x => String(x['ma-benh-vien']) === String(id)); return h ? h['ten-benh-vien'] : id; }
@@ -369,14 +355,14 @@
             }
 
             /* =================================================
-               3. TẢI PHÂN CÔNG VÀ HIỂN THỊ
+               3. TẢI PHÂN CÔNG VÀ ĐỒNG BỘ THỜI KHÓA BIỂU
             ================================================= */
             classSelect.addEventListener("change", loadClassAssignments);
 
             async function loadClassAssignments() {
                 const maLop = String(classSelect.value).trim();
                 if (!maLop) {
-                    unassignedPool.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;" id="emptyPoolMsg">Vui lòng chọn lớp học...</div>`;
+                    unassignedPool.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;">Vui lòng chọn lớp học...</div>`;
                     poolCount.textContent = "0";
                     clearGridContent();
                     return;
@@ -385,11 +371,12 @@
                 const selectedClass = classesList.find(c => String(c["ma-lop"]).trim() === maLop);
                 const tableName = selectedClass["chuong-trinh"];
                 
-                unassignedPool.innerHTML = `<div style="text-align: center; margin-top: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>`;
+                unassignedPool.innerHTML = `<div style="text-align: center; margin-top: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang đồng bộ CSDL...</div>`;
                 
                 try {
                     const supabase = window.supabaseClient;
 
+                    // 1. Tải Phân công và Chương trình
                     const [resCur, resSem, resAssign] = await Promise.all([
                         supabase.from(tableName).select('ma-hoc-phan, ten-hoc-phan'),
                         supabase.from('lop-hoc-phan').select('ma-hoc-phan, hoc-ky').eq('ma-lop', maLop),
@@ -398,21 +385,63 @@
 
                     currentCurriculumData = resCur.data || [];
                     currentAssignmentsData = resAssign.data || [];
-                    
                     currentModuleSemesters = {};
                     (resSem.data || []).forEach(item => { currentModuleSemesters[String(item["ma-hoc-phan"]).trim()] = item["hoc-ky"]; });
 
                     const assignIds = currentAssignmentsData.map(a => a.id);
                     schedulesData = [];
+                    
                     if (assignIds.length > 0) {
                         const { data: schData } = await supabase.from('thoi-khoa-bieu').select('*').in('ma-phan-cong', assignIds);
                         schedulesData = schData || [];
+                        
+                        // 2. AUTO-SYNC LOGIC: Tự động Insert nếu thiếu dòng trong bảng thoi-khoa-bieu
+                        await syncDatabaseSchedules(assignIds);
                     }
 
                     populateModuleFilter();
                     processAndRenderCards();
 
                 } catch (error) { window.showToast("Lỗi tải dữ liệu: " + error.message, true); }
+            }
+
+            // HÀM KIỂM TRA VÀ INSERT DỮ LIỆU TỰ ĐỘNG
+            async function syncDatabaseSchedules(assignIds) {
+                let toInsert = [];
+                let toDelete = [];
+
+                currentAssignmentsData.forEach(a => {
+                    const assignsSch = schedulesData.filter(s => String(s['ma-phan-cong']) === String(a.id));
+                    
+                    ['LT', 'TH'].forEach(type => {
+                        const schOfType = assignsSch.filter(s => s['loai-buoi'] === type);
+                        const targetCount = parseInt(type === 'LT' ? a["so-buoi-ly-thuyet"] : a["so-buoi-thuc-hanh"]) || 0;
+                        
+                        if (schOfType.length < targetCount) {
+                            // Thiếu -> Chuẩn bị tạo mới với giờ Null
+                            for (let i = schOfType.length; i < targetCount; i++) {
+                                toInsert.push({ "ma-phan-cong": a.id, "loai-buoi": type });
+                            }
+                        } else if (schOfType.length > targetCount) {
+                            // Dư (do ng dùng sửa giảm số buổi) -> Tìm những cái chưa xếp lịch để ưu tiên xóa
+                            const unassigned = schOfType.filter(s => !s['gio-bat-dau']);
+                            let excess = schOfType.length - targetCount;
+                            for (let i = 0; i < excess && i < unassigned.length; i++) {
+                                toDelete.push(unassigned[i].id);
+                            }
+                        }
+                    });
+                });
+
+                if (toInsert.length > 0 || toDelete.length > 0) {
+                    const supabase = window.supabaseClient;
+                    if (toInsert.length > 0) await supabase.from('thoi-khoa-bieu').insert(toInsert);
+                    if (toDelete.length > 0) await supabase.from('thoi-khoa-bieu').delete().in('id', toDelete);
+                    
+                    // Tải lại sau khi Sync
+                    const { data: newSchData } = await supabase.from('thoi-khoa-bieu').select('*').in('ma-phan-cong', assignIds);
+                    schedulesData = newSchData || [];
+                }
             }
 
             function populateModuleFilter() {
@@ -424,6 +453,9 @@
                 });
             }
 
+            /* =================================================
+               4. VẼ THẺ TỪ DỮ LIỆU ĐÃ ĐỒNG BỘ
+            ================================================= */
             function processAndRenderCards() {
                 unassignedPool.innerHTML = "";
                 clearGridContent();
@@ -432,80 +464,82 @@
                 const fSem = filterSemester.value;
                 const fMod = filterModule.value;
 
+                // Tính toán chỉ số Session (Ví dụ: LT 1/3, LT 2/3) cho dễ nhìn
                 currentAssignmentsData.forEach(a => {
+                    ['LT', 'TH'].forEach(type => {
+                        const schs = schedulesData.filter(s => String(s['ma-phan-cong']) === String(a.id) && s['loai-buoi'] === type);
+                        // Sắp xếp: Ưu tiên cái đã xếp ngày giờ lên trước
+                        schs.sort((s1, s2) => {
+                            if (s1.ngay && !s2.ngay) return -1;
+                            if (!s1.ngay && s2.ngay) return 1;
+                            if (s1.ngay && s2.ngay) return new Date(s1.ngay + 'T' + s1['gio-bat-dau']) - new Date(s2.ngay + 'T' + s2['gio-bat-dau']);
+                            return 0;
+                        });
+                        schs.forEach((sch, idx) => {
+                            sch._sessionIndex = idx + 1;
+                            sch._totalSessions = schs.length;
+                        });
+                    });
+                });
+
+                // VẼ THẺ VÀO POOL (CHỈ LẤY NHỮNG THẺ CHƯA CÓ GIỜ BẮT ĐẦU)
+                schedulesData.forEach(sch => {
+                    if (sch['ngay'] && sch['gio-bat-dau']) return; // Skip đã xếp lịch
+
+                    const a = currentAssignmentsData.find(x => String(x.id) === String(sch['ma-phan-cong']));
+                    if (!a) return;
+
                     const maHp = String(a["ma-hoc-phan"]).trim();
                     const hk = String(currentModuleSemesters[maHp] || "");
                     
-                    // Lọc
                     if (fSem && hk !== fSem) return;
                     if (fMod && maHp !== fMod) return;
 
                     const tenHp = escapeHtml(getModuleName(maHp));
                     const tenLop = escapeHtml(getClassName(a["ma-lop"]));
                     const tenGv = escapeHtml(getInstructorName(a["ma-giang-vien"]));
-                    const ghiChu = escapeHtml(a["ghi-chu"] || "");
                     let targetText = "Cả lớp";
                     if (a["doi-tuong"] === "nhom") targetText = `Nhóm ${escapeHtml(a["ten-nhom"])}`;
                     else if (a["doi-tuong"] === "ca-nhan") targetText = escapeHtml(a["ho-ten"]);
 
-                    const ltCount = parseInt(a["so-buoi-ly-thuyet"]) || 0;
-                    const thCount = parseInt(a["so-buoi-thuc-hanh"]) || 0;
-
-                    // Đếm số buổi đã được xếp lịch
-                    const assignsSch = schedulesData.filter(s => String(s['ma-phan-cong']) === String(a.id));
-                    let ltSchCount = assignsSch.filter(s => s['loai-buoi'] === 'LT').length;
-                    let thSchCount = assignsSch.filter(s => s['loai-buoi'] === 'TH').length;
-
-                    // SINH THẺ TRONG POOL (Những buổi chưa xếp)
-                    const unassignedLT = Math.max(0, ltCount - ltSchCount);
-                    for (let i = 0; i < unassignedLT; i++) {
-                        const cardId = `pool-card-${a.id}-LT-${i}`;
-                        const cardHtml = createCardHtml(cardId, a.id, 'LT', tenHp, tenLop, tenGv, targetText, ghiChu);
-                        unassignedPool.insertAdjacentHTML('beforeend', cardHtml);
-                        poolCardCount++;
-                    }
-
-                    const unassignedTH = Math.max(0, thCount - thSchCount);
-                    for (let i = 0; i < unassignedTH; i++) {
-                        const cardId = `pool-card-${a.id}-TH-${i}`;
-                        const cardHtml = createCardHtml(cardId, a.id, 'TH', tenHp, tenLop, tenGv, targetText, ghiChu);
-                        unassignedPool.insertAdjacentHTML('beforeend', cardHtml);
-                        poolCardCount++;
-                    }
+                    const cardId = `pool-card-${sch.id}`;
+                    const cardHtml = createCardHtml(cardId, sch.id, sch['loai-buoi'], tenHp, tenLop, tenGv, targetText, a["ghi-chu"], null, sch._sessionIndex, sch._totalSessions);
+                    
+                    unassignedPool.insertAdjacentHTML('beforeend', cardHtml);
+                    poolCardCount++;
                 });
 
-                if (poolCardCount === 0) { unassignedPool.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;">Không có học phần nào chờ xếp.</div>`; }
+                if (poolCardCount === 0) { unassignedPool.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;">Hàng đợi trống. Toàn bộ đã được lên lịch.</div>`; }
                 poolCount.textContent = poolCardCount;
 
+                // VẼ THẺ LÊN GRID (LỊCH)
                 placeCardsOnGrid();
-                setupDragEventsForCards(); // Chỉ gán sự kiện kéo thả cho các thẻ vừa sinh ra
+                setupDragEventsForCards();
             }
 
             filterSemester.addEventListener('change', processAndRenderCards);
             filterModule.addEventListener('change', processAndRenderCards);
 
-            function createCardHtml(cardId, assignId, type, tenHp, tenLop, tenGv, targetText, ghiChu, schData = null) {
+            function createCardHtml(cardId, schId, type, tenHp, tenLop, tenGv, targetText, ghiChu, schData = null, sessionIndex = 1, totalSessions = 1) {
                 const typeClass = type === 'LT' ? 'type-lt' : 'type-th';
                 const noteHtml = ghiChu ? `<div class="cc-note"><i class="fas fa-sticky-note" style="margin-right:4px;"></i>${ghiChu}</div>` : '';
                 
                 let timeLocHtml = "";
-                if (schData) {
+                if (schData && schData.ngay) {
                     const locType = schData['ma-phong-hoc'] ? 'phong' : 'vien';
                     const locId = schData['ma-phong-hoc'] || schData['ma-benh-vien'];
                     const locName = getLocName(locType, locId);
                     
                     timeLocHtml = `
                         <div class="cc-time-loc">
-                            <i class="far fa-clock"></i> ${schData['gio-bat-dau'].substring(0,5)} - ${schData['gio-ket-thuc'].substring(0,5)}<br>
+                            <i class="far fa-clock"></i> ${String(schData['gio-bat-dau']).substring(0,5)} - ${String(schData['gio-ket-thuc']).substring(0,5)}<br>
                             <i class="fas fa-map-marker-alt"></i> ${escapeHtml(locName)}
                         </div>`;
                 }
 
                 return `
-                    <div class="class-card ${typeClass}" draggable="true" id="${cardId}" 
-                         data-assign-id="${assignId}" data-type="${type}" 
-                         data-schid="${schData ? schData.id : ''}">
-                        <div class="cc-type-badge">${type}</div>
+                    <div class="class-card ${typeClass}" draggable="true" id="${cardId}" data-schid="${schId}">
+                        <div class="cc-type-badge">${type} ${sessionIndex}/${totalSessions}</div>
                         <div class="cc-title" title="${tenHp}">${tenHp}</div>
                         <div class="cc-info"><i class="fas fa-users"></i> <span>${tenLop} | ${targetText}</span></div>
                         <div class="cc-info"><i class="fas fa-user-tie"></i> <span>${tenGv}</span></div>
@@ -529,8 +563,9 @@
                 });
 
                 schedulesData.forEach(sch => {
+                    if (!sch['ngay'] || !sch['gio-bat-dau']) return; // Bỏ qua nếu chưa xếp
+
                     const schDate = String(sch['ngay']); 
-                    
                     if (dateMap.hasOwnProperty(schDate)) {
                         const dayIndex = dateMap[schDate];
                         const startHour = String(sch['gio-bat-dau']).substring(0,2) + ":00"; 
@@ -547,7 +582,7 @@
                                 else if (a["doi-tuong"] === "ca-nhan") targetText = escapeHtml(a["ho-ten"]);
 
                                 const cardId = `grid-card-${sch.id}`;
-                                const cardHtml = createCardHtml(cardId, a.id, sch['loai-buoi'], tenHp, tenLop, tenGv, targetText, a["ghi-chu"], sch);
+                                const cardHtml = createCardHtml(cardId, sch.id, sch['loai-buoi'], tenHp, tenLop, tenGv, targetText, a["ghi-chu"], sch, sch._sessionIndex, sch._totalSessions);
                                 targetDropzone.insertAdjacentHTML('beforeend', cardHtml);
                             }
                         }
@@ -556,9 +591,8 @@
             }
 
             /* =================================================
-               4. LOGIC KÉO THẢ TỐI ƯU
+               5. CƠ CHẾ KÉO THẢ UPDATE THÔNG MINH
             ================================================= */
-            // Cài đặt Dropzone 1 lần duy nhất để không làm hỏng DOM
             function initDropzones() {
                 const dropzones = document.querySelectorAll('.dropzone');
                 dropzones.forEach(zone => {
@@ -578,85 +612,83 @@
 
                         const action = this.dataset.action; 
 
-                        // Hành động thả vào POOL -> Xóa lịch
                         if (action === 'pool') {
-                            if (draggedCardInfo.schId) {
-                                if(confirm("Xác nhận xóa buổi học này khỏi Lịch?")) {
-                                    try {
-                                        const { error } = await window.supabaseClient.from('thoi-khoa-bieu').delete().eq('id', draggedCardInfo.schId);
-                                        if (error) throw error;
-                                        window.showToast("Đã hủy lịch!");
-                                        loadClassAssignments(); 
-                                    } catch (err) { window.showToast("Lỗi xóa: " + err.message, true); }
-                                }
+                            // KÉO TỪ GRID VỀ POOL -> UPDATE CHUYỂN NGÀY GIỜ THÀNH NULL
+                            if (confirm("Gỡ thẻ này khỏi lịch và đưa về Hàng đợi?")) {
+                                try {
+                                    const payload = { "ngay": null, "gio-bat-dau": null, "gio-ket-thuc": null, "ma-phong-hoc": null, "ma-benh-vien": null };
+                                    const { error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', draggedCardInfo.schId);
+                                    if (error) throw error;
+                                    window.showToast("Đã đưa thẻ về Hàng đợi!");
+                                    loadClassAssignments(); 
+                                } catch (err) { window.showToast("Lỗi: " + err.message, true); }
                             }
                         } 
-                        // Hành động thả vào LỊCH -> Mở Modal xếp lịch
                         else if (action === 'grid') {
+                            // KÉO VÀO LỊCH -> MỞ MODAL ĐIỀN THÔNG TIN UPDATE
                             const dayIndex = this.dataset.dayindex;
                             const hourStr = this.dataset.hour; 
                             
                             const th = document.getElementById(`th-${dayIndex}`);
                             if(!th || !th.dataset.fulldate) return;
                             
-                            openModalForSchedule(draggedCardInfo.assignId, draggedCardInfo.type, draggedCardInfo.schId, th.dataset.fulldate, hourStr);
+                            openModalForSchedule(draggedCardInfo.schId, th.dataset.fulldate, hourStr);
                         }
                     });
                 });
             }
 
-            // Gắn sự kiện cho các Card mới được sinh ra
             function setupDragEventsForCards() {
                 const cards = document.querySelectorAll('.class-card');
                 cards.forEach(card => {
-                    card.addEventListener('dragstart', function(e) {
+                    const newCard = card.cloneNode(true);
+                    card.parentNode.replaceChild(newCard, card);
+                    
+                    newCard.addEventListener('dragstart', function(e) {
                         draggedCardInfo = {
                             elementId: this.id,
-                            assignId: this.dataset.assignId,
-                            type: this.dataset.type,
                             schId: this.dataset.schid
                         };
                         setTimeout(() => this.classList.add('dragging'), 0);
                         e.dataTransfer.effectAllowed = 'move';
                     });
 
-                    card.addEventListener('dragend', function() {
+                    newCard.addEventListener('dragend', function() {
                         this.classList.remove('dragging');
                         document.querySelectorAll('.dropzone').forEach(dz => dz.classList.remove('dragover'));
                     });
                     
-                    // Click thẻ trên lịch để chỉnh sửa
-                    if(card.dataset.schid) {
-                        card.addEventListener('click', function() {
-                            openModalForEdit(this.dataset.schid);
-                        });
-                    }
+                    newCard.addEventListener('click', function() {
+                        const sch = schedulesData.find(s => String(s.id) === String(this.dataset.schid));
+                        if(sch && sch.ngay) {
+                            openModalForSchedule(this.dataset.schid, sch.ngay, String(sch['gio-bat-dau']).substring(0,5));
+                        } else {
+                            // Nằm trong pool click -> Gợi ý ngày mặc định
+                            openModalForSchedule(this.dataset.schid, weekSelector.value, "07:00");
+                        }
+                    });
                 });
             }
 
             /* =================================================
-               5. XỬ LÝ MODAL FORM
+               6. MODAL GHI NHẬN UPDATE
             ================================================= */
-            function openModalForSchedule(assignId, type, existingSchId, suggestDate, suggestHour) {
-                document.getElementById('schAssignId').value = assignId;
-                document.getElementById('schLoaiBuoi').value = type;
-                document.getElementById('schCardId').value = existingSchId || "";
+            function openModalForSchedule(schId, suggestDate, suggestHour) {
+                document.getElementById('schCardId').value = schId;
 
-                if (existingSchId) {
-                    const sch = schedulesData.find(s => String(s.id) === String(existingSchId));
-                    if(sch) {
-                        schDate.value = sch['ngay'];
-                        schStartTime.value = String(sch['gio-bat-dau']).substring(0,5);
-                        schEndTime.value = String(sch['gio-ket-thuc']).substring(0,5);
-                        if (sch['ma-phong-hoc']) {
-                            schLocationType.value = 'phong';
-                            schLocationType.dispatchEvent(new Event('change'));
-                            schLocation.value = sch['ma-phong-hoc'];
-                        } else {
-                            schLocationType.value = 'vien';
-                            schLocationType.dispatchEvent(new Event('change'));
-                            schLocation.value = sch['ma-benh-vien'];
-                        }
+                const sch = schedulesData.find(s => String(s.id) === String(schId));
+                if (sch && sch.ngay) {
+                    schDate.value = sch['ngay'];
+                    schStartTime.value = String(sch['gio-bat-dau']).substring(0,5);
+                    schEndTime.value = String(sch['gio-ket-thuc']).substring(0,5);
+                    if (sch['ma-phong-hoc']) {
+                        schLocationType.value = 'phong';
+                        schLocationType.dispatchEvent(new Event('change'));
+                        schLocation.value = sch['ma-phong-hoc'];
+                    } else {
+                        schLocationType.value = 'vien';
+                        schLocationType.dispatchEvent(new Event('change'));
+                        schLocation.value = sch['ma-benh-vien'];
                     }
                 } else {
                     schDate.value = suggestDate;
@@ -671,21 +703,13 @@
                 scheduleModal.classList.remove('hidden');
             }
 
-            function openModalForEdit(schId) {
-                const sch = schedulesData.find(s => String(s.id) === String(schId));
-                if(sch) openModalForSchedule(sch['ma-phan-cong'], sch['loai-buoi'], sch.id, null, null);
-            }
-
             document.getElementById('btnCloseModal').addEventListener('click', () => scheduleModal.classList.add('hidden'));
             document.getElementById('btnCancelModal').addEventListener('click', () => scheduleModal.classList.add('hidden'));
 
             scheduleForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
-                const assignId = document.getElementById('schAssignId').value;
-                const loaiBuoi = document.getElementById('schLoaiBuoi').value;
-                const existId = document.getElementById('schCardId').value;
-
+                const schId = document.getElementById('schCardId').value;
                 const ngay = schDate.value;
                 const gioBd = schStartTime.value + ":00";
                 const gioKt = schEndTime.value + ":00";
@@ -696,8 +720,6 @@
                 if(gioBd >= gioKt) { window.showToast("Giờ kết thúc phải lớn hơn giờ bắt đầu!", true); return; }
 
                 const payload = {
-                    "ma-phan-cong": parseInt(assignId),
-                    "loai-buoi": loaiBuoi,
                     "ngay": ngay,
                     "gio-bat-dau": gioBd,
                     "gio-ket-thuc": gioKt,
@@ -708,27 +730,20 @@
                 try {
                     const btn = document.getElementById('btnSaveSchedule');
                     const origText = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cập nhật...';
                     btn.disabled = true;
 
-                    const supabase = window.supabaseClient;
-                    if (existId) {
-                        const { error } = await supabase.from('thoi-khoa-bieu').update(payload).eq('id', existId);
-                        if (error) throw error;
-                        window.showToast("Cập nhật lịch thành công!");
-                    } else {
-                        const { error } = await supabase.from('thoi-khoa-bieu').insert([payload]);
-                        if (error) throw error;
-                        window.showToast("Đã xếp lịch thành công!");
-                    }
+                    const { error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', schId);
+                    if (error) throw error;
                     
+                    window.showToast("Ghi nhận lịch thành công!");
                     scheduleModal.classList.add('hidden');
                     loadClassAssignments(); 
                     
                     btn.innerHTML = origText; btn.disabled = false;
                 } catch(err) {
                     window.showToast("Lỗi lưu lịch: " + err.message, true);
-                    document.getElementById('btnSaveSchedule').innerHTML = '<i class="fas fa-save"></i> Lưu lịch';
+                    document.getElementById('btnSaveSchedule').innerHTML = '<i class="fas fa-save"></i> Ghi nhận';
                     document.getElementById('btnSaveSchedule').disabled = false;
                 }
             });
