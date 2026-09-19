@@ -44,7 +44,7 @@
         .dropzone.dragover { background: #f0fdf4 !important; box-shadow: inset 0 0 0 2px #22c55e; }
 
         /* THẺ HỌC PHẦN (DRAGGABLE CARD) */
-        .class-card { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 6px; padding: 6px; margin-bottom: 6px; cursor: grab; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 0.7rem; line-height: 1.3; position: relative; z-index: 10; }
+        .class-card { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 6px; padding: 6px; margin-bottom: 6px; cursor: grab; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 0.7rem; line-height: 1.3; position: relative; z-index: 10; transition: transform 0.1s; }
         .class-card:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.1); transform: translateY(-1px); }
         .class-card:active { cursor: grabbing; }
         .class-card.dragging { opacity: 0.5; }
@@ -101,7 +101,7 @@
                         <span>Hàng đợi chờ xếp lịch</span>
                         <span class="badge" id="poolCount" style="background:var(--primary); color:#fff; padding: 2px 8px; border-radius: 10px;">0</span>
                     </div>
-                    <!-- Kéo thả vào đây để HỦY xếp lịch (Đưa về trạng thái Null) -->
+                    <!-- Kéo thả vào đây để HỦY xếp lịch -->
                     <div id="unassignedPool" class="dropzone" data-action="pool">
                         <div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;" id="emptyPoolMsg">
                             Vui lòng chọn lớp học...
@@ -220,7 +220,7 @@
             // --- TRẠNG THÁI DỮ LIỆU ---
             let classesList = [], instructorsList = [], roomsList = [], hospitalsList = [];
             let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {};
-            let schedulesData = []; // Toàn bộ dữ liệu bảng thoi-khoa-bieu
+            let schedulesData = []; 
             
             let currentWeekStart = new Date();
             let draggedCardInfo = null;
@@ -257,7 +257,7 @@
                     });
                     calendarGridBody.appendChild(tr);
                 }
-                initDropzones();
+                initDropzones(); // Kích hoạt kéo thả cho các ô
             }
 
             function getMonday(d) {
@@ -310,7 +310,7 @@
             });
 
             /* =================================================
-               2. LẤY DỮ LIỆU CSDL & HÀM BỔ TRỢ
+               2. LẤY DỮ LIỆU CSDL VÀ HÀM BỔ TRỢ
             ================================================= */
             async function loadInitialData() {
                 try {
@@ -331,7 +331,6 @@
                     classesList.forEach(cls => {
                         classSelect.appendChild(new Option(cls["ten-lop"], cls["ma-lop"]));
                     });
-
                 } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
             }
 
@@ -355,7 +354,7 @@
             }
 
             /* =================================================
-               3. TẢI PHÂN CÔNG VÀ ĐỒNG BỘ THỜI KHÓA BIỂU
+               3. TẢI PHÂN CÔNG & ĐỒNG BỘ CSDL
             ================================================= */
             classSelect.addEventListener("change", loadClassAssignments);
 
@@ -371,7 +370,7 @@
                 const selectedClass = classesList.find(c => String(c["ma-lop"]).trim() === maLop);
                 const tableName = selectedClass["chuong-trinh"];
                 
-                unassignedPool.innerHTML = `<div style="text-align: center; margin-top: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang đồng bộ CSDL...</div>`;
+                unassignedPool.innerHTML = `<div style="text-align: center; margin-top: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang đồng bộ tự động...</div>`;
                 
                 try {
                     const supabase = window.supabaseClient;
@@ -392,10 +391,10 @@
                     schedulesData = [];
                     
                     if (assignIds.length > 0) {
-                        const { data: schData } = await supabase.from('thoi-khoa-bieu').select('*').in('ma-phan-cong', assignIds);
+                        const { data: schData } = await supabase.from('thoi-khoa-bieu').select('*').in('id-phan-cong', assignIds);
                         schedulesData = schData || [];
                         
-                        // 2. AUTO-SYNC LOGIC: Tự động Insert nếu thiếu dòng trong bảng thoi-khoa-bieu
+                        // 2. AUTO-SYNC LOGIC: Sinh thẻ tự động / Cắt thẻ thừa
                         await syncDatabaseSchedules(assignIds);
                     }
 
@@ -405,29 +404,33 @@
                 } catch (error) { window.showToast("Lỗi tải dữ liệu: " + error.message, true); }
             }
 
-            // HÀM KIỂM TRA VÀ INSERT DỮ LIỆU TỰ ĐỘNG
+            // HÀM KIỂM TRA VÀ INSERT/DELETE DỮ LIỆU TỰ ĐỘNG
             async function syncDatabaseSchedules(assignIds) {
                 let toInsert = [];
                 let toDelete = [];
 
                 currentAssignmentsData.forEach(a => {
-                    const assignsSch = schedulesData.filter(s => String(s['ma-phan-cong']) === String(a.id));
+                    const assignsSch = schedulesData.filter(s => String(s['id-phan-cong']) === String(a.id));
                     
                     ['LT', 'TH'].forEach(type => {
                         const schOfType = assignsSch.filter(s => s['loai-buoi'] === type);
                         const targetCount = parseInt(type === 'LT' ? a["so-buoi-ly-thuyet"] : a["so-buoi-thuc-hanh"]) || 0;
                         
                         if (schOfType.length < targetCount) {
-                            // Thiếu -> Chuẩn bị tạo mới với giờ Null
+                            // Thiếu -> Sinh mới (Null)
                             for (let i = schOfType.length; i < targetCount; i++) {
-                                toInsert.push({ "ma-phan-cong": a.id, "loai-buoi": type });
+                                toInsert.push({ "id-phan-cong": a.id, "loai-buoi": type });
                             }
                         } else if (schOfType.length > targetCount) {
-                            // Dư (do ng dùng sửa giảm số buổi) -> Tìm những cái chưa xếp lịch để ưu tiên xóa
-                            const unassigned = schOfType.filter(s => !s['gio-bat-dau']);
+                            // Dư -> Ưu tiên xóa các thẻ chưa xếp lịch (ngay == null)
+                            schOfType.sort((s1, s2) => {
+                                if (!s1.ngay && s2.ngay) return -1;
+                                if (s1.ngay && !s2.ngay) return 1;
+                                return 0;
+                            });
                             let excess = schOfType.length - targetCount;
-                            for (let i = 0; i < excess && i < unassigned.length; i++) {
-                                toDelete.push(unassigned[i].id);
+                            for (let i = 0; i < excess; i++) {
+                                toDelete.push(schOfType[i].id);
                             }
                         }
                     });
@@ -439,7 +442,7 @@
                     if (toDelete.length > 0) await supabase.from('thoi-khoa-bieu').delete().in('id', toDelete);
                     
                     // Tải lại sau khi Sync
-                    const { data: newSchData } = await supabase.from('thoi-khoa-bieu').select('*').in('ma-phan-cong', assignIds);
+                    const { data: newSchData } = await supabase.from('thoi-khoa-bieu').select('*').in('id-phan-cong', assignIds);
                     schedulesData = newSchData || [];
                 }
             }
@@ -464,11 +467,10 @@
                 const fSem = filterSemester.value;
                 const fMod = filterModule.value;
 
-                // Tính toán chỉ số Session (Ví dụ: LT 1/3, LT 2/3) cho dễ nhìn
+                // Tính toán chỉ số Session (Ví dụ: LT 1/3, LT 2/3)
                 currentAssignmentsData.forEach(a => {
                     ['LT', 'TH'].forEach(type => {
-                        const schs = schedulesData.filter(s => String(s['ma-phan-cong']) === String(a.id) && s['loai-buoi'] === type);
-                        // Sắp xếp: Ưu tiên cái đã xếp ngày giờ lên trước
+                        const schs = schedulesData.filter(s => String(s['id-phan-cong']) === String(a.id) && s['loai-buoi'] === type);
                         schs.sort((s1, s2) => {
                             if (s1.ngay && !s2.ngay) return -1;
                             if (!s1.ngay && s2.ngay) return 1;
@@ -482,11 +484,11 @@
                     });
                 });
 
-                // VẼ THẺ VÀO POOL (CHỈ LẤY NHỮNG THẺ CHƯA CÓ GIỜ BẮT ĐẦU)
+                // VẼ THẺ VÀO POOL (CHỈ LẤY NHỮNG THẺ CHƯA CÓ NGÀY GIỜ)
                 schedulesData.forEach(sch => {
-                    if (sch['ngay'] && sch['gio-bat-dau']) return; // Skip đã xếp lịch
+                    if (sch['ngay'] && sch['gio-bat-dau']) return; // Đã xếp lịch thì bỏ qua
 
-                    const a = currentAssignmentsData.find(x => String(x.id) === String(sch['ma-phan-cong']));
+                    const a = currentAssignmentsData.find(x => String(x.id) === String(sch['id-phan-cong']));
                     if (!a) return;
 
                     const maHp = String(a["ma-hoc-phan"]).trim();
@@ -563,7 +565,7 @@
                 });
 
                 schedulesData.forEach(sch => {
-                    if (!sch['ngay'] || !sch['gio-bat-dau']) return; // Bỏ qua nếu chưa xếp
+                    if (!sch['ngay'] || !sch['gio-bat-dau']) return; // Bỏ qua thẻ trong Pool
 
                     const schDate = String(sch['ngay']); 
                     if (dateMap.hasOwnProperty(schDate)) {
@@ -572,7 +574,7 @@
                         
                         const targetDropzone = document.querySelector(`.dropzone[data-action="grid"][data-dayindex="${dayIndex}"][data-hour="${startHour}"]`);
                         if (targetDropzone) {
-                            const a = currentAssignmentsData.find(x => String(x.id) === String(sch['ma-phan-cong']));
+                            const a = currentAssignmentsData.find(x => String(x.id) === String(sch['id-phan-cong']));
                             if (a) {
                                 const tenHp = escapeHtml(getModuleName(a["ma-hoc-phan"]));
                                 const tenLop = escapeHtml(getClassName(a["ma-lop"]));
@@ -593,6 +595,7 @@
             /* =================================================
                5. CƠ CHẾ KÉO THẢ UPDATE THÔNG MINH
             ================================================= */
+            // Cài đặt Dropzone
             function initDropzones() {
                 const dropzones = document.querySelectorAll('.dropzone');
                 dropzones.forEach(zone => {
@@ -613,7 +616,7 @@
                         const action = this.dataset.action; 
 
                         if (action === 'pool') {
-                            // KÉO TỪ GRID VỀ POOL -> UPDATE CHUYỂN NGÀY GIỜ THÀNH NULL
+                            // KÉO VỀ POOL -> UPDATE XÓA TRẮNG NGÀY GIỜ
                             if (confirm("Gỡ thẻ này khỏi lịch và đưa về Hàng đợi?")) {
                                 try {
                                     const payload = { "ngay": null, "gio-bat-dau": null, "gio-ket-thuc": null, "ma-phong-hoc": null, "ma-benh-vien": null };
@@ -625,7 +628,7 @@
                             }
                         } 
                         else if (action === 'grid') {
-                            // KÉO VÀO LỊCH -> MỞ MODAL ĐIỀN THÔNG TIN UPDATE
+                            // KÉO VÀO LỊCH -> UPDATE NGÀY GIỜ
                             const dayIndex = this.dataset.dayindex;
                             const hourStr = this.dataset.hour; 
                             
@@ -638,9 +641,11 @@
                 });
             }
 
+            // Gắn sự kiện cho các Card
             function setupDragEventsForCards() {
                 const cards = document.querySelectorAll('.class-card');
                 cards.forEach(card => {
+                    // Xóa event rác
                     const newCard = card.cloneNode(true);
                     card.parentNode.replaceChild(newCard, card);
                     
@@ -658,12 +663,12 @@
                         document.querySelectorAll('.dropzone').forEach(dz => dz.classList.remove('dragover'));
                     });
                     
+                    // Click để sửa thông tin
                     newCard.addEventListener('click', function() {
                         const sch = schedulesData.find(s => String(s.id) === String(this.dataset.schid));
                         if(sch && sch.ngay) {
                             openModalForSchedule(this.dataset.schid, sch.ngay, String(sch['gio-bat-dau']).substring(0,5));
                         } else {
-                            // Nằm trong pool click -> Gợi ý ngày mặc định
                             openModalForSchedule(this.dataset.schid, weekSelector.value, "07:00");
                         }
                     });
@@ -710,6 +715,8 @@
                 e.preventDefault();
                 
                 const schId = document.getElementById('schCardId').value;
+                if (!schId) { window.showToast("Lỗi: Không tìm thấy ID thẻ thời khóa biểu!", true); return; }
+
                 const ngay = schDate.value;
                 const gioBd = schStartTime.value + ":00";
                 const gioKt = schEndTime.value + ":00";
@@ -733,6 +740,7 @@
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cập nhật...';
                     btn.disabled = true;
 
+                    // Chỉ gọi UPDATE vì thẻ đã được tạo tự động từ trước
                     const { error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', schId);
                     if (error) throw error;
                     
