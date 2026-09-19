@@ -222,10 +222,10 @@
             // --- TRẠNG THÁI DỮ LIỆU ---
             let classesList = [], instructorsList = [], roomsList = [], hospitalsList = [];
             let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {};
-            let schedulesData = []; // Dữ liệu từ bảng thoi-khoa-bieu
+            let schedulesData = []; 
             
-            let currentWeekStart = new Date(); // Lưu ngày Thứ 2 của tuần hiện tại
-            let draggedCardInfo = null; // Thông tin thẻ đang kéo
+            let currentWeekStart = new Date();
+            let draggedCardInfo = null; 
 
             // --- DOM ELEMENTS ---
             const classSelect = document.getElementById("classSelect");
@@ -253,7 +253,6 @@
                     const tr = document.createElement("tr");
                     tr.innerHTML = `<td class="time-col">${timeLabel}</td>`;
                     
-                    // Cột: T2(1), T3(2), T4(3), T5(4), T6(5), T7(6), CN(0)
                     const days = [1, 2, 3, 4, 5, 6, 0]; 
                     days.forEach(dayIndex => {
                         tr.innerHTML += `<td><div class="dropzone" data-action="grid" data-dayindex="${dayIndex}" data-hour="${timeLabel}"></div></td>`;
@@ -284,7 +283,7 @@
                     const currentDay = new Date(mon);
                     currentDay.setDate(mon.getDate() + i);
                     
-                    const dayIndex = currentDay.getDay(); // 0-6 (CN-T7)
+                    const dayIndex = currentDay.getDay(); 
                     const headerId = daysMap[dayIndex];
                     const th = document.getElementById(headerId);
                     
@@ -300,7 +299,7 @@
             weekSelector.addEventListener("change", (e) => {
                 currentWeekStart = getMonday(new Date(e.target.value));
                 updateWeekHeaders();
-                placeCardsOnGrid(); // Vẽ lại lịch tuần này
+                placeCardsOnGrid(); 
             });
             btnPrevWeek.addEventListener("click", () => {
                 currentWeekStart.setDate(currentWeekStart.getDate() - 7);
@@ -367,7 +366,6 @@
                 try {
                     const supabase = window.supabaseClient;
 
-                    // Lấy môn học, học kỳ, phân công
                     const [resCur, resSem, resAssign] = await Promise.all([
                         supabase.from(tableName).select('ma-hoc-phan, ten-hoc-phan'),
                         supabase.from('lop-hoc-phan').select('ma-hoc-phan, hoc-ky').eq('ma-lop', maLop),
@@ -380,7 +378,6 @@
                     currentModuleSemesters = {};
                     (resSem.data || []).forEach(item => { currentModuleSemesters[String(item["ma-hoc-phan"]).trim()] = item["hoc-ky"]; });
 
-                    // Lấy TẤT CẢ thời khóa biểu của các mã phân công thuộc lớp này
                     const assignIds = currentAssignmentsData.map(a => a.id);
                     schedulesData = [];
                     if (assignIds.length > 0) {
@@ -403,8 +400,19 @@
                 });
             }
 
-            function getModuleName(maHp) { const mod = currentCurriculumData.find(m => String(m["ma-hoc-phan"]).trim() === String(maHp).trim()); return mod ? mod["ten-hoc-phan"] : maHp; }
-            function getClassName(maLop) { const cls = classesList.find(c => String(c["ma-lop"]).trim() === String(maLop).trim()); return cls ? cls["ten-lop"] : maLop; }
+            // HÀM LẤY TÊN (ĐÃ BỔ SUNG LẠI HÀM LẤY TÊN GIẢNG VIÊN BỊ THIẾU)
+            function getModuleName(maHp) { 
+                const mod = currentCurriculumData.find(m => String(m["ma-hoc-phan"]).trim() === String(maHp).trim()); 
+                return mod ? mod["ten-hoc-phan"] : maHp; 
+            }
+            function getClassName(maLop) { 
+                const cls = classesList.find(c => String(c["ma-lop"]).trim() === String(maLop).trim()); 
+                return cls ? cls["ten-lop"] : maLop; 
+            }
+            function getInstructorName(maGv) { 
+                const gv = instructorsList.find(i => String(i["ma-giang-vien"]).trim() === String(maGv).trim()); 
+                return gv ? gv["ho-ten"] : maGv; 
+            }
             function getLocName(type, id) {
                 if(type === 'phong') { const r = roomsList.find(x => String(x['ma-phong-hoc']) === String(id)); return r ? r['ten-phong-hoc'] : id; }
                 if(type === 'vien') { const h = hospitalsList.find(x => String(x['ma-benh-vien']) === String(id)); return h ? h['ten-benh-vien'] : id; }
@@ -441,12 +449,12 @@
                     const ltCount = parseInt(a["so-buoi-ly-thuyet"]) || 0;
                     const thCount = parseInt(a["so-buoi-thuc-hanh"]) || 0;
 
-                    // Lấy lịch đã xếp cho assign này
+                    // Lấy lịch đã xếp
                     const assignsSch = schedulesData.filter(s => String(s['ma-phan-cong']) === String(a.id));
                     let ltSchCount = assignsSch.filter(s => s['loai-buoi'] === 'LT').length;
                     let thSchCount = assignsSch.filter(s => s['loai-buoi'] === 'TH').length;
 
-                    // --- SINH THẺ TRONG POOL (Chưa xếp) ---
+                    // SINH THẺ TRONG POOL
                     const unassignedLT = Math.max(0, ltCount - ltSchCount);
                     for (let i = 0; i < unassignedLT; i++) {
                         const cardId = `pool-card-${a.id}-LT-${i}`;
@@ -467,7 +475,6 @@
                 if (poolCardCount === 0) { unassignedPool.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;">Không có học phần nào chờ xếp.</div>`; }
                 poolCount.textContent = poolCardCount;
 
-                // --- VẼ THẺ LÊN LỊCH ---
                 placeCardsOnGrid();
                 setupDragAndDrop();
             }
@@ -480,7 +487,6 @@
                 const noteHtml = ghiChu ? `<div class="cc-note"><i class="fas fa-sticky-note" style="margin-right:4px;"></i>${ghiChu}</div>` : '';
                 
                 let timeLocHtml = "";
-                // Nếu thẻ đã được xếp lịch
                 if (schData) {
                     const locType = schData['ma-phong-hoc'] ? 'phong' : 'vien';
                     const locId = schData['ma-phong-hoc'] || schData['ma-benh-vien'];
@@ -514,24 +520,21 @@
             function placeCardsOnGrid() {
                 clearGridContent();
                 
-                // Thu thập tất cả id của các <th> để lấy full date
-                const dateMap = {}; // { dayIndex: "2026-10-15" }
+                const dateMap = {}; 
                 [1,2,3,4,5,6,0].forEach(idx => {
                     const th = document.getElementById(`th-${idx}`);
                     if(th && th.dataset.fulldate) { dateMap[th.dataset.fulldate] = idx; }
                 });
 
                 schedulesData.forEach(sch => {
-                    const schDate = String(sch['ngay']); // YYYY-MM-DD
+                    const schDate = String(sch['ngay']); 
                     
-                    // Chỉ hiển thị nếu ngày nằm trong tuần đang xem
                     if (dateMap.hasOwnProperty(schDate)) {
                         const dayIndex = dateMap[schDate];
-                        const startHour = String(sch['gio-bat-dau']).substring(0,2) + ":00"; // Làm tròn về đầu giờ để tìm ô
+                        const startHour = String(sch['gio-bat-dau']).substring(0,2) + ":00"; 
                         
                         const targetDropzone = document.querySelector(`.dropzone[data-action="grid"][data-dayindex="${dayIndex}"][data-hour="${startHour}"]`);
                         if (targetDropzone) {
-                            // Lấy thông tin assignment gốc
                             const a = currentAssignmentsData.find(x => String(x.id) === String(sch['ma-phan-cong']));
                             if (a) {
                                 const tenHp = escapeHtml(getModuleName(a["ma-hoc-phan"]));
@@ -549,7 +552,7 @@
                     }
                 });
                 
-                setupDragAndDrop(); // Gắn lại sự kiện cho các thẻ vừa sinh ra
+                setupDragAndDrop();
             }
 
             /* =================================================
@@ -559,8 +562,9 @@
                 const cards = document.querySelectorAll('.class-card');
                 const dropzones = document.querySelectorAll('.dropzone');
 
+                let draggedCard = null; // Biến tạm này chỉ dùng nội bộ trong 1 chu kỳ drag
+
                 cards.forEach(card => {
-                    // Xóa event cũ tránh lặp
                     const newCard = card.cloneNode(true);
                     card.parentNode.replaceChild(newCard, card);
                     
@@ -580,7 +584,6 @@
                         dropzones.forEach(dz => dz.classList.remove('dragover'));
                     });
                     
-                    // Click vào thẻ trên Grid để Sửa
                     if(newCard.dataset.schid) {
                         newCard.addEventListener('click', function() {
                             openModalForEdit(this.dataset.schid);
@@ -588,7 +591,6 @@
                     }
                 });
 
-                // Cập nhật lại list dropzones sau khi replace
                 document.querySelectorAll('.dropzone').forEach(zone => {
                     const newZone = zone.cloneNode(true);
                     zone.parentNode.replaceChild(newZone, zone);
@@ -601,26 +603,23 @@
                         this.classList.remove('dragover');
                         if (!draggedCardInfo) return;
 
-                        const action = this.dataset.action; // "pool" hoặc "grid"
+                        const action = this.dataset.action; 
 
                         if (action === 'pool') {
-                            // KÉO TỪ GRID VỀ POOL -> XÓA LỊCH
                             if (draggedCardInfo.schId) {
                                 if(confirm("Xóa lịch học này?")) {
                                     try {
                                         const { error } = await window.supabaseClient.from('thoi-khoa-bieu').delete().eq('id', draggedCardInfo.schId);
                                         if (error) throw error;
                                         window.showToast("Đã hủy lịch!");
-                                        loadClassAssignments(); // Reload để chia lại bài
+                                        loadClassAssignments(); 
                                     } catch (err) { window.showToast("Lỗi xóa: " + err.message, true); }
                                 }
                             }
                         } else if (action === 'grid') {
-                            // KÉO VÀO GRID -> MỞ MODAL XẾP LỊCH
                             const dayIndex = this.dataset.dayindex;
-                            const hourStr = this.dataset.hour; // "07:00"
+                            const hourStr = this.dataset.hour; 
                             
-                            // Tìm full date từ TH
                             const th = document.getElementById(`th-${dayIndex}`);
                             if(!th || !th.dataset.fulldate) return;
                             
@@ -639,7 +638,6 @@
                 document.getElementById('schCardId').value = existingSchId || "";
 
                 if (existingSchId) {
-                    // Chỉnh sửa thẻ đã có trên grid
                     const sch = schedulesData.find(s => String(s.id) === String(existingSchId));
                     if(sch) {
                         schDate.value = sch['ngay'];
@@ -656,10 +654,8 @@
                         }
                     }
                 } else {
-                    // Thẻ mới từ pool
                     schDate.value = suggestDate;
                     schStartTime.value = suggestHour;
-                    // Mặc định kết thúc sau 2 tiếng
                     let endH = parseInt(suggestHour.split(':')[0]) + 2;
                     schEndTime.value = `${endH.toString().padStart(2,'0')}:00`;
                     
