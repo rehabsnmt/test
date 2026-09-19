@@ -40,19 +40,19 @@
         .calendar-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 900px; }
         .calendar-table th, .calendar-table td { border: 1px solid var(--border); padding: 0; vertical-align: top; }
         .calendar-table th { background: var(--primary-light); color: var(--primary-hover); padding: 8px 4px; text-align: center; font-size: 0.85rem; }
-        .calendar-table td.time-col { background: #f8fafc; font-weight: bold; text-align: center; vertical-align: middle; color: var(--text-muted); width: 60px; font-size: 0.8rem; padding: 10px 0; }
+        .calendar-table td.time-col { background: #f8fafc; font-weight: bold; text-align: center; vertical-align: middle; color: var(--text-muted); width: 70px; font-size: 0.8rem; padding: 10px 0; }
         
-        /* KHU VỰC THẢ (TỪNG Ô GIỜ TRÊN LỊCH) */
-        .dropzone { min-height: 80px; height: 100%; padding: 4px; background: #fff; transition: background 0.2s ease; position: relative; }
+        /* KHU VỰC THẢ (TỪNG Ô BUỔI TRÊN LỊCH) */
+        .dropzone { min-height: 120px; height: 100%; padding: 6px; background: #fff; transition: background 0.2s ease; position: relative; display: flex; flex-direction: column; gap: 6px; }
         .dropzone.dragover { background: #f0fdf4 !important; box-shadow: inset 0 0 0 2px #22c55e; }
 
-        /* THẺ HỌC PHẦN - ÉP KÍCH THƯỚC & XUỐNG DÒNG */
+        /* THẺ HỌC PHẦN - CĂN TRÁI VÀ XUỐNG DÒNG */
         .class-card { 
             background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--primary); 
-            border-radius: 6px; padding: 8px; margin-bottom: 6px; cursor: grab; 
+            border-radius: 6px; padding: 8px; cursor: grab; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; z-index: 10; 
             transition: transform 0.1s; text-align: left;
-            width: 100%; box-sizing: border-box; overflow: hidden; /* KHÔNG CHO TRÀN */
+            width: 100%; box-sizing: border-box; overflow: hidden;
         }
         .class-card:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.2); transform: translateY(-2px); }
         .class-card:active { cursor: grabbing; }
@@ -129,7 +129,7 @@
                     </div>
                 </div>
 
-                <!-- CỘT PHẢI: KHUNG LỊCH (TIME GRID) -->
+                <!-- CỘT PHẢI: KHUNG LỊCH (BUỔI SÁNG/CHIỀU/TỐI) -->
                 <div class="calendar-column">
                     <div class="week-controls">
                         <button class="btn-primary" id="btnPrevWeek"><i class="fas fa-chevron-left"></i> Tuần trước</button>
@@ -143,7 +143,7 @@
                     <table class="calendar-table">
                         <thead>
                             <tr>
-                                <th style="width: 60px;">Giờ</th>
+                                <th style="width: 70px;">Buổi</th>
                                 <th id="th-1">Thứ 2<br><small>--</small></th>
                                 <th id="th-2">Thứ 3<br><small>--</small></th>
                                 <th id="th-3">Thứ 4<br><small>--</small></th>
@@ -154,7 +154,7 @@
                             </tr>
                         </thead>
                         <tbody id="calendarGridBody">
-                            <!-- JS sẽ render dòng từ 07:00 đến 21:00 -->
+                            <!-- JS sẽ render dòng Sáng, Chiều, Tối -->
                         </tbody>
                     </table>
                 </div>
@@ -272,22 +272,46 @@
             const btnRemoveFromGrid = document.getElementById("btnRemoveFromGrid");
 
             /* =================================================
-               1. KHỞI TẠO GRID LỊCH THEO GIỜ & XỬ LÝ NGÀY TUẦN (ĐÃ FIX LỖI TIMEZONE)
+               1. KHỞI TẠO GRID THEO BUỔI VÀ XỬ LÝ NGÀY TUẦN
             ================================================= */
             function generateCalendarGrid() {
                 calendarGridBody.innerHTML = "";
-                for (let hour = 7; hour <= 21; hour++) {
-                    const timeLabel = `${hour.toString().padStart(2, '0')}:00`;
+                
+                // Mảng cấu hình 3 buổi trong ngày
+                const sessions = [
+                    { id: "Sáng", label: "Sáng<br><small>07:30 - 11:30</small>", defStart: "07:30", defEnd: "11:30" },
+                    { id: "Chiều", label: "Chiều<br><small>13:30 - 17:30</small>", defStart: "13:30", defEnd: "17:30" },
+                    { id: "Tối", label: "Tối<br><small>18:00 - 21:00</small>", defStart: "18:00", defEnd: "21:00" }
+                ];
+
+                sessions.forEach(session => {
                     const tr = document.createElement("tr");
-                    tr.innerHTML = `<td class="time-col">${timeLabel}</td>`;
+                    tr.innerHTML = `<td class="time-col" style="height: 160px;">${session.label}</td>`;
                     
                     const days = [1, 2, 3, 4, 5, 6, 0]; 
                     days.forEach(dayIndex => {
-                        tr.innerHTML += `<td><div class="dropzone grid-zone" data-action="grid" data-dayindex="${dayIndex}" data-hour="${timeLabel}"></div></td>`;
+                        tr.innerHTML += `<td>
+                            <div class="dropzone grid-zone" 
+                                 data-action="grid" 
+                                 data-dayindex="${dayIndex}" 
+                                 data-session="${session.id}" 
+                                 data-defstart="${session.defStart}" 
+                                 data-defend="${session.defEnd}"></div>
+                        </td>`;
                     });
                     calendarGridBody.appendChild(tr);
-                }
+                });
+                
                 initDropzones();
+            }
+
+            // Hàm phân loại giờ về Buổi (Dùng khi vẽ thẻ lên lịch)
+            function getSessionFromTime(timeStr) {
+                if (!timeStr) return null;
+                const hour = parseInt(timeStr.split(':')[0]);
+                if (hour < 12) return "Sáng";
+                if (hour < 18) return "Chiều";
+                return "Tối";
             }
 
             function formatDateToInput(date) {
@@ -358,6 +382,7 @@
                     classesList.forEach(cls => {
                         classSelect.appendChild(new Option(cls["ten-lop"], cls["ma-lop"]));
                     });
+
                 } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
             }
 
@@ -397,7 +422,7 @@
                 const selectedClass = classesList.find(c => String(c["ma-lop"]).trim() === maLop);
                 const tableName = selectedClass["chuong-trinh"];
                 
-                if (!isSilent) unassignedPool.innerHTML = `<div style="text-align: center; margin-top: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang tự động đồng bộ...</div>`;
+                if (!isSilent) unassignedPool.innerHTML = `<div style="text-align: center; margin-top: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang đồng bộ...</div>`;
                 
                 try {
                     const supabase = window.supabaseClient;
@@ -504,6 +529,7 @@
                     });
                 });
 
+                // VẼ THẺ VÀO POOL (CHƯA CÓ NGÀY GIỜ)
                 schedulesData.forEach(sch => {
                     if (sch['ngay'] && sch['gio-bat-dau']) return;
 
@@ -588,9 +614,9 @@
                     const schDate = String(sch['ngay']); 
                     if (dateMap.hasOwnProperty(schDate)) {
                         const dayIndex = dateMap[schDate];
-                        const startHour = String(sch['gio-bat-dau']).substring(0,2) + ":00"; 
+                        const sessionName = getSessionFromTime(sch['gio-bat-dau']); 
                         
-                        const targetDropzone = document.querySelector(`.dropzone[data-action="grid"][data-dayindex="${dayIndex}"][data-hour="${startHour}"]`);
+                        const targetDropzone = document.querySelector(`.dropzone[data-action="grid"][data-dayindex="${dayIndex}"][data-session="${sessionName}"]`);
                         if (targetDropzone) {
                             const a = currentAssignmentsData.find(x => String(x.id) === String(sch['id-phan-cong']));
                             if (a) {
@@ -648,7 +674,9 @@
                         } 
                         else if (action === 'grid') {
                             const dayIndex = this.dataset.dayindex;
-                            const hourStr = this.dataset.hour; 
+                            const targetSession = this.dataset.session;
+                            const defStart = this.dataset.defstart; 
+                            const defEnd = this.dataset.defend;
                             
                             const th = document.getElementById(`th-${dayIndex}`);
                             if(!th || !th.dataset.fulldate) return;
@@ -657,36 +685,34 @@
                             const sch = schedulesData.find(s => String(s.id) === String(draggedCardInfo.schId));
 
                             if (sch && sch.ngay) {
-                                updateScheduleTimeSilently(sch, targetDate, hourStr);
+                                // ĐÃ CÓ TRÊN LỊCH -> CẬP NHẬT NGẦM LỊCH (SILENT UPDATE)
+                                updateScheduleTimeSilently(sch, targetDate, defStart, defEnd, targetSession);
                             } else {
-                                openModalForSchedule(draggedCardInfo.schId, targetDate, hourStr, null, true, sch);
+                                // TỪ HÀNG ĐỢI KÉO VÀO -> HIỆN MODAL HỎI PHÒNG
+                                openModalForSchedule(draggedCardInfo.schId, targetDate, defStart, defEnd, true, sch);
                             }
                         }
                     });
                 });
             }
 
-            async function updateScheduleTimeSilently(sch, newDate, newStartHourStr) {
-                let oldDurationMs = 2 * 60 * 60 * 1000;
-                if (sch['gio-bat-dau'] && sch['gio-ket-thuc']) {
-                    const os = new Date(`1970-01-01T${sch['gio-bat-dau']}`);
-                    const oe = new Date(`1970-01-01T${sch['gio-ket-thuc']}`);
-                    oldDurationMs = oe - os;
+            async function updateScheduleTimeSilently(sch, newDate, defStartStr, defEndStr, newSession) {
+                let gioBd = String(sch['gio-bat-dau']).substring(0,5);
+                let gioKt = String(sch['gio-ket-thuc']).substring(0,5);
+                
+                const currentSession = getSessionFromTime(gioBd);
+                
+                // Nếu thẻ bị kéo sang buổi khác (VD: Sáng -> Chiều), ép giờ về mặc định của buổi đó
+                if (currentSession !== newSession) {
+                    gioBd = defStartStr;
+                    gioKt = defEndStr;
                 }
 
-                let startH = parseInt(newStartHourStr.split(':')[0]);
-                let startM = parseInt(newStartHourStr.split(':')[1]);
-                let durationH = Math.floor(oldDurationMs / 3600000);
-                let durationM = Math.floor((oldDurationMs % 3600000) / 60000);
-                
-                let endH = startH + durationH;
-                let endM = startM + durationM;
-                if (endM >= 60) { endH += Math.floor(endM/60); endM = endM % 60; }
-
-                const gioBd = `${startH.toString().padStart(2,'0')}:${startM.toString().padStart(2,'0')}:00`;
-                const gioKt = `${endH.toString().padStart(2,'0')}:${endM.toString().padStart(2,'0')}:00`;
-
-                const payload = { "ngay": newDate, "gio-bat-dau": gioBd, "gio-ket-thuc": gioKt };
+                const payload = { 
+                    "ngay": newDate, 
+                    "gio-bat-dau": gioBd + ":00", 
+                    "gio-ket-thuc": gioKt + ":00" 
+                };
 
                 try {
                     const { error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', sch.id);
@@ -746,16 +772,11 @@
                 } else {
                     schDate.value = suggestDate;
                     schStartTime.value = suggestStartHour;
-                    
-                    if (suggestEndHour) {
-                        schEndTime.value = suggestEndHour;
-                    } else {
-                        let endH = parseInt(suggestStartHour.split(':')[0]) + 2;
-                        schEndTime.value = `${endH.toString().padStart(2,'0')}:00`;
-                    }
+                    schEndTime.value = suggestEndHour;
                     
                     schLocationType.value = 'phong';
                     schLocationType.dispatchEvent(new Event('change'));
+                    schLocation.value = "";
                     
                     btnRemoveFromGrid.style.display = 'none'; 
                 }
