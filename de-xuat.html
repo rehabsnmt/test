@@ -344,7 +344,7 @@
         </div>
     </div>
 
-    <!-- MODAL CHI TIẾT DÀNH RIÊNG CHO MOBILE -->
+    <!-- MODAL CHI TIẾT DÀNH RIÊNG CHO MOBILE (KHÔNG DÙNG TR FIXED) -->
     <div id="mobileDetailModal" class="hidden">
         <div class="mdm-header">
             <div class="mdm-title-wrap">
@@ -393,7 +393,7 @@
 
             function escapeHtml(value) {
                 if (value == null) return "";
-                return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+                return String(value).replace(/&/g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
             }
 
             // HÀM MỞ/ĐÓNG POPUP MOBILE ĐỘC LẬP
@@ -450,10 +450,10 @@
 
                         if (isOfficial) {
                             if (hasPending) {
-                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:left; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
+                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:center; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
                             } else if (canPropose) {
-                                actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Chờ duyệt)"><i class="fas fa-pen"></i> Sửa</button>`;
-                                actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Chờ xóa)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
+                                actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)"><i class="fas fa-pen"></i> Sửa</button>`;
+                                actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
                             }
                         } else {
                             if (trangThai === "Chờ xóa") {
@@ -569,7 +569,7 @@
 
                 const modal = document.getElementById('mobileDetailModal');
                 modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; // Tránh scroll màn hình bên dưới
+                document.body.style.overflow = 'hidden'; 
             };
 
             window.closeMobileDetailModal = function() {
@@ -946,18 +946,18 @@
                                     if (hasPending) {
                                         actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:right; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
                                     } else if (canPropose) {
-                                        actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Chờ duyệt)"><i class="fas fa-pen"></i></button>`;
-                                        actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Chờ xóa)"><i class="fas fa-trash-alt"></i></button>`;
+                                        actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Chờ duyệt)"><i class="fas fa-pen"></i> Sửa</button>`;
+                                        actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Chờ xóa)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
                                     }
                                 } else {
                                     if (trangThai === "Chờ xóa") {
                                         if (canApprove) actionButtons += `<button class="btn-action-assign approve-delete" onclick="approveAssignment('${assignId}')">Duyệt Xóa</button>`;
-                                        if (canPropose) actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')"><i class="fas fa-undo"></i></button>`;
+                                        if (canPropose) actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')"><i class="fas fa-undo"></i> Hủy</button>`;
                                     } else { 
                                         if (canApprove) actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')">Duyệt</button>`;
                                         if (canPropose) {
-                                            actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i></button>`;
-                                            actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i></button>`;
+                                            actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i> Sửa</button>`;
+                                            actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i> Xóa</button>`;
                                         }
                                     }
                                 }
@@ -995,7 +995,7 @@
                             if (assignedLT >= khLT && assignedTH >= khTH && khTong > 0) {
                                 actionTdHtml = `<button disabled style="background: var(--text-muted); cursor: not-allowed; border:none; color:#fff; width:100%; min-height: 36px;" title="Đã phân công đủ số buổi"><i class="fas fa-check"></i> Đủ</button>`;
                             } else {
-                                actionTdHtml = `<button class="btn-primary" style="border:none; width: 100%; min-height: 36px;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"><i class="fas fa-plus"></i></button>`;
+                                actionTdHtml = `<button class="btn-primary" style="border:none; width: 100%; min-height: 36px;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"><i class="fas fa-plus"></i> Thêm</button>`;
                             }
                         }
 
@@ -1257,14 +1257,15 @@
                 if (!targetRecord) return;
                 
                 const maHp = String(targetRecord["ma-hoc-phan"]).trim();
-                const groupId = targetRecord["nhom-de-xuat"];
 
                 try {
                     const supabase = window.supabaseClient;
                     
                     let targetIds = [assignId];
-                    if (groupId) {
-                        const { data: groupProposals } = await supabase.from('de-xuat-phan-cong').select('id').eq('nhom-de-xuat', groupId);
+                    // Truy xuất groupId gốc trực tiếp từ CSDL vì bản phân công chính thức có thể không lưu đủ
+                    const { data: currentProp } = await supabase.from('de-xuat-phan-cong').select('nhom-de-xuat').eq('id', assignId).single();
+                    if (currentProp && currentProp['nhom-de-xuat']) {
+                        const { data: groupProposals } = await supabase.from('de-xuat-phan-cong').select('id').eq('nhom-de-xuat', currentProp['nhom-de-xuat']);
                         if (groupProposals && groupProposals.length > 0) targetIds = groupProposals.map(g => g.id);
                     }
 
@@ -1320,10 +1321,9 @@
                 instructorSelect.value = ""; assignNote.value = "";
                 targetTypeSelect.value = "ca-lop"; targetTypeSelect.dispatchEvent(new Event('change'));
 
-                // Để tạo mới, ta KHÔNG LOẠI TRỪ các đề xuất hiện có, cho phép add thêm GV thứ 2, 3 độc lập.
-                // Tính số buổi CÒN LẠI (tổng số buổi trừ đi các buổi đã phân công chính thức HOẶC đang chờ duyệt CỦA GV KHÁC)
                 const allAssignsForModule = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let assignedLT = 0, assignedTH = 0;
+                
                 const countedProposalIds = new Set();
                 
                 allAssignsForModule.forEach(a => {
@@ -1352,7 +1352,7 @@
                 assignModal.classList.remove("hidden");
             };
 
-            window.editAssignment = function(assignId, isOfficialParam) {
+            window.editAssignment = async function(assignId, isOfficialParam) {
                 if (isOfficialParam && (!assignId || assignId === 'null' || assignId === 'undefined')) {
                     window.showToast("Lỗi dữ liệu: Phân công này thiếu liên kết (id-de-xuat).", true); return;
                 }
@@ -1390,7 +1390,6 @@
                     setTimeout(() => studentSelect.value = assignment["ma-hoc-vien"] || "", 50);
                 }
 
-                // CỘNG DỒN NHƯNG LOẠI TRỪ BẢN ĐANG SỬA
                 const allAssignsForModule = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let otherLT = 0, otherTH = 0;
                 const countedProposalIds = new Set();
@@ -1466,7 +1465,7 @@
                     };
 
                     if (editingAssignmentId) {
-                        const existingProp = currentAssignmentsData.find(a => String(a._proposalId) === String(editingAssignmentId));
+                        const { data: existingProp } = await supabase.from('de-xuat-phan-cong').select('nhom-de-xuat').eq('id', editingAssignmentId).single();
                         if (existingProp && existingProp['nhom-de-xuat']) {
                             groupId = existingProp['nhom-de-xuat'];
                         }
@@ -1496,9 +1495,6 @@
                             // CHỈ AUTO NẾU SỐ BUỔI CHƯƠNG TRÌNH KHỚP NHAU HOÀN TOÀN
                             if (sibKhLT === currentSelectedModule.khLT && sibKhTH === currentSelectedModule.khTH) {
                                 
-                                const { data: existPc } = await supabase.from('phan-cong-giang-day').select('id').eq('ma-lop', sib["ma-lop"]).eq('ma-hoc-phan', savedMaHp);
-                                if (existPc && existPc.length > 0) continue; 
-
                                 const sibPayload = {
                                     ...mainPayload, 
                                     "ma-lop": sib["ma-lop"],
@@ -1516,11 +1512,18 @@
                                     if (existDxSameGroup && existDxSameGroup.length > 0) {
                                         payloadsToUpdate.push({ id: existDxSameGroup[0].id, payload: sibPayload });
                                     } else {
-                                        payloadsToInsert.push(sibPayload);
+                                        // KHI SỬA NHƯNG LỚP KIA CHƯA CÓ TRONG NHÓM NÀY: KIỂM TRA XEM CÓ ĐANG GÁN CHO GV KHÁC KO
+                                        const { data: existPc } = await supabase.from('phan-cong-giang-day').select('id').eq('ma-lop', sib["ma-lop"]).eq('ma-hoc-phan', savedMaHp);
+                                        if (!existPc || existPc.length === 0) {
+                                            payloadsToInsert.push(sibPayload);
+                                        }
                                     }
                                 } else {
                                     // Thêm mới hoàn toàn độc lập
-                                    payloadsToInsert.push(sibPayload);
+                                    const { data: existPc } = await supabase.from('phan-cong-giang-day').select('id').eq('ma-lop', sib["ma-lop"]).eq('ma-hoc-phan', savedMaHp);
+                                    if (!existPc || existPc.length === 0) {
+                                        payloadsToInsert.push(sibPayload);
+                                    }
                                 }
                             }
                         }
