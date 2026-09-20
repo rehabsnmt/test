@@ -69,7 +69,7 @@
         .btn-action-assign.undo:hover { background: #fef3c7; color: #d97706; }
         .btn-action-assign.approve { color: #16a34a; background: #f0fdf4; border: 1px solid #86efac; }
         .btn-action-assign.approve:hover { background: #dcfce7; color: #15803d; border-color: #22c55e; }
-        .btn-action-assign.approve-delete { color: #dc2626; background: #fef2f2; border: 1px solid #fca5a5; }
+        .btn-action-assign.approve-delete { color: #dc2626; background: #fef2f2; border: 1px solid #fca5a5; font-weight: bold; }
         .btn-action-assign.approve-delete:hover { background: #fee2e2; color: #b91c1c; border-color: #ef4444; }
 
         .badge { padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-left: 6px; vertical-align: middle; display: inline-block; white-space: normal; line-height: 1.2;}
@@ -176,11 +176,22 @@
             
             .mdm-section .assignment-list-inline li { flex-direction: column; background: #f8fafc; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); border-radius: 10px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
             .mdm-section .action-group { width: 100%; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
-            .mdm-section .btn-action-assign { flex: 1 1 calc(50% - 8px); padding: 10px 4px; font-size: 0.9rem; font-weight: 600; min-height: 40px; border-radius: 8px; }
+            .mdm-section .btn-action-assign {
+                flex: 1 1 calc(50% - 8px); padding: 10px 4px; font-size: 0.9rem; font-weight: 600;
+                min-height: 40px; border-radius: 8px;
+            }
 
-            .btn-add-large { width: 100%; min-height: 48px; font-size: 1.05rem; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2); border: none; padding: 12px; }
+            .btn-add-large {
+                width: 100%; min-height: 48px; font-size: 1.05rem; border-radius: 10px; font-weight: bold;
+                box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2); border: none; padding: 12px;
+            }
 
-            #assignModal .modal-content { width: 96vw !important; max-width: 450px !important; padding: 20px 16px !important; max-height: 90vh !important; overflow-y: auto !important; border-radius: 16px !important; margin: 0 auto; }
+            /* --- FORM MODAL (THÊM/SỬA) TỐI ƯU MOBILE --- */
+            #assignModal .modal-content {
+                width: 92vw !important; max-width: 450px !important; padding: 20px 16px !important;
+                max-height: 90vh !important; overflow-y: auto !important; border-radius: 16px !important;
+                margin: 0 auto;
+            }
             .flex-row-mobile-col { flex-direction: column; gap: 12px; display: flex; width: 100%; }
             #assignModal .form-group { margin-bottom: 12px; width: 100%; }
             #assignModal input, #assignModal select, #assignModal textarea { min-height: 44px; font-size: 1rem; width: 100%; }
@@ -454,7 +465,7 @@
 
                         if (isOfficial) {
                             if (hasPending) {
-                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:left; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
+                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:center; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
                             } else if (canPropose) {
                                 actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)"><i class="fas fa-pen"></i> Sửa</button>`;
                                 actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
@@ -472,8 +483,8 @@
                                     actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')">Duyệt</button>`;
                                 }
                                 if (canPropose) {
-                                    actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i></button>`;
-                                    actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i></button>`;
+                                    actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i> Sửa</button>`;
+                                    actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i> Xóa</button>`;
                                 }
                             }
                         }
@@ -529,7 +540,7 @@
                     `;
                 } else {
                     const displayHk = hocKy ? `Học kỳ ${hocKy}` : `<span class="text-muted" style="font-weight: normal; font-style: italic;">Chưa xác định</span>`;
-                    hkSelectHtml = `<div style="font-size: 1rem; font-weight: bold; color: var(--primary);">${displayHk}</div>`;
+                    hkSelectHtml = `<div style="font-size: 1rem; font-weight: bold; color: var(--primary); text-align: left;">${displayHk}</div>`;
                 }
 
                 const progressHtml = `
@@ -622,7 +633,6 @@
                         currentUserId = authData.user.id;
                     }
 
-                    // TẢI THÊM "ma-lop-goc"
                     const [resClass, resInst, resAcc] = await Promise.all([
                         supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh, "ma-lop-goc"'),
                         supabase.from('giang-vien').select('ma-giang-vien, ho-ten').order('ho-ten', { ascending: true }),
@@ -1000,7 +1010,7 @@
                             if (assignedLT >= khLT && assignedTH >= khTH && khTong > 0) {
                                 actionTdHtml = `<button disabled style="background: var(--text-muted); cursor: not-allowed; border:none; color:#fff; width:100%; min-height: 36px;" title="Đã phân công đủ số buổi"><i class="fas fa-check"></i> Đủ</button>`;
                             } else {
-                                actionTdHtml = `<button class="btn-primary" style="border:none; width: 100%; min-height: 36px;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"><i class="fas fa-plus"></i> Thêm</button>`;
+                                actionTdHtml = `<button class="btn-primary" style="border:none; width: 100%; min-height: 36px;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"><i class="fas fa-plus"></i></button>`;
                             }
                         }
 
@@ -1065,7 +1075,6 @@
                                 <div class="mmc-stt">${escapeHtml(mod["stt"] || "")}</div>
                                 <div class="mmc-content">
                                     <div class="mmc-name word-wrap-safe">${tenHp}</div>
-                                    <div class="mmc-sub word-wrap-safe">${tinChi} TC | ${chuyenNganh}</div>
                                 </div>
                                 <i class="fas fa-chevron-right mmc-arrow"></i>
                             `;
@@ -1296,33 +1305,40 @@
                 const siblingClasses = classesList.filter(c => c["ma-lop-goc"] === maLopGoc && c["ma-lop"] !== currentSelectedClass["ma-lop"]);
                 if (siblingClasses.length === 0) return null;
 
-                let html = `<label style="display:block; font-weight:bold; margin-bottom: 8px; color: var(--primary);">Đề xuất phân công đồng thời:</label>`;
+                let html = `<label style="display:block; font-weight:bold; margin-bottom: 8px; color: var(--primary); text-align:left;">Đề xuất phân công đồng thời:</label>`;
                 let hasValidSibling = false;
 
                 for (const sib of siblingClasses) {
                     if (!sib["chuong-trinh"]) continue;
 
-                    // 1. Kiểm tra tồn tại trong chương trình đào tạo của lớp anh em
                     const { data: currData } = await window.supabaseClient.from(sib["chuong-trinh"]).select('so-buoi-ly-thuyet, so-buoi-thuc-hanh').eq('ma-hoc-phan', maHp);
                     if (!currData || currData.length === 0) continue;
 
                     const sibKhLT = parseInt(currData[0]['so-buoi-ly-thuyet']) || 0;
                     const sibKhTH = parseInt(currData[0]['so-buoi-thuc-hanh']) || 0;
 
-                    // 2. Kiểm tra xem đã có phân công chính thức chưa
                     const { data: existPc } = await window.supabaseClient.from('phan-cong-giang-day').select('id').eq('ma-lop', sib["ma-lop"]).eq('ma-hoc-phan', maHp);
-                    if (existPc && existPc.length > 0) continue;
+                    const hasPc = existPc && existPc.length > 0;
 
-                    // 3. Kiểm tra xem đã có đề xuất chưa (Chờ duyệt hoặc Chờ xóa)
                     const { data: existDx } = await window.supabaseClient.from('de-xuat-phan-cong').select('id').eq('ma-lop', sib["ma-lop"]).eq('ma-hoc-phan', maHp).neq('trang-thai', 'Đã duyệt');
-                    if (existDx && existDx.length > 0) continue;
+                    const hasDx = existDx && existDx.length > 0;
 
-                    // Đạt đủ điều kiện: Thêm checkbox
+                    let warningHtml = "";
+                    if (hasPc || hasDx) {
+                        let warns = [];
+                        if (hasPc) warns.push("Đã có phân công chính thức");
+                        if (hasDx) warns.push("Đang có đề xuất chờ duyệt");
+                        warningHtml = `<div style="color: #ef4444; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-exclamation-circle"></i> ${warns.join(', ')}</div>`;
+                    }
+
                     hasValidSibling = true;
                     html += `
-                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: normal; cursor: pointer;">
-                            <input type="checkbox" class="sibling-proposal-cb" value="${sib["ma-lop"]}" data-lt="${sibKhLT}" data-th="${sibKhTH}">
-                            Cho lớp <strong>${sib["ten-lop"]}</strong> <span class="text-muted">(LT: ${sibKhLT}, TH: ${sibKhTH})</span>
+                        <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px; font-weight: normal; cursor: pointer; line-height: 1.4; text-align:left;">
+                            <input type="checkbox" class="sibling-proposal-cb" value="${sib["ma-lop"]}" data-lt="${sibKhLT}" data-th="${sibKhTH}" style="margin-top: 3px; max-width:20px;">
+                            <div style="flex: 1; min-width:0;">
+                                <span>Cho lớp <strong>${sib["ten-lop"]}</strong> <span class="text-muted">(LT: ${sibKhLT}, TH: ${sibKhTH})</span></span>
+                                ${warningHtml}
+                            </div>
                         </label>
                     `;
                 }
@@ -1379,7 +1395,7 @@
 
                 if (currentSelectedClass["ma-lop-goc"]) {
                     simultaneousDiv.style.display = "block";
-                    simultaneousDiv.innerHTML = `<div class="text-muted"><i class="fas fa-spinner fa-spin"></i> Đang kiểm tra các lớp liên kết...</div>`;
+                    simultaneousDiv.innerHTML = `<div class="text-muted" style="text-align:left;"><i class="fas fa-spinner fa-spin"></i> Đang kiểm tra các lớp liên kết...</div>`;
 
                     checkSimultaneousOptions(maHpRaw).then(html => {
                         if (html) {
@@ -1389,7 +1405,6 @@
                         }
                     }).catch(err => {
                         simultaneousDiv.style.display = "none";
-                        console.error("Lỗi kiểm tra lớp liên kết:", err);
                     });
                 }
             };
@@ -1458,11 +1473,28 @@
                 practiceSessions.max = remainTH; practiceSessions.value = assignment["so-buoi-thuc-hanh"];
                 hintLT.textContent = `Tối đa: ${remainLT}`; hintTH.textContent = `Tối đa: ${remainTH}`;
 
-                document.getElementById("simultaneousProposalsDiv").style.display = "none";
-                document.getElementById("simultaneousProposalsDiv").innerHTML = "";
-
                 assignModal.style.zIndex = "10001";
                 assignModal.classList.remove("hidden");
+
+                // KIỂM TRA ĐỀ XUẤT ĐỒNG THỜI KHI SỬA
+                const simultaneousDiv = document.getElementById("simultaneousProposalsDiv");
+                simultaneousDiv.innerHTML = "";
+                simultaneousDiv.style.display = "none";
+
+                if (currentSelectedClass["ma-lop-goc"]) {
+                    simultaneousDiv.style.display = "block";
+                    simultaneousDiv.innerHTML = `<div class="text-muted" style="text-align:left;"><i class="fas fa-spinner fa-spin"></i> Đang kiểm tra các lớp liên kết...</div>`;
+
+                    checkSimultaneousOptions(maHp).then(html => {
+                        if (html) {
+                            simultaneousDiv.innerHTML = html;
+                        } else {
+                            simultaneousDiv.style.display = "none";
+                        }
+                    }).catch(err => {
+                        simultaneousDiv.style.display = "none";
+                    });
+                }
             };
 
             function closeModal() { assignModal.classList.add("hidden"); currentSelectedModule = null; editingAssignmentId = null; }
@@ -1499,9 +1531,8 @@
 
                 try {
                     const supabase = window.supabaseClient;
-                    
                     const payloads = [];
-                    const groupId = generateUUID(); // ID chung cho nếu đề xuất nhiều lớp cùng lúc
+                    let groupId = generateUUID(); 
 
                     const mainPayload = {
                         "ma-giang-vien": maGv, "so-buoi-ly-thuyet": lt, "so-buoi-thuc-hanh": th, "ghi-chu": note,
@@ -1510,31 +1541,59 @@
                     };
 
                     if (editingAssignmentId) {
+                        // Tìm groupId cũ nếu có
+                        const existingProp = currentAssignmentsData.find(a => String(a._proposalId) === String(editingAssignmentId));
+                        if (existingProp && existingProp['nhom-de-xuat']) {
+                            groupId = existingProp['nhom-de-xuat'];
+                        }
+
+                        const checkedSibs = document.querySelectorAll('.sibling-proposal-cb:checked');
+                        if (checkedSibs.length > 0) {
+                            mainPayload["nhom-de-xuat"] = groupId;
+                        }
+
                         const { data, error } = await supabase.from('de-xuat-phan-cong').update(mainPayload).eq('id', editingAssignmentId).select();
                         if (error) throw error;
                         if (!data || data.length === 0) throw new Error("Lỗi: Không tìm thấy đề xuất để cập nhật trên hệ thống.");
-                        window.showToast("Đã lưu đề xuất thay đổi!");
+
+                        if (checkedSibs.length > 0) {
+                            const siblingPayloads = [];
+                            checkedSibs.forEach(cb => {
+                                siblingPayloads.push({
+                                    ...mainPayload,
+                                    "ma-lop": cb.value,
+                                    "ma-hoc-phan": savedMaHp,
+                                    "so-buoi-ly-thuyet": parseInt(cb.dataset.lt),
+                                    "so-buoi-thuc-hanh": parseInt(cb.dataset.th),
+                                    "nhom-de-xuat": groupId
+                                });
+                            });
+                            const { error: insErr } = await supabase.from('de-xuat-phan-cong').insert(siblingPayloads);
+                            if (insErr) throw insErr;
+                            window.showToast(`Đã lưu và thêm đề xuất cho ${checkedSibs.length} lớp!`);
+                        } else {
+                            window.showToast("Đã lưu đề xuất thay đổi!");
+                        }
                     } else {
                         mainPayload["ma-lop"] = currentSelectedClass["ma-lop"];
-                        mainPayload["ma-hoc-phan"] = currentSelectedModule.maHp;
+                        mainPayload["ma-hoc-phan"] = savedMaHp;
 
-                        // Kiểm tra xem có tích chọn đề xuất đồng thời không
                         const checkedSibs = document.querySelectorAll('.sibling-proposal-cb:checked');
                         if (checkedSibs.length > 0) {
-                            mainPayload["nhom-de-xuat"] = groupId; // Gán ID nhóm cho lớp chính
+                            mainPayload["nhom-de-xuat"] = groupId;
                             payloads.push(mainPayload);
 
                             checkedSibs.forEach(cb => {
                                 payloads.push({
-                                    ...mainPayload, // Kế thừa thông tin GV, đối tượng, ghi chú
+                                    ...mainPayload,
                                     "ma-lop": cb.value,
-                                    "so-buoi-ly-thuyet": parseInt(cb.dataset.lt), // Lấy đúng số buổi của lớp đích
+                                    "so-buoi-ly-thuyet": parseInt(cb.dataset.lt), 
                                     "so-buoi-thuc-hanh": parseInt(cb.dataset.th),
                                     "nhom-de-xuat": groupId
                                 });
                             });
                         } else {
-                            payloads.push(mainPayload); // Chỉ thêm duy nhất lớp hiện tại
+                            payloads.push(mainPayload); 
                         }
 
                         const { data, error } = await supabase.from('de-xuat-phan-cong').insert(payloads).select();
