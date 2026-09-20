@@ -176,22 +176,11 @@
             
             .mdm-section .assignment-list-inline li { flex-direction: column; background: #f8fafc; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); border-radius: 10px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
             .mdm-section .action-group { width: 100%; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
-            .mdm-section .btn-action-assign {
-                flex: 1 1 calc(50% - 8px); padding: 10px 4px; font-size: 0.9rem; font-weight: 600;
-                min-height: 40px; border-radius: 8px;
-            }
+            .mdm-section .btn-action-assign { flex: 1 1 calc(50% - 8px); padding: 10px 4px; font-size: 0.9rem; font-weight: 600; min-height: 40px; border-radius: 8px; }
 
-            .btn-add-large {
-                width: 100%; min-height: 48px; font-size: 1.05rem; border-radius: 10px; font-weight: bold;
-                box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2); border: none; padding: 12px;
-            }
+            .btn-add-large { width: 100%; min-height: 48px; font-size: 1.05rem; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2); border: none; padding: 12px; }
 
-            /* --- FORM MODAL (THÊM/SỬA) TỐI ƯU MOBILE --- */
-            #assignModal .modal-content {
-                width: 92vw !important; max-width: 450px !important; padding: 20px 16px !important;
-                max-height: 90vh !important; overflow-y: auto !important; border-radius: 16px !important;
-                margin: 0 auto;
-            }
+            #assignModal .modal-content { width: 96vw !important; max-width: 450px !important; padding: 20px 16px !important; max-height: 90vh !important; overflow-y: auto !important; border-radius: 16px !important; margin: 0 auto; }
             .flex-row-mobile-col { flex-direction: column; gap: 12px; display: flex; width: 100%; }
             #assignModal .form-group { margin-bottom: 12px; width: 100%; }
             #assignModal input, #assignModal select, #assignModal textarea { min-height: 44px; font-size: 1rem; width: 100%; }
@@ -465,7 +454,7 @@
 
                         if (isOfficial) {
                             if (hasPending) {
-                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:center; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
+                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:left; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
                             } else if (canPropose) {
                                 actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)"><i class="fas fa-pen"></i> Sửa</button>`;
                                 actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
@@ -489,6 +478,7 @@
                             }
                         }
 
+                        // Nếu không có quyền duyệt và cũng k có quyền đề xuất thì không hiện action group
                         const renderActionGroup = actionButtons !== "" ? `<div class="action-group">${actionButtons}</div>` : "";
 
                         assignListHtml += `
@@ -584,7 +574,7 @@
 
                 const modal = document.getElementById('mobileDetailModal');
                 modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; 
+                document.body.style.overflow = 'hidden'; // Tránh scroll màn hình bên dưới
             };
 
             window.closeMobileDetailModal = function() {
@@ -1075,6 +1065,7 @@
                                 <div class="mmc-stt">${escapeHtml(mod["stt"] || "")}</div>
                                 <div class="mmc-content">
                                     <div class="mmc-name word-wrap-safe">${tenHp}</div>
+                                    <div class="mmc-sub word-wrap-safe">${tinChi} TC | ${chuyenNganh}</div>
                                 </div>
                                 <i class="fas fa-chevron-right mmc-arrow"></i>
                             `;
@@ -1297,7 +1288,7 @@
             /* =================================================
                HÀM KIỂM TRA LỚP CHUNG MÃ GỐC VÀ RENDER CHECKBOX
             ================================================= */
-            async function checkSimultaneousOptions(maHpRaw) {
+            async function checkSimultaneousOptions(maHpRaw, currentGroupId = null) {
                 const maHp = String(maHpRaw).trim();
                 const maLopGoc = currentSelectedClass["ma-lop-goc"];
                 if (!maLopGoc) return null;
@@ -1320,7 +1311,12 @@
                     const { data: existPc } = await window.supabaseClient.from('phan-cong-giang-day').select('id').eq('ma-lop', sib["ma-lop"]).eq('ma-hoc-phan', maHp);
                     const hasPc = existPc && existPc.length > 0;
 
-                    const { data: existDx } = await window.supabaseClient.from('de-xuat-phan-cong').select('id').eq('ma-lop', sib["ma-lop"]).eq('ma-hoc-phan', maHp).neq('trang-thai', 'Đã duyệt');
+                    const { data: existDx } = await window.supabaseClient.from('de-xuat-phan-cong')
+                        .select('id, nhom-de-xuat')
+                        .eq('ma-lop', sib["ma-lop"])
+                        .eq('ma-hoc-phan', maHp)
+                        .neq('trang-thai', 'Đã duyệt');
+                    
                     const hasDx = existDx && existDx.length > 0;
 
                     let warningHtml = "";
@@ -1331,10 +1327,16 @@
                         warningHtml = `<div style="color: #ef4444; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-exclamation-circle"></i> ${warns.join(', ')}</div>`;
                     }
 
+                    let isChecked = false;
+                    // Tự động check nếu nó đang ở chung 1 nhóm đề xuất
+                    if (hasDx && currentGroupId && existDx[0]['nhom-de-xuat'] === currentGroupId) {
+                        isChecked = true;
+                    }
+
                     hasValidSibling = true;
                     html += `
                         <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px; font-weight: normal; cursor: pointer; line-height: 1.4; text-align:left;">
-                            <input type="checkbox" class="sibling-proposal-cb" value="${sib["ma-lop"]}" data-lt="${sibKhLT}" data-th="${sibKhTH}" style="margin-top: 3px; max-width:20px;">
+                            <input type="checkbox" class="sibling-proposal-cb" value="${sib["ma-lop"]}" data-lt="${sibKhLT}" data-th="${sibKhTH}" ${isChecked ? 'checked' : ''} style="margin-top: 3px; max-width:20px;">
                             <div style="flex: 1; min-width:0;">
                                 <span>Cho lớp <strong>${sib["ten-lop"]}</strong> <span class="text-muted">(LT: ${sibKhLT}, TH: ${sibKhTH})</span></span>
                                 ${warningHtml}
@@ -1481,11 +1483,16 @@
                 simultaneousDiv.innerHTML = "";
                 simultaneousDiv.style.display = "none";
 
+                let currentGroupId = null;
+                if (assignment['nhom-de-xuat']) {
+                    currentGroupId = assignment['nhom-de-xuat'];
+                }
+
                 if (currentSelectedClass["ma-lop-goc"]) {
                     simultaneousDiv.style.display = "block";
                     simultaneousDiv.innerHTML = `<div class="text-muted" style="text-align:left;"><i class="fas fa-spinner fa-spin"></i> Đang kiểm tra các lớp liên kết...</div>`;
 
-                    checkSimultaneousOptions(maHp).then(html => {
+                    checkSimultaneousOptions(maHp, currentGroupId).then(html => {
                         if (html) {
                             simultaneousDiv.innerHTML = html;
                         } else {
@@ -1531,7 +1538,6 @@
 
                 try {
                     const supabase = window.supabaseClient;
-                    const payloads = [];
                     let groupId = generateUUID(); 
 
                     const mainPayload = {
@@ -1540,14 +1546,14 @@
                         "trang-thai": "Chờ duyệt" 
                     };
 
+                    const checkedSibs = document.querySelectorAll('.sibling-proposal-cb:checked');
+
                     if (editingAssignmentId) {
-                        // Tìm groupId cũ nếu có
                         const existingProp = currentAssignmentsData.find(a => String(a._proposalId) === String(editingAssignmentId));
                         if (existingProp && existingProp['nhom-de-xuat']) {
                             groupId = existingProp['nhom-de-xuat'];
                         }
 
-                        const checkedSibs = document.querySelectorAll('.sibling-proposal-cb:checked');
                         if (checkedSibs.length > 0) {
                             mainPayload["nhom-de-xuat"] = groupId;
                         }
@@ -1555,57 +1561,62 @@
                         const { data, error } = await supabase.from('de-xuat-phan-cong').update(mainPayload).eq('id', editingAssignmentId).select();
                         if (error) throw error;
                         if (!data || data.length === 0) throw new Error("Lỗi: Không tìm thấy đề xuất để cập nhật trên hệ thống.");
-
-                        if (checkedSibs.length > 0) {
-                            const siblingPayloads = [];
-                            checkedSibs.forEach(cb => {
-                                siblingPayloads.push({
-                                    ...mainPayload,
-                                    "ma-lop": cb.value,
-                                    "ma-hoc-phan": savedMaHp,
-                                    "so-buoi-ly-thuyet": parseInt(cb.dataset.lt),
-                                    "so-buoi-thuc-hanh": parseInt(cb.dataset.th),
-                                    "nhom-de-xuat": groupId
-                                });
-                            });
-                            const { error: insErr } = await supabase.from('de-xuat-phan-cong').insert(siblingPayloads);
-                            if (insErr) throw insErr;
-                            window.showToast(`Đã lưu và thêm đề xuất cho ${checkedSibs.length} lớp!`);
-                        } else {
-                            window.showToast("Đã lưu đề xuất thay đổi!");
-                        }
+                        
                     } else {
                         mainPayload["ma-lop"] = currentSelectedClass["ma-lop"];
                         mainPayload["ma-hoc-phan"] = savedMaHp;
-
-                        const checkedSibs = document.querySelectorAll('.sibling-proposal-cb:checked');
+                        
                         if (checkedSibs.length > 0) {
                             mainPayload["nhom-de-xuat"] = groupId;
-                            payloads.push(mainPayload);
-
-                            checkedSibs.forEach(cb => {
-                                payloads.push({
-                                    ...mainPayload,
-                                    "ma-lop": cb.value,
-                                    "so-buoi-ly-thuyet": parseInt(cb.dataset.lt), 
-                                    "so-buoi-thuc-hanh": parseInt(cb.dataset.th),
-                                    "nhom-de-xuat": groupId
-                                });
-                            });
-                        } else {
-                            payloads.push(mainPayload); 
                         }
 
-                        const { data, error } = await supabase.from('de-xuat-phan-cong').insert(payloads).select();
+                        const { data, error } = await supabase.from('de-xuat-phan-cong').insert([mainPayload]).select();
                         if (error) throw error;
                         if (!data || data.length === 0) throw new Error("Lỗi: Không thể thêm đề xuất mới vào hệ thống.");
-                        
-                        if (payloads.length > 1) {
-                            window.showToast(`Đã thêm đề xuất cho ${payloads.length} lớp!`);
-                        } else {
-                            window.showToast("Đã thêm đề xuất mới!");
-                        }
                     }
+
+                    // XỬ LÝ LỚP ĐỒNG THỜI KHI SỬA HOẶC THÊM MỚI
+                    if (checkedSibs.length > 0) {
+                        for (const cb of checkedSibs) {
+                            const sibMaLop = cb.value;
+                            const sibLT = parseInt(cb.dataset.lt);
+                            const sibTH = parseInt(cb.dataset.th);
+
+                            const sibPayload = {
+                                "ma-lop": sibMaLop,
+                                "ma-hoc-phan": savedMaHp,
+                                "ma-giang-vien": maGv,
+                                "so-buoi-ly-thuyet": sibLT,
+                                "so-buoi-thuc-hanh": sibTH,
+                                "ghi-chu": note,
+                                "doi-tuong": doiTuong,
+                                "loai-nhom": loaiNhom,
+                                "ten-nhom": tenNhom,
+                                "ma-hoc-vien": maHv,
+                                "ho-ten": hoTenHv,
+                                "trang-thai": "Chờ duyệt",
+                                "nhom-de-xuat": groupId
+                            };
+
+                            const { data: existDx } = await supabase.from('de-xuat-phan-cong')
+                                .select('id')
+                                .eq('ma-lop', sibMaLop)
+                                .eq('ma-hoc-phan', savedMaHp)
+                                .neq('trang-thai', 'Đã duyệt');
+
+                            if (existDx && existDx.length > 0) {
+                                // NẾU ĐÃ CÓ ĐỀ XUẤT -> TIẾN HÀNH CẬP NHẬT
+                                await supabase.from('de-xuat-phan-cong').update(sibPayload).eq('id', existDx[0].id);
+                            } else {
+                                // NẾU CHƯA CÓ -> THÊM MỚI
+                                await supabase.from('de-xuat-phan-cong').insert([sibPayload]);
+                            }
+                        }
+                        window.showToast(`Đã lưu và cập nhật đồng thời cho ${checkedSibs.length} lớp liên kết!`);
+                    } else {
+                        window.showToast(editingAssignmentId ? "Đã lưu đề xuất thay đổi!" : "Đã thêm đề xuất mới!");
+                    }
+
                     closeModal(); 
                     reloadAndFocus(savedMaHp);
                 } catch (error) { window.showToast("Lỗi: " + error.message, true);
