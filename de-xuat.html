@@ -102,13 +102,19 @@
         .hk-bar-track { flex: 1 1 auto; background: var(--border-light); height: 14px; border-radius: 8px; margin: 0 10px; overflow: hidden; min-width: 0; }
         .hk-bar-fill { background: var(--primary); height: 100%; border-radius: 8px; transition: width 0.5s ease; }
         .hk-bar-value { width: 45px; font-size: 0.85rem; font-weight: bold; color: var(--primary); text-align: right; flex-shrink: 0; }
-
+        
         .highlight-row { background-color: var(--primary-light) !important; transition: background-color 0.5s ease; }
 
-        /* Base Input/Select bảo vệ Box Model */
-        select, input, textarea, button {
-            max-width: 100%;
-            box-sizing: border-box !important;
+        /* Modal Elements ẩn mặc định trên desktop */
+        .btn-mobile-detail { display: none; }
+        #mobileDetailModal { z-index: 9998; } /* Thấp hơn assignModal (9999) */
+
+        /* Responsive Flex cho Form trên Mobile */
+        .flex-row-mobile-col { display: flex; gap: 1rem; }
+
+        /* Tối ưu hóa form input chung */
+        input[type="number"], input[type="date"], input[type="time"], select, textarea {
+            width: 100%; max-width: 100%;
         }
 
         /* =========================================
@@ -139,7 +145,7 @@
 
             /* Bố cục Tín chỉ dạng dọc */
             .hk-bar-container { flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
-            .hk-bar-label { width: 100%; flex-shrink: 0; font-size: 0.9rem; }
+            .hk-bar-label { width: 100%; flex-shrink: 0; font-size: 0.9rem; text-align: left; }
             .hk-bar-track { width: calc(100% - 55px); flex: none; margin: 0; height: 16px; }
             .hk-bar-value { width: 50px; text-align: right; }
 
@@ -160,7 +166,7 @@
                 font-weight: bold;
                 font-size: 1.05rem;
                 margin-top: 10px;
-                text-align: center;
+                text-align: left; /* Căn trái thay vì căn giữa */
                 width: 100%;
                 word-break: break-word;
             }
@@ -199,11 +205,13 @@
                 font-weight: bold;
                 color: #0f172a;
                 margin-bottom: 4px;
+                text-align: left;
             }
 
             .mmc-sub {
                 font-size: 0.85rem;
                 color: var(--text-muted);
+                text-align: left;
             }
 
             .mmc-arrow {
@@ -241,6 +249,7 @@
             .mdm-title-wrap {
                 flex: 1;
                 min-width: 0;
+                text-align: left;
             }
             .mdm-title {
                 font-size: 1.15rem;
@@ -283,7 +292,7 @@
 
             .mdm-label {
                 display: block; font-weight: bold; font-size: 0.95rem; color: #475569; margin-bottom: 10px;
-                border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;
+                border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; text-align: left;
             }
 
             .mdm-section .hk-select { min-height: 44px; font-size: 1rem; }
@@ -336,7 +345,7 @@
 
     <main style="opacity: 0; transition: opacity 0.3s ease;">
         
-        <div class="section-title" style="margin-top: 0; margin-bottom: 1rem;">
+        <div class="section-title" style="margin-top: 0; margin-bottom: 1rem; text-align: left;">
             <h1 style="font-size: 1.3rem;">Quản lý Phân công & Đề xuất</h1>
         </div>
 
@@ -356,19 +365,19 @@
                         </select>
                     </div>
                 </div>
-                <div id="curriculumInfo" style="margin-top: 5px; font-size: 0.85rem; color: var(--text-muted); display: none;">
+                <div id="curriculumInfo" style="margin-top: 5px; font-size: 0.85rem; color: var(--text-muted); display: none; text-align: left;">
                     CTĐT: <strong id="curriculumNameText" class="word-wrap-safe">...</strong>
                 </div>
             </div>
 
             <div id="summaryCard" class="summary-card">
-                <h3 style="margin-bottom: 0.8rem; font-size: 1rem;"><i class="fas fa-chart-pie" style="color:var(--primary); margin-right:5px;"></i> Tổng quan Tín chỉ</h3>
+                <h3 style="margin-bottom: 0.8rem; font-size: 1rem; text-align: left;"><i class="fas fa-chart-pie" style="color:var(--primary); margin-right:5px;"></i> Tổng quan Tín chỉ</h3>
                 
                 <div id="specTotalsDiv" style="margin-bottom: 1rem; font-size: 0.85rem; display: flex; flex-wrap: wrap; gap: 8px;"></div>
 
                 <div id="hkBreakdownDiv" style="display: none; border-top: 1px dashed var(--border); padding-top: 1rem;">
-                    <h4 style="margin-bottom: 0.2rem; font-size: 0.95rem;">Phân bổ 4 Học kỳ: <span id="summaryMajorName" style="color: var(--primary);"></span></h4>
-                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">* Đã cộng gộp học phần nhóm <strong>"Chung"</strong>.</p>
+                    <h4 style="margin-bottom: 0.2rem; font-size: 0.95rem; text-align: left;">Phân bổ 4 Học kỳ: <span id="summaryMajorName" style="color: var(--primary);"></span></h4>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; text-align: left;">* Đã cộng gộp học phần nhóm <strong>"Chung"</strong>.</p>
                     
                     <div id="hkBarsContainer">
                         <div class="hk-bar-container"><div class="hk-bar-label">Học kỳ 1</div><div class="hk-bar-track"><div id="bar-hk1" class="hk-bar-fill" style="width: 0%;"></div></div><div class="hk-bar-value" id="val-hk1">0 TC</div></div>
@@ -377,7 +386,7 @@
                         <div class="hk-bar-container"><div class="hk-bar-label">Học kỳ 4</div><div class="hk-bar-track"><div id="bar-hk4" class="hk-bar-fill" style="width: 0%;"></div></div><div class="hk-bar-value" id="val-hk4">0 TC</div></div>
                     </div>
                 </div>
-                <div id="hkBreakdownEmpty" style="font-size: 0.85rem; color: var(--text-muted); font-style: italic; border-top: 1px dashed var(--border); padding-top: 0.8rem;">
+                <div id="hkBreakdownEmpty" style="font-size: 0.85rem; color: var(--text-muted); font-style: italic; border-top: 1px dashed var(--border); padding-top: 0.8rem; text-align: left;">
                     Vui lòng chọn 1 chuyên ngành ở bộ lọc để xem chi tiết phân bổ theo từng học kỳ.
                 </div>
             </div>
@@ -389,22 +398,22 @@
                         <thead>
                             <tr>
                                 <th style="width: 35px; text-align: center;">TT</th>
-                                <th style="width: 26%;">Học phần</th>
-                                <th style="width: 80px;">Học kỳ</th>
-                                <th style="width: 140px;">Tiến độ</th>
-                                <th style="width: auto;">Chi tiết Phân công & Đề xuất</th>
+                                <th style="width: 26%; text-align: left;">Học phần</th>
+                                <th style="width: 80px; text-align: left;">Học kỳ</th>
+                                <th style="width: 140px; text-align: left;">Tiến độ</th>
+                                <th style="width: auto; text-align: left;">Chi tiết Phân công & Đề xuất</th>
                                 <th style="width: 80px;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="modulesTableBody">
-                            <tr><td colspan="6" class="text-center">Vui lòng chọn lớp học để xem chương trình.</td></tr>
+                            <tr><td colspan="6" class="text-left" style="padding: 10px;">Vui lòng chọn lớp học để xem chương trình.</td></tr>
                         </tbody>
                     </table>
                 </div>
 
                 <!-- MOBILE CARD LIST -->
                 <div id="mobileModuleListContainer" class="mobile-only">
-                    <div style="text-align: center; font-size: 0.9rem; color: var(--text-muted); padding: 20px;">Vui lòng chọn lớp học để xem chương trình.</div>
+                    <div style="text-align: left; font-size: 0.9rem; color: var(--text-muted); padding: 10px 0;">Vui lòng chọn lớp học để xem chương trình.</div>
                 </div>
             </div>
         </div>
@@ -414,19 +423,19 @@
     <div id="assignModal" class="modal-overlay hidden">
         <div class="modal-content">
             <button class="modal-close" id="btnCloseModal" aria-label="Đóng"><i class="fas fa-times"></i></button>
-            <h3 id="modalTitle" style="margin-bottom: 0.5rem; text-align: center; font-size: 1.2rem;">Thêm Đề xuất</h3>
-            <p id="modalModuleInfo" class="word-wrap-safe" style="text-align: center; color: var(--primary); font-weight: 600; font-size: 0.95rem; margin-bottom: 1.2rem;"></p>
+            <h3 id="modalTitle" style="margin-bottom: 0.5rem; text-align: left; font-size: 1.2rem;">Thêm Đề xuất</h3>
+            <p id="modalModuleInfo" class="word-wrap-safe" style="text-align: left; color: var(--primary); font-weight: 600; font-size: 0.95rem; margin-bottom: 1.2rem;"></p>
 
             <form id="assignForm">
                 <div class="form-group">
-                    <label for="instructorSelect">Chọn Giảng viên <span class="text-danger">*</span></label>
+                    <label for="instructorSelect" style="text-align: left; display: block;">Chọn Giảng viên <span class="text-danger">*</span></label>
                     <select id="instructorSelect" required>
                         <option value="">-- Đang tải giảng viên --</option>
                     </select>
                 </div>
 
                 <div class="form-group" style="margin-top: 1rem;">
-                    <label for="targetTypeSelect">Đối tượng giảng dạy</label>
+                    <label for="targetTypeSelect" style="text-align: left; display: block;">Đối tượng giảng dạy</label>
                     <select id="targetTypeSelect" style="border-color: var(--primary);">
                         <option value="ca-lop">Cả lớp</option>
                         <option value="nhom">Nhóm học viên</option>
@@ -437,15 +446,15 @@
                 <div id="groupTargetDiv" style="display: none; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; background: var(--bg-page); padding: 12px; border-radius: 8px; width: 100%;">
                     <div class="flex-row-mobile-col">
                         <div class="form-group" style="margin: 0;">
-                            <label for="groupTypeSelect" style="font-size: 0.85rem;">Loại nhóm <span class="text-danger">*</span></label>
+                            <label for="groupTypeSelect" style="font-size: 0.85rem; text-align: left; display: block;">Loại nhóm <span class="text-danger">*</span></label>
                             <select id="groupTypeSelect"><option value="">- Loại -</option></select>
                         </div>
                         <div class="form-group" style="margin: 0;">
-                            <label for="groupNameSelect" style="font-size: 0.85rem;">Tên nhóm <span class="text-danger">*</span></label>
+                            <label for="groupNameSelect" style="font-size: 0.85rem; text-align: left; display: block;">Tên nhóm <span class="text-danger">*</span></label>
                             <select id="groupNameSelect"><option value="">- Tên -</option></select>
                         </div>
                     </div>
-                    <div id="groupMembersDiv" style="margin-top: 10px; font-size: 0.85rem; display: none;">
+                    <div id="groupMembersDiv" style="margin-top: 10px; font-size: 0.85rem; display: none; text-align: left;">
                         <strong style="color: var(--text-dark);">Danh sách học viên nhóm:</strong>
                         <ul id="groupMembersList" style="margin: 8px 0 0 0; padding-left: 20px; color: var(--text-muted); max-height: 120px; overflow-y: auto;">
                         </ul>
@@ -454,32 +463,32 @@
 
                 <div id="studentTargetDiv" style="display: none; margin-bottom: 1rem; background: var(--bg-page); padding: 12px; border-radius: 8px;">
                     <div class="form-group" style="margin: 0;">
-                        <label for="studentSelect" style="font-size: 0.85rem;">Chọn Học viên <span class="text-danger">*</span></label>
+                        <label for="studentSelect" style="font-size: 0.85rem; text-align: left; display: block;">Chọn Học viên <span class="text-danger">*</span></label>
                         <select id="studentSelect"><option value="">- Học viên -</option></select>
                     </div>
                 </div>
 
                 <div class="flex-row-mobile-col">
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label for="theorySessions">Lý thuyết (LT) <span class="text-danger">*</span></label>
+                        <label for="theorySessions" style="text-align: left; display: block;">Lý thuyết (LT) <span class="text-danger">*</span></label>
                         <input type="number" id="theorySessions" min="0" value="0" required>
-                        <small id="hintLT" class="text-muted" style="display: block; margin-top: 6px; font-weight: 600; color: var(--primary);">Còn lại: 0</small>
+                        <small id="hintLT" class="text-muted" style="display: block; margin-top: 6px; font-weight: 600; color: var(--primary); text-align: left;">Còn lại: 0</small>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label for="practiceSessions">Thực hành (TH) <span class="text-danger">*</span></label>
+                        <label for="practiceSessions" style="text-align: left; display: block;">Thực hành (TH) <span class="text-danger">*</span></label>
                         <input type="number" id="practiceSessions" min="0" value="0" required>
-                        <small id="hintTH" class="text-muted" style="display: block; margin-top: 6px; font-weight: 600; color: var(--primary);">Còn lại: 0</small>
+                        <small id="hintTH" class="text-muted" style="display: block; margin-top: 6px; font-weight: 600; color: var(--primary); text-align: left;">Còn lại: 0</small>
                     </div>
                 </div>
 
                 <div class="form-group" style="margin-top: 1rem;">
-                    <label for="assignNote">Ghi chú (Tùy chọn)</label>
+                    <label for="assignNote" style="text-align: left; display: block;">Ghi chú (Tùy chọn)</label>
                     <textarea id="assignNote" rows="2" placeholder="Ghi chú đề xuất..."></textarea>
                 </div>
 
-                <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; gap: 12px; width: 100%;">
-                    <button type="button" class="btn-warning" id="btnCancelModal" style="color: #fff; background: var(--text-muted); flex: 1; border-radius: 8px; font-weight: bold;">Hủy</button>
-                    <button type="submit" class="btn-primary" id="btnSaveAssignment" style="flex: 1; border-radius: 8px; font-weight: bold;">
+                <div style="margin-top: 2rem; display: flex; justify-content: space-between; gap: 12px; width: 100%;">
+                    <button type="button" class="btn-warning" id="btnCancelModal" style="color: #fff; background: var(--text-muted); flex: 1; border-radius: 8px; font-weight: bold; font-size: 1rem; padding: 12px;">Hủy</button>
+                    <button type="submit" class="btn-primary" id="btnSaveAssignment" style="flex: 1; border-radius: 8px; font-weight: bold; font-size: 1rem; padding: 12px;">
                         <i class="fas fa-save"></i> Lưu
                     </button>
                 </div>
@@ -530,7 +539,7 @@
 
             // HÀM MỞ/ĐÓNG POPUP MOBILE ĐỘC LẬP
             window.openMobileDetailModal = function(rawMaHp) {
-                if (window.innerWidth > 768) return; // Bảo mật, chỉ chạy mobile
+                if (window.innerWidth > 768) return; 
                 
                 const mod = currentCurriculumData.find(m => String(m["ma-hoc-phan"]).trim() === String(rawMaHp));
                 if (!mod) return;
@@ -546,7 +555,7 @@
 
                 const moduleAssignments = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === rawMaHp);
                 
-                let assignedLT = 0, assignedTH = 0, assignListHtml = `<div class="text-muted" style="font-style:italic; padding: 10px; text-align:center;">Chưa có phân công</div>`;
+                let assignedLT = 0, assignedTH = 0, assignListHtml = `<div class="text-muted" style="font-style:italic; padding: 8px 0; text-align:left;">Chưa có phân công</div>`;
                 let taughtSessions = 0; 
                 
                 if (moduleAssignments.length > 0) {
@@ -570,7 +579,7 @@
                         else if (a["doi-tuong"] === "ca-nhan") targetText = `HV: ${escapeHtml(a["ho-ten"])}`;
 
                         let noteHtml = "";
-                        if (aNote) { noteHtml = `<div class="word-wrap-safe" style="font-size: 0.85rem; color: #d97706; margin-top: 6px;"><i class="fas fa-sticky-note"></i> Ghi chú: ${aNote}</div>`; }
+                        if (aNote) { noteHtml = `<div class="word-wrap-safe" style="font-size: 0.85rem; color: #d97706; margin-top: 6px; text-align:left;"><i class="fas fa-sticky-note"></i> Ghi chú: ${aNote}</div>`; }
 
                         let badgeHtml = "";
                         if (trangThai === "Chính thức") badgeHtml = `<span class="badge official">Chính thức</span>`;
@@ -582,7 +591,7 @@
 
                         if (isOfficial) {
                             if (hasPending) {
-                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:center; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
+                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:left; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
                             } else {
                                 actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)"><i class="fas fa-pen"></i> Sửa</button>`;
                                 actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
@@ -600,11 +609,11 @@
 
                         assignListHtml += `
                             <li>
-                                <div class="assignment-info-wrap">
+                                <div class="assignment-info-wrap" style="text-align:left;">
                                     <i class="fas fa-user-tie" style="color:var(--primary); font-size:0.9rem;"></i> 
                                     <strong style="font-size:1rem;">${escapeHtml(getInstructorName(a["ma-giang-vien"]))}</strong> 
                                     ${badgeHtml}
-                                    <span class="text-muted word-wrap-safe" style="font-size:0.9rem; display:block; margin-top: 6px;">
+                                    <span class="text-muted word-wrap-safe" style="font-size:0.9rem; display:block; margin-top: 6px; text-align:left;">
                                         LT:${aLT} | TH:${aTH} | <span style="color:var(--accent); font-weight:600;">${targetText}</span>
                                     </span>
                                     ${noteHtml}
@@ -641,16 +650,17 @@
                 `;
 
                 const progressHtml = `
-                    <div style="font-size: 0.95rem; margin-bottom: 6px; text-align: left; line-height: 1.3;">
-                        <b>Phân công: ${assignedTong}/${khTong}</b> <span class="text-muted">(LT:${assignedLT}/${khLT} TH:${assignedTH}/${khTH})</span>
+                    <div style="font-size: 0.95rem; margin-bottom: 6px; text-align: left; line-height: 1.4;">
+                        <div style="font-weight: bold; color: var(--text-dark);">Phân công: ${assignedTong}/${khTong}</div>
+                        <div class="text-muted" style="font-size: 0.85rem; margin-top: 2px;">(LT:${assignedLT}/${khLT} TH:${assignedTH}/${khTH})</div>
                     </div>
                     <div class="progress-wrapper" style="margin-bottom: 12px;">
                         <div class="progress-container" style="height:8px;"><div class="progress-bar ${pColor}" style="width: ${Math.min(percent, 100)}%;"></div></div>
                         <span class="progress-percent">${percent}%</span>
                     </div>
                     
-                    <div style="font-size: 0.95rem; margin-bottom: 6px; text-align: left; line-height: 1.3; color: #0369a1;">
-                        <b>Đã dạy: ${taughtSessions}/${khTong} buổi</b>
+                    <div style="font-size: 0.95rem; margin-bottom: 6px; text-align: left; line-height: 1.4; color: #0369a1;">
+                        <div style="font-weight: bold;">Đã dạy: ${taughtSessions}/${khTong} buổi</div>
                     </div>
                     <div class="progress-wrapper">
                         <div class="progress-container" style="height: 6px;"><div class="progress-bar taught" style="width: ${Math.min(taughtPercent, 100)}%;"></div></div>
@@ -763,8 +773,8 @@
                 const maLop = classSelect.value;
                 if (!maLop) {
                     currentSelectedClass = null; curriculumInfo.style.display = "none"; specSelect.disabled = true; specSelect.innerHTML = `<option value="">-- Tất cả chuyên ngành --</option>`;
-                    modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center">Vui lòng chọn lớp học.</td></tr>`; 
-                    if(mobileModuleListContainer) mobileModuleListContainer.innerHTML = `<div style="text-align: center; font-size: 0.9rem; color: var(--text-muted); padding: 20px;">Vui lòng chọn lớp học để xem chương trình.</div>`;
+                    modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-left" style="padding: 10px;">Vui lòng chọn lớp học.</td></tr>`; 
+                    if(mobileModuleListContainer) mobileModuleListContainer.innerHTML = `<div style="text-align: left; font-size: 0.9rem; color: var(--text-muted); padding: 10px 0;">Vui lòng chọn lớp học để xem chương trình.</div>`;
                     return;
                 }
                 
@@ -775,8 +785,8 @@
 
                 curriculumNameText.textContent = tableName; curriculumInfo.style.display = "block";
                 if (!isSilentReload) {
-                    modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>`;
-                    if(mobileModuleListContainer) mobileModuleListContainer.innerHTML = `<div style="text-align: center; font-size: 0.9rem; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải...</div>`;
+                    modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-left" style="padding: 10px;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>`;
+                    if(mobileModuleListContainer) mobileModuleListContainer.innerHTML = `<div style="text-align: left; font-size: 0.9rem; padding: 10px 0;"><i class="fas fa-spinner fa-spin"></i> Đang tải...</div>`;
                 }
 
                 try {
@@ -843,8 +853,8 @@
                     }
                     
                 } catch (error) { 
-                    modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu. Lỗi: ${escapeHtml(error.message || "")}</td></tr>`; 
-                    if(mobileModuleListContainer) mobileModuleListContainer.innerHTML = `<div class="text-danger text-center">Lỗi tải dữ liệu.</div>`;
+                    modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-left text-danger" style="padding: 10px;">Lỗi tải dữ liệu. Lỗi: ${escapeHtml(error.message || "")}</td></tr>`; 
+                    if(mobileModuleListContainer) mobileModuleListContainer.innerHTML = `<div class="text-danger text-left" style="padding: 10px 0;">Lỗi tải dữ liệu.</div>`;
                 }
             }
 
@@ -969,8 +979,8 @@
                 });
 
                 if (filteredMods.length === 0) { 
-                    modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-center">Không có dữ liệu.</td></tr>`; 
-                    if(mobileModuleListContainer) mobileModuleListContainer.innerHTML = `<div style="text-align:center; padding: 20px;">Không có dữ liệu.</div>`;
+                    modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-left" style="padding: 10px;">Không có dữ liệu.</td></tr>`; 
+                    if(mobileModuleListContainer) mobileModuleListContainer.innerHTML = `<div style="text-align:left; padding: 10px 0;">Không có dữ liệu.</div>`;
                     return; 
                 }
 
@@ -1004,7 +1014,7 @@
 
                         const moduleAssignments = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === rawMaHp);
                         
-                        let assignedLT = 0, assignedTH = 0, assignListHtml = `<span class="text-muted" style="font-style:italic;">Chưa có phân công</span>`;
+                        let assignedLT = 0, assignedTH = 0, assignListHtml = `<div class="text-muted" style="font-style:italic; padding: 8px 0; text-align:left;">Chưa có phân công</div>`;
                         let taughtSessions = 0; 
                         
                         if (moduleAssignments.length > 0) {
@@ -1035,7 +1045,7 @@
                                 else if (a["doi-tuong"] === "ca-nhan") targetText = `HV: ${escapeHtml(a["ho-ten"])}`;
 
                                 let noteHtml = "";
-                                if (aNote) { noteHtml = `<div class="word-wrap-safe" style="font-size: 0.75rem; color: #d97706; margin-top: 2px;"><i class="fas fa-sticky-note"></i> Ghi chú: ${aNote}</div>`; }
+                                if (aNote) { noteHtml = `<div class="word-wrap-safe" style="font-size: 0.75rem; color: #d97706; margin-top: 2px; text-align:left;"><i class="fas fa-sticky-note"></i> Ghi chú: ${aNote}</div>`; }
 
                                 let badgeHtml = "";
                                 if (trangThai === "Chính thức") badgeHtml = `<span class="badge official">Chính thức</span>`;
@@ -1065,18 +1075,16 @@
 
                                 assignListHtml += `
                                     <li>
-                                        <div class="assignment-info-wrap">
-                                            <i class="fas fa-user-tie" style="color:var(--primary); font-size:0.8rem;"></i> 
-                                            <strong>${escapeHtml(getInstructorName(a["ma-giang-vien"]))}</strong> 
+                                        <div class="assignment-info-wrap" style="text-align:left;">
+                                            <i class="fas fa-user-tie" style="color:var(--primary); font-size:0.9rem;"></i> 
+                                            <strong style="font-size:1rem;">${escapeHtml(getInstructorName(a["ma-giang-vien"]))}</strong> 
                                             ${badgeHtml}
-                                            <span class="text-muted word-wrap-safe" style="font-size:0.75rem; display:block; margin-top: 2px;">
-                                                LT:${aLT} | TH:${aTH} | <span style="color:var(--accent); font-weight:500;">${targetText}</span>
+                                            <span class="text-muted word-wrap-safe" style="font-size:0.9rem; display:block; margin-top: 6px; text-align:left;">
+                                                LT:${aLT} | TH:${aTH} | <span style="color:var(--accent); font-weight:600;">${targetText}</span>
                                             </span>
                                             ${noteHtml}
                                         </div>
-                                        <div class="action-group">
-                                            ${actionButtons}
-                                        </div>
+                                        <div class="action-group">${actionButtons}</div>
                                     </li>`;
                             });
                             assignListHtml += `</ul>`;
@@ -1109,15 +1117,16 @@
                         `;
 
                         const progressHtml = `
-                            <div style="font-size: 0.75rem; margin-bottom: 2px; text-align: left; line-height: 1.2;">
-                                <b>Phân công: ${assignedTong}/${khTong}</b> <span class="text-muted">(LT:${assignedLT}/${khLT} TH:${assignedTH}/${khTH})</span>
+                            <div style="font-size: 0.75rem; margin-bottom: 4px; text-align: left; line-height: 1.3;">
+                                <div style="font-weight: bold; color: var(--text-dark);">Phân công: ${assignedTong}/${khTong}</div>
+                                <div class="text-muted" style="margin-top: 2px;">(LT:${assignedLT}/${khLT} TH:${assignedTH}/${khTH})</div>
                             </div>
                             <div class="progress-wrapper">
                                 <div class="progress-container"><div class="progress-bar ${pColor}" style="width: ${Math.min(percent, 100)}%;"></div></div>
                                 <span class="progress-percent">${percent}%</span>
                             </div>
                             
-                            <div style="font-size: 0.75rem; margin-top: 6px; margin-bottom: 2px; text-align: left; line-height: 1.2; color: #0369a1;">
+                            <div style="font-size: 0.75rem; margin-top: 8px; margin-bottom: 4px; text-align: left; line-height: 1.3; color: #0369a1;">
                                 <b>Đã dạy: ${taughtSessions}/${khTong}</b>
                             </div>
                             <div class="progress-wrapper">
@@ -1131,8 +1140,8 @@
                         tr.innerHTML = `
                             <td class="text-center">${escapeHtml(mod["stt"] || "")}</td>
                             <td>
-                                <strong class="word-wrap-safe" style="color: var(--text-dark); font-size: 0.9rem;">${tenHp}</strong>
-                                <span class="text-muted word-wrap-safe" style="font-size: 0.8rem; display:block;">${tinChi} TC | ${chuyenNganh}</span>
+                                <strong class="word-wrap-safe" style="color: var(--text-dark); font-size: 0.9rem; text-align:left; display:block;">${tenHp}</strong>
+                                <span class="text-muted word-wrap-safe" style="font-size: 0.8rem; display:block; text-align:left;">${tinChi} TC | ${chuyenNganh}</span>
                             </td>
                             <td>${hkSelectHtml}</td>
                             <td style="padding: 0.5rem 0.8rem;">${progressHtml}</td>
@@ -1389,7 +1398,6 @@
                 const allAssignsForModule = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let assignedLT = 0, assignedTH = 0;
                 
-                // Set để tránh cộng trùng 1 ID (Trường hợp sửa đề xuất của bản chính thức)
                 const countedProposalIds = new Set();
                 
                 allAssignsForModule.forEach(a => {
@@ -1456,7 +1464,6 @@
                     setTimeout(() => studentSelect.value = assignment["ma-hoc-vien"] || "", 50);
                 }
 
-                // CỘNG DỒN NHƯNG LOẠI TRỪ BẢN ĐANG SỬA
                 const allAssignsForModule = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let otherLT = 0, otherTH = 0;
                 const countedProposalIds = new Set();
