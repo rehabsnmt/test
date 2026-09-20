@@ -469,7 +469,7 @@
                                 }
                                 if (canPropose) {
                                     actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i> Sửa</button>`;
-                                    actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i> Xóa</button>`;
+                                    actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
                                 }
                             }
                         }
@@ -814,31 +814,61 @@
 
             window.updateSemester = async function(maHpRaw, newHk) {
                 try {
-                    const maLop = currentSelectedClass["ma-lop"]; const supabase = window.supabaseClient; const maHp = String(maHpRaw).trim(); 
-                    const { data: existingRecords, error: checkError } = await supabase.from('lop-hoc-phan').select('id').eq('ma-lop', maLop).eq('ma-hoc-phan', maHp);
-                    if (checkError) throw checkError;
+                    const currentMaLop = currentSelectedClass["ma-lop"];
+                    const maLopGoc = currentSelectedClass["ma-lop-goc"];
+                    const supabase = window.supabaseClient;
+                    const maHp = String(maHpRaw).trim();
 
-                    if (existingRecords && existingRecords.length > 0) {
-                        const recordId = existingRecords[0].id;
-                        if (newHk) {
-                            const { data, error } = await supabase.from('lop-hoc-phan').update({ 'hoc-ky': parseInt(newHk) }).eq('id', recordId).select();
-                            if (error) throw error;
-                            if (!data || data.length === 0) throw new Error("Không thể cập nhật trên hệ thống.");
-                        } else {
-                            const { data, error } = await supabase.from('lop-hoc-phan').delete().eq('id', recordId).select();
-                            if (error) throw error;
-                            if (!data || data.length === 0) throw new Error("Không thể xóa trên hệ thống.");
-                        }
-                    } else {
-                        if (newHk) {
-                            const { data, error } = await supabase.from('lop-hoc-phan').insert([{ "ma-lop": maLop, "ma-hoc-phan": maHp, "hoc-ky": parseInt(newHk) }]).select();
-                            if (error) throw error;
-                            if (!data || data.length === 0) throw new Error("Không thể thêm trên hệ thống.");
+                    // Xác định danh sách các lớp cần cập nhật
+                    let targetClasses = [currentMaLop];
+                    if (maLopGoc) {
+                        const siblingClasses = classesList.filter(c => c["ma-lop-goc"] === maLopGoc && c["ma-lop"] !== currentMaLop);
+
+                        for (const sib of siblingClasses) {
+                            if (sib["chuong-trinh"]) {
+                                const { data: currData } = await supabase.from(sib["chuong-trinh"]).select('ma-hoc-phan').eq('ma-hoc-phan', maHp);
+                                if (currData && currData.length > 0) {
+                                    targetClasses.push(sib["ma-lop"]);
+                                }
+                            }
                         }
                     }
+
+                    // Chạy Update/Insert/Delete
+                    for (const maLop of targetClasses) {
+                        const { data: existingRecords, error: checkError } = await supabase.from('lop-hoc-phan').select('id').eq('ma-lop', maLop).eq('ma-hoc-phan', maHp);
+                        if (checkError) throw checkError;
+
+                        if (existingRecords && existingRecords.length > 0) {
+                            const recordId = existingRecords[0].id;
+                            if (newHk) {
+                                const { error: updErr } = await supabase.from('lop-hoc-phan').update({ 'hoc-ky': parseInt(newHk) }).eq('id', recordId);
+                                if(updErr) throw updErr;
+                            } else {
+                                const { error: delErr } = await supabase.from('lop-hoc-phan').delete().eq('id', recordId);
+                                if(delErr) throw delErr;
+                            }
+                        } else {
+                            if (newHk) {
+                                const { error: insErr } = await supabase.from('lop-hoc-phan').insert([{ "ma-lop": maLop, "ma-hoc-phan": maHp, "hoc-ky": parseInt(newHk) }]);
+                                if(insErr) throw insErr;
+                            }
+                        }
+                    }
+
                     currentModuleSemesters[maHp] = newHk ? parseInt(newHk) : null;
-                    window.showToast("Cập nhật học kỳ thành công!"); updateSummary();
-                } catch (err) { window.showToast("Lỗi cập nhật bảng lop-hoc-phan: " + err.message, true); loadClassData(true); }
+
+                    if (targetClasses.length > 1) {
+                        window.showToast(`Đã đồng bộ học kỳ cho ${targetClasses.length} lớp liên kết!`);
+                    } else {
+                        window.showToast("Cập nhật học kỳ thành công!");
+                    }
+
+                    updateSummary();
+                } catch (err) {
+                    window.showToast("Lỗi cập nhật bảng lop-hoc-phan: " + err.message, true);
+                    loadClassData(true);
+                }
             };
 
             function isPastSession(ngay, gioKt) {
@@ -946,18 +976,18 @@
                                     if (hasPending) {
                                         actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:right; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
                                     } else if (canPropose) {
-                                        actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Chờ duyệt)"><i class="fas fa-pen"></i> Sửa</button>`;
-                                        actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Chờ xóa)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
+                                        actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Chờ duyệt)"><i class="fas fa-pen"></i></button>`;
+                                        actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Chờ xóa)"><i class="fas fa-trash-alt"></i></button>`;
                                     }
                                 } else {
                                     if (trangThai === "Chờ xóa") {
                                         if (canApprove) actionButtons += `<button class="btn-action-assign approve-delete" onclick="approveAssignment('${assignId}')">Duyệt Xóa</button>`;
-                                        if (canPropose) actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')"><i class="fas fa-undo"></i> Hủy</button>`;
+                                        if (canPropose) actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')"><i class="fas fa-undo"></i></button>`;
                                     } else { 
                                         if (canApprove) actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')">Duyệt</button>`;
                                         if (canPropose) {
-                                            actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i> Sửa</button>`;
-                                            actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i> Xóa</button>`;
+                                            actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i></button>`;
+                                            actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i></button>`;
                                         }
                                     }
                                 }
@@ -995,7 +1025,7 @@
                             if (assignedLT >= khLT && assignedTH >= khTH && khTong > 0) {
                                 actionTdHtml = `<button disabled style="background: var(--text-muted); cursor: not-allowed; border:none; color:#fff; width:100%; min-height: 36px;" title="Đã phân công đủ số buổi"><i class="fas fa-check"></i> Đủ</button>`;
                             } else {
-                                actionTdHtml = `<button class="btn-primary" style="border:none; width: 100%; min-height: 36px;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"><i class="fas fa-plus"></i> Thêm</button>`;
+                                actionTdHtml = `<button class="btn-primary" style="border:none; width: 100%; min-height: 36px;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"><i class="fas fa-plus"></i></button>`;
                             }
                         }
 
@@ -1257,7 +1287,7 @@
                 if (!targetRecord) return;
                 
                 const maHp = String(targetRecord["ma-hoc-phan"]).trim();
-
+                
                 try {
                     const supabase = window.supabaseClient;
                     
@@ -1416,6 +1446,10 @@
                 practiceSessions.max = remainTH; practiceSessions.value = assignment["so-buoi-thuc-hanh"];
                 hintLT.textContent = `Tối đa: ${remainLT}`; hintTH.textContent = `Tối đa: ${remainTH}`;
 
+                // Nếu là đang sửa bản chính thức (isOfficialParam = true), ta chủ động chuyển nó thành đề xuất chờ duyệt mới.
+                // Thực tế trong Supabase, khi Update trạng thái của row bên de-xuat-phan-cong về "Chờ duyệt",
+                // UI sẽ hiển thị lại nó thành màu vàng chờ duyệt.
+                
                 assignModal.style.zIndex = "10001";
                 assignModal.classList.remove("hidden");
             };
@@ -1465,6 +1499,8 @@
                     };
 
                     if (editingAssignmentId) {
+                        // Nếu đang sửa (Sửa đề xuất HOẶC sửa bản chính thức)
+                        // Ta cần lấy groupId gốc
                         const { data: existingProp } = await supabase.from('de-xuat-phan-cong').select('nhom-de-xuat').eq('id', editingAssignmentId).single();
                         if (existingProp && existingProp['nhom-de-xuat']) {
                             groupId = existingProp['nhom-de-xuat'];
@@ -1503,7 +1539,7 @@
                                 };
 
                                 if (editingAssignmentId) {
-                                    // Sửa các lớp trong cùng 1 cụm group-id
+                                    // Sửa các lớp trong cùng 1 cụm group-id (Cho phép cả bản nháp và bản chính thức chuyển về chờ duyệt)
                                     const { data: existDxSameGroup } = await supabase.from('de-xuat-phan-cong')
                                         .select('id')
                                         .eq('ma-lop', sib["ma-lop"])
@@ -1512,7 +1548,7 @@
                                     if (existDxSameGroup && existDxSameGroup.length > 0) {
                                         payloadsToUpdate.push({ id: existDxSameGroup[0].id, payload: sibPayload });
                                     } else {
-                                        // KHI SỬA NHƯNG LỚP KIA CHƯA CÓ TRONG NHÓM NÀY: KIỂM TRA XEM CÓ ĐANG GÁN CHO GV KHÁC KO
+                                        // NẾU CHƯA TỒN TẠI (Có thể do lỗi data cũ), thì chỉ thêm nếu lớp kia chưa phân cho ai
                                         const { data: existPc } = await supabase.from('phan-cong-giang-day').select('id').eq('ma-lop', sib["ma-lop"]).eq('ma-hoc-phan', savedMaHp);
                                         if (!existPc || existPc.length === 0) {
                                             payloadsToInsert.push(sibPayload);
