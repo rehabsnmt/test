@@ -20,10 +20,11 @@
         .top-controls { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1rem; flex-wrap: wrap; background: var(--surface); padding: 1rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
         .top-controls .form-group { margin-bottom: 0; flex: 1; min-width: 200px; }
 
-        .schedule-layout { display: flex; gap: 1.5rem; align-items: flex-start; }
+        .schedule-layout { display: flex; gap: 1.5rem; align-items: flex-start; transition: all 0.3s; }
 
         /* CỘT TRÁI: HÀNG ĐỢI (POOL) */
-        .pool-column { width: 320px; flex-shrink: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); }
+        .pool-column { width: 320px; flex-shrink: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); transition: all 0.3s; }
+        .pool-column.hidden { display: none; }
         .pool-filters { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--border); display: flex; flex-direction: column; gap: 8px; }
         .pool-filters select { width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.8rem; }
         
@@ -32,7 +33,7 @@
         #unassignedPool.dragover { border-color: var(--accent); background: #fee2e2; }
 
         /* CỘT PHẢI: KHUNG LỊCH (TIME GRID) */
-        .calendar-column { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; box-shadow: var(--shadow-sm); overflow-x: auto; }
+        .calendar-column { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; box-shadow: var(--shadow-sm); overflow-x: auto; transition: all 0.3s; }
         .week-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .week-controls button { padding: 5px 12px; font-size: 0.85rem; }
         .week-controls input[type="date"], .week-controls select { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; }
@@ -51,7 +52,7 @@
             background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--primary); 
             border-radius: 6px; padding: 8px; cursor: grab; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; z-index: 10; 
-            transition: transform 0.1s; text-align: left;
+            transition: all 0.2s; text-align: left;
             width: 100%; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column;
         }
         .class-card:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.2); transform: translateY(-2px); }
@@ -75,6 +76,27 @@
         .cc-time-loc { 
             margin-top: 5px; padding-top: 5px; border-top: 1px dashed var(--border-light); font-weight: 600; color: #0f172a; font-size: 0.75rem; 
             white-space: normal !important; overflow-wrap: break-word; word-break: break-word; line-height: 1.4;
+        }
+
+        /* CHẾ ĐỘ THU GỌN THẺ (COMPACT MODE) KHI CÓ NHIỀU THẺ TRONG 1 Ô */
+        .class-card.compact {
+            padding: 5px 8px; min-height: unset; cursor: pointer;
+        }
+        .class-card.compact .cc-title,
+        .class-card.compact .cc-info,
+        .class-card.compact .cc-type-badge,
+        .class-card.compact .cc-note {
+            display: none !important;
+        }
+        .class-card.compact .cc-time-loc {
+            margin-top: 0; padding-top: 0; border-top: none; color: var(--primary); font-weight: bold; padding-right: 15px;
+        }
+        .class-card.compact::after {
+            content: '\f107'; /* fa-angle-down */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); font-size: 0.8rem;
         }
 
         .modal-overlay { z-index: 9999; }
@@ -103,7 +125,7 @@
 
             <div class="schedule-layout">
                 <!-- CỘT TRÁI: HÀNG ĐỢI (POOL) -->
-                <div class="pool-column">
+                <div class="pool-column" id="poolColumn">
                     <div class="pool-filters">
                         <select id="filterSemester">
                             <option value="">-- Tất cả học kỳ --</option>
@@ -118,7 +140,7 @@
                     </div>
 
                     <div class="pool-header">
-                        <span>Hàng đợi chưa xếp lịch</span>
+                        <span>Hàng đợi chờ xếp</span>
                         <span class="badge" id="poolCount" style="background:var(--primary); color:#fff; padding: 2px 8px; border-radius: 10px;">0</span>
                     </div>
                     <!-- Dropzone để gỡ lịch -->
@@ -135,6 +157,7 @@
                         <button class="btn-primary" id="btnPrevWeek"><i class="fas fa-chevron-left"></i> Tuần trước</button>
                         
                         <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
+                            <button id="btnTogglePool" class="btn-primary" style="background-color: var(--text-muted);"><i class="fas fa-columns"></i> Ẩn/Hiện Kho</button>
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 <label style="font-weight: bold; font-size: 0.85rem;">Lớp hiển thị:</label>
                                 <select id="gridClassFilter" style="max-width: 180px;">
@@ -142,7 +165,7 @@
                                 </select>
                             </div>
                             <div style="display: flex; align-items: center; gap: 5px;">
-                                <label style="font-weight: bold; font-size: 0.85rem;">Tuần từ:</label>
+                                <label style="font-weight: bold; font-size: 0.85rem;">Tuần:</label>
                                 <input type="date" id="weekSelector">
                             </div>
                         </div>
@@ -189,11 +212,11 @@
                 <div style="display: flex; gap: 1rem;">
                     <div class="form-group" style="flex: 1;">
                         <label>Giờ bắt đầu <span class="text-danger">*</span></label>
-                        <input type="time" id="schStartTime" required>
+                        <input type="time" id="schStartTime" lang="en-US" required>
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label>Giờ kết thúc <span class="text-danger">*</span></label>
-                        <input type="time" id="schEndTime" required>
+                        <input type="time" id="schEndTime" lang="en-US" required>
                     </div>
                 </div>
 
@@ -252,6 +275,17 @@
                 return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
             }
 
+            // Chuyển 13:30 -> 01:30 PM
+            function formatAMPM(timeStr) {
+                if (!timeStr) return '';
+                let [h, m] = timeStr.split(':');
+                h = parseInt(h);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12;
+                h = h ? h : 12;
+                return String(h).padStart(2, '0') + ':' + m + ' ' + ampm;
+            }
+
             // --- TRẠNG THÁI DỮ LIỆU ---
             let classesList = [], instructorsList = [], roomsList = [], hospitalsList = [];
             let masterCurriculumMap = {}, masterSemesterMap = {};
@@ -269,6 +303,8 @@
             const gridClassFilter = document.getElementById("gridClassFilter");
             const filterSemester = document.getElementById("filterSemester");
             const filterModule = document.getElementById("filterModule");
+            const poolColumn = document.getElementById("poolColumn");
+            const btnTogglePool = document.getElementById("btnTogglePool");
             const unassignedPool = document.getElementById("unassignedPool");
             const poolCount = document.getElementById("poolCount");
             
@@ -281,6 +317,11 @@
             const schDate = document.getElementById("schDate"), schStartTime = document.getElementById("schStartTime"), schEndTime = document.getElementById("schEndTime");
             const schLocationType = document.getElementById("schLocationType"), schLocation = document.getElementById("schLocation");
             const btnRemoveFromGrid = document.getElementById("btnRemoveFromGrid");
+
+            // Tính năng ẩn/hiện hàng đợi
+            btnTogglePool.addEventListener("click", () => {
+                poolColumn.classList.toggle("hidden");
+            });
 
             /* =================================================
                1. KHỞI TẠO GRID THEO BUỔI & XỬ LÝ NGÀY TUẦN
@@ -392,7 +433,6 @@
                         gridClassFilter.appendChild(new Option(cls["ten-lop"], cls["ma-lop"]));
                     });
 
-                    // Build master map cho môn học
                     const chuongTrinhSet = new Set(classesList.map(c => c['chuong-trinh']).filter(Boolean));
                     for (let ct of chuongTrinhSet) {
                         const { data } = await supabase.from(ct).select('ma-hoc-phan, ten-hoc-phan');
@@ -403,7 +443,6 @@
                         }
                     }
 
-                    // Tải toàn bộ dữ liệu (Thay vì tải từng lớp)
                     await refreshGlobalData();
 
                 } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
@@ -427,7 +466,6 @@
                 try {
                     const supabase = window.supabaseClient;
 
-                    // Giới hạn 10000 dòng để lấy hết toàn bộ lịch của tất cả các lớp
                     const [resAssign, resSch, resSem] = await Promise.all([
                         supabase.from('phan-cong-giang-day').select('*').limit(10000),
                         supabase.from('thoi-khoa-bieu').select('*').limit(10000),
@@ -442,7 +480,6 @@
                         masterSemesterMap[`${String(item['ma-lop']).trim()}_${String(item['ma-hoc-phan']).trim()}`] = item["hoc-ky"]; 
                     });
 
-                    // AUTO-SYNC: Tạo các thẻ Null (Hàng đợi) nếu Phân công có cập nhật số lượng
                     await syncAllDatabaseSchedules();
 
                     if (!isSilent) populateModuleFilter();
@@ -491,7 +528,6 @@
                     allSchedulesData = newSchData || [];
                 }
 
-                // Tính toán Session Index (VD: 1/3, 2/3) cho tất cả thẻ
                 allAssignmentsData.forEach(a => {
                     ['LT', 'TH'].forEach(type => {
                         const schs = allSchedulesData.filter(s => String(s['id-phan-cong']) === String(a.id) && s['loai-buoi'] === type);
@@ -534,7 +570,7 @@
                 });
             }
 
-            // VẼ POOL (HÀNG ĐỢI CHO RIÊNG LỚP ĐƯỢC CHỌN)
+            // VẼ POOL (TỰ ĐỘNG GIỮ ĐÚNG THỨ TỰ NHÓM MÔN)
             function renderPool() {
                 unassignedPool.innerHTML = "";
                 let poolCardCount = 0;
@@ -549,30 +585,38 @@
                 const fSem = filterSemester.value;
                 const fMod = filterModule.value;
 
-                allSchedulesData.forEach(sch => {
-                    if (sch['ngay'] && sch['gio-bat-dau']) return; // Chỉ lấy các thẻ chưa xếp lịch
-
-                    const a = allAssignmentsData.find(x => String(x.id) === String(sch['id-phan-cong']));
-                    if (!a || String(a['ma-lop']).trim() !== maLopSelected) return;
-
+                // Duyệt qua allAssignmentsData để giữ đúng thứ tự các thẻ trong cùng 1 môn
+                allAssignmentsData.forEach(a => {
+                    if (String(a['ma-lop']).trim() !== maLopSelected) return;
+                    
                     const maHp = String(a["ma-hoc-phan"]).trim();
                     const hk = String(masterSemesterMap[`${maLopSelected}_${maHp}`] || "");
                     
                     if (fSem && hk !== fSem) return;
                     if (fMod && maHp !== fMod) return;
 
-                    const tenHp = escapeHtml(getModuleName(maHp));
-                    const tenLop = escapeHtml(getClassName(a["ma-lop"]));
-                    const tenGv = escapeHtml(getInstructorName(a["ma-giang-vien"]));
-                    let targetText = "Cả lớp";
-                    if (a["doi-tuong"] === "nhom") targetText = `Nhóm ${escapeHtml(a["ten-nhom"])}`;
-                    else if (a["doi-tuong"] === "ca-nhan") targetText = escapeHtml(a["ho-ten"]);
+                    ['LT', 'TH'].forEach(type => {
+                        const unassignedSchs = allSchedulesData.filter(s => 
+                            String(s['id-phan-cong']) === String(a.id) && 
+                            s['loai-buoi'] === type && 
+                            (!s['ngay'] || !s['gio-bat-dau'])
+                        );
 
-                    const cardId = `pool-card-${sch.id}`;
-                    const cardHtml = createCardHtml(cardId, sch.id, sch['loai-buoi'], tenHp, tenLop, tenGv, targetText, a["ghi-chu"], null, sch._sessionIndex, sch._totalSessions);
-                    
-                    unassignedPool.insertAdjacentHTML('beforeend', cardHtml);
-                    poolCardCount++;
+                        unassignedSchs.forEach(sch => {
+                            const tenHp = escapeHtml(getModuleName(maHp));
+                            const tenLop = escapeHtml(getClassName(a["ma-lop"]));
+                            const tenGv = escapeHtml(getInstructorName(a["ma-giang-vien"]));
+                            let targetText = "Cả lớp";
+                            if (a["doi-tuong"] === "nhom") targetText = `Nhóm ${escapeHtml(a["ten-nhom"])}`;
+                            else if (a["doi-tuong"] === "ca-nhan") targetText = escapeHtml(a["ho-ten"]);
+
+                            const cardId = `pool-card-${sch.id}`;
+                            const cardHtml = createCardHtml(cardId, sch.id, sch['loai-buoi'], tenHp, tenLop, tenGv, targetText, a["ghi-chu"], null, sch._sessionIndex, sch._totalSessions);
+                            
+                            unassignedPool.insertAdjacentHTML('beforeend', cardHtml);
+                            poolCardCount++;
+                        });
+                    });
                 });
 
                 if (poolCardCount === 0) { unassignedPool.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;">Hàng đợi trống. Toàn bộ môn của lớp này đã xếp lịch.</div>`; }
@@ -581,7 +625,7 @@
                 setupDragEventsForCards();
             }
 
-            // VẼ GRID (LỊCH HIỂN THỊ CHUNG HOẶC THEO LỚP BỘ LỌC)
+            // VẼ GRID
             function renderGrid() {
                 clearGridContent();
                 const gridClass = gridClassFilter.value;
@@ -621,12 +665,20 @@
                     }
                 });
                 
+                // Thu gọn các thẻ nếu ô đó có nhiều hơn 1 thẻ
+                document.querySelectorAll('.grid-zone').forEach(zone => {
+                    const cardsInZone = zone.querySelectorAll('.class-card');
+                    if (cardsInZone.length > 1) {
+                        cardsInZone.forEach(c => c.classList.add('compact'));
+                    }
+                });
+                
                 setupDragEventsForCards(); 
             }
 
             function createCardHtml(cardId, schId, type, tenHp, tenLop, tenGv, targetText, ghiChu, schData = null, sessionIndex = 1, totalSessions = 1) {
                 const typeClass = type === 'LT' ? 'type-lt' : 'type-th';
-                const noteHtml = ghiChu ? `<div style="margin-top: 5px; padding-top: 5px; border-top: 1px dashed rgba(0,0,0,0.1); font-style: italic; color: #64748b; font-size: 0.7rem;"><i class="fas fa-sticky-note" style="margin-right:4px;"></i>${ghiChu}</div>` : '';
+                const noteHtml = ghiChu ? `<div class="cc-note" style="margin-top: 5px; padding-top: 5px; border-top: 1px dashed rgba(0,0,0,0.1); font-style: italic; color: #64748b; font-size: 0.7rem;"><i class="fas fa-sticky-note" style="margin-right:4px;"></i>${ghiChu}</div>` : '';
                 
                 let timeLocHtml = "";
                 if (schData && schData.ngay) {
@@ -636,7 +688,7 @@
                     
                     timeLocHtml = `
                         <div class="cc-time-loc">
-                            <i class="far fa-clock"></i> <span>${String(schData['gio-bat-dau']).substring(0,5)} - ${String(schData['gio-ket-thuc']).substring(0,5)}</span><br>
+                            <i class="far fa-clock"></i> <span>${formatAMPM(String(schData['gio-bat-dau']).substring(0,5))} - ${formatAMPM(String(schData['gio-ket-thuc']).substring(0,5))}</span><br>
                             <i class="fas fa-map-marker-alt"></i> <span>${escapeHtml(locName)}</span>
                         </div>`;
                 }
@@ -723,7 +775,7 @@
                 
                 const currentSession = getSessionFromTime(gioBd);
                 
-                // Nếu thẻ bị kéo sang buổi khác (Sáng -> Chiều) thì lấy khung giờ mặc định của buổi đó
+                // Ép giờ mặc định nếu dời sang buổi khác
                 if (currentSession !== newSession) {
                     gioBd = defStartStr;
                     gioKt = defEndStr;
@@ -760,14 +812,19 @@
                         document.querySelectorAll('.dropzone').forEach(dz => dz.classList.remove('dragover'));
                     });
                     
-                    // KHÓA CLICK Ở POOL: CHỈ THẺ NẰM TRÊN LỊCH MỚI ĐƯỢC CLICK MỞ POPUP
                     const sch = allSchedulesData.find(s => String(s.id) === String(newCard.dataset.schid));
                     if(sch && sch.ngay) {
-                        newCard.addEventListener('click', function() {
-                            openModalForSchedule(this.dataset.schid, sch.ngay, String(sch['gio-bat-dau']).substring(0,5), String(sch['gio-ket-thuc']).substring(0,5), false, sch);
+                        // Nhấn vào thẻ trên lịch: Nếu đang thu gọn -> Mở rộng, ngược lại -> Mở Modal sửa
+                        newCard.addEventListener('click', function(e) {
+                            if (this.classList.contains('compact')) {
+                                e.stopPropagation();
+                                this.classList.remove('compact');
+                            } else {
+                                openModalForSchedule(this.dataset.schid, sch.ngay, String(sch['gio-bat-dau']).substring(0,5), String(sch['gio-ket-thuc']).substring(0,5), false, sch);
+                            }
                         });
                     } else {
-                        newCard.style.cursor = 'grab'; // Không hiện pointer cho thẻ ở pool
+                        newCard.style.cursor = 'grab'; 
                     }
                 });
             }
