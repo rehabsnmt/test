@@ -25,41 +25,26 @@
            1. RESET & BOX MODEL CHUẨN
         ========================================= */
         html, body { 
-            width: 100%; 
-            max-width: 100%; 
-            margin: 0; 
-            padding: 0; 
-            /* KHÔNG DÙNG overflow-x: hidden để che lỗi */
+            width: 100%; max-width: 100%; margin: 0; padding: 0; overflow-x: hidden; 
         }
-        
-        *, *::before, *::after { 
-            box-sizing: border-box !important; 
-        }
+        *, *::before, *::after { box-sizing: border-box !important; }
 
-        /* Bảo vệ container không bị phình ngang */
         main { width: 100%; max-width: 100% !important; padding: 1rem 2% 2rem !important; min-width: 0; }
         .container { width: 100%; max-width: 100% !important; padding: 0 !important; min-width: 0; }
         .card { width: 100%; max-width: 100%; min-width: 0; }
 
-        /* Ép văn bản rớt dòng an toàn */
-        .word-wrap-safe {
-            min-width: 0;
-            max-width: 100%;
-            overflow-wrap: anywhere;
-            word-break: break-word;
-            white-space: normal;
-        }
+        .word-wrap-safe { min-width: 0; max-width: 100%; overflow-wrap: anywhere; word-break: break-word; white-space: normal; }
 
         /* =========================================
-           2. CÁC STYLE CHUNG (DÙNG CHO CẢ DESKTOP & MOBILE MODAL)
+           2. CÁC STYLE CHUNG & HIỆU ỨNG HIGHLIGHT
         ========================================= */
         .filter-section { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 0.5rem; flex-wrap: wrap; width: 100%; min-width: 0; }
         .filter-section .form-group { margin-bottom: 0; flex: 1; min-width: 200px; max-width: 100%; }
+        .modal-overlay { z-index: 9999; }
         
         .hk-select { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-page); font-size: 0.85rem; width: 100%; max-width: 100%; cursor: pointer; min-height: 36px; box-sizing: border-box; }
         .hk-select:focus { border-color: var(--primary); outline: none; }
 
-        /* Thanh tiến độ */
         .progress-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 4px; width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; }
         .progress-container { flex: 1 1 auto; background-color: var(--border); border-radius: var(--radius-pill); height: 6px; overflow: hidden; margin: 0; min-width: 0; }
         .progress-bar { height: 100%; background-color: var(--primary); transition: width 0.3s ease; }
@@ -68,34 +53,42 @@
         .progress-bar.taught { background-color: #38bdf8; }
         .progress-percent { flex: 0 0 auto; font-size: 0.75rem; font-weight: bold; color: var(--text-muted); }
 
-        /* Danh sách GV & Nút Thao tác */
         .assignment-list-inline { list-style: none; padding: 0; margin: 0; font-size: 0.85rem; text-align: left; width: 100%; min-width: 0; }
         .assignment-list-inline li { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-light); width: 100%; min-width: 0; }
         .assignment-list-inline li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .assignment-info-wrap { flex: 1 1 auto; min-width: 0; padding-right: 8px; line-height: 1.4; }
         
         .action-group { display: flex; gap: 5px; flex-shrink: 0; align-items: center; flex-wrap: wrap; justify-content: flex-end; min-width: 0; max-width: 100%; }
-        .btn-action-assign { background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s ease; font-size: 0.8rem; min-height: 36px; display: flex; align-items: center; justify-content: center; max-width: 100%; box-sizing: border-box; }
-        .btn-action-assign.edit { color: #0284c7; background: #f0f9ff; }
-        .btn-action-assign.edit:hover { background: #e0f2fe; color: #0369a1; }
-        .btn-action-assign.delete { color: #ef4444; background: #fef2f2; }
-        .btn-action-assign.delete:hover { background: #fee2e2; color: #b91c1c; }
-        .btn-action-assign.undo { color: #f59e0b; background: #fffbeb; }
-        .btn-action-assign.undo:hover { background: #fef3c7; color: #d97706; }
+        .btn-action-assign { background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s ease; font-size: 0.8rem; min-height: 36px; display: flex; align-items: center; justify-content: center; max-width: 100%; box-sizing: border-box; font-weight: 600;}
         
-        /* Nút Duyệt nổi bật */
-        .btn-action-assign.approve { color: #16a34a; background: #f0fdf4; border: 1px solid #86efac; font-weight: bold; }
+        .btn-action-assign.edit { color: #0284c7; background: #f0f9ff; border: 1px solid #bae6fd;}
+        .btn-action-assign.edit:hover { background: #e0f2fe; color: #0369a1; }
+        .btn-action-assign.delete { color: #ef4444; background: #fef2f2; border: 1px solid #fecaca;}
+        .btn-action-assign.delete:hover { background: #fee2e2; color: #b91c1c; }
+        .btn-action-assign.undo { color: #f59e0b; background: #fffbeb; border: 1px solid #fde68a;}
+        .btn-action-assign.undo:hover { background: #fef3c7; color: #d97706; }
+        .btn-action-assign.approve { color: #16a34a; background: #f0fdf4; border: 1px solid #86efac; }
         .btn-action-assign.approve:hover { background: #dcfce7; color: #15803d; border-color: #22c55e; }
-        .btn-action-assign.approve-delete { color: #dc2626; background: #fef2f2; border: 1px solid #fca5a5; font-weight: bold; }
+        .btn-action-assign.approve-delete { color: #dc2626; background: #fef2f2; border: 1px solid #fca5a5; }
         .btn-action-assign.approve-delete:hover { background: #fee2e2; color: #b91c1c; border-color: #ef4444; }
 
-        /* Badges trạng thái */
         .badge { padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-left: 6px; vertical-align: middle; display: inline-block; white-space: normal; line-height: 1.2;}
         .badge.official { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
         .badge.pending { background: #fef08a; color: #854d0e; border: 1px solid #fde047; }
         .badge.pending-delete { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
-        /* Thống kê Tín chỉ */
+        /* HIỆU ỨNG NHẤP NHÁY NỔI BẬT ĐỀ XUẤT MỚI */
+        @keyframes pulse-highlight {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+        .highlight-pending {
+            border-left: 5px solid #f59e0b !important; 
+            background-color: #fffbeb !important;
+            animation: pulse-highlight 2s infinite;
+        }
+
         .summary-card { background: var(--surface); border: 1px solid var(--primary-light); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); display: none; width: 100%; min-width: 0; box-sizing: border-box; }
         .hk-bar-container { display: flex; align-items: center; margin-bottom: 8px; width: 100%; min-width: 0; }
         .hk-bar-label { width: 75px; font-size: 0.85rem; font-weight: 600; color: var(--text-dark); flex-shrink: 0; }
@@ -105,17 +98,8 @@
         
         .highlight-row { background-color: var(--primary-light) !important; transition: background-color 0.5s ease; }
 
-        /* Modal Elements ẩn mặc định trên desktop */
-        .btn-mobile-detail { display: none; }
-        #mobileDetailModal { z-index: 9998; } /* Thấp hơn assignModal (9999) */
-
-        /* Responsive Flex cho Form trên Mobile */
+        select, input, textarea, button { max-width: 100%; box-sizing: border-box !important; }
         .flex-row-mobile-col { display: flex; gap: 1rem; }
-
-        /* Tối ưu hóa form input chung */
-        input[type="number"], input[type="date"], input[type="time"], select, textarea {
-            width: 100%; max-width: 100%;
-        }
 
         /* =========================================
            3. DESKTOP VIEW LỚN (>= 769px)
@@ -129,7 +113,7 @@
         .table-responsive { width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; }
 
         /* =========================================
-           4. MOBILE VIEW (<= 768px)
+           4. MOBILE VIEW CHUYÊN DỤNG (<= 768px)
         ========================================= */
         @media (max-width: 768px) {
             .desktop-only { display: none !important; }
@@ -138,198 +122,65 @@
             main { padding: 10px 8px 20px 8px !important; }
             .card { padding: 12px 10px !important; border-radius: 12px; }
 
-            /* Bố cục Filter xếp dọc */
             .filter-section { flex-direction: column; align-items: stretch; gap: 12px; }
             .filter-section .form-group { width: 100%; margin: 0; }
             .filter-section select { width: 100%; min-height: 44px; font-size: 0.95rem; }
 
-            /* Bố cục Tín chỉ dạng dọc */
             .hk-bar-container { flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
-            .hk-bar-label { width: 100%; flex-shrink: 0; font-size: 0.9rem; text-align: left; }
+            .hk-bar-label { width: 100%; flex-shrink: 0; font-size: 0.9rem; text-align: left;}
             .hk-bar-track { width: calc(100% - 55px); flex: none; margin: 0; height: 16px; }
             .hk-bar-value { width: 50px; text-align: right; }
 
-            /* --- DANH SÁCH CARD HỌC PHẦN TRÊN MOBILE --- */
-            #mobileModuleListContainer {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-                width: 100%;
-                min-width: 0;
-            }
-
-            .mobile-group-title {
-                background: var(--primary);
-                color: #fff;
-                padding: 10px 14px;
-                border-radius: 8px;
-                font-weight: bold;
-                font-size: 1.05rem;
-                margin-top: 10px;
-                text-align: left; /* Căn trái thay vì căn giữa */
-                width: 100%;
-                word-break: break-word;
-            }
+            #mobileModuleListContainer { display: flex; flex-direction: column; gap: 12px; width: 100%; min-width: 0; }
+            .mobile-group-title { background: var(--primary); color: #fff; padding: 10px 14px; border-radius: 8px; font-weight: bold; font-size: 1.05rem; margin-top: 10px; text-align: left; width: 100%; word-break: break-word; }
 
             .mobile-module-card {
-                background: #fff;
-                border: 1px solid #e2e8f0;
-                border-radius: 10px;
-                padding: 14px 12px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                cursor: pointer;
-                width: 100%;
-                min-width: 0;
+                background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 12px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 12px;
+                cursor: pointer; width: 100%; min-width: 0; position: relative;
             }
-
             .mmc-stt {
-                background: var(--primary-light);
-                color: var(--primary);
-                font-weight: 900;
-                width: 36px; height: 36px; flex-shrink: 0;
-                display: flex; align-items: center; justify-content: center;
-                border-radius: 50%;
-                font-size: 0.95rem;
+                background: var(--primary-light); color: var(--primary); font-weight: 900;
+                width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+                border-radius: 50%; font-size: 0.95rem;
             }
+            .mmc-content { flex: 1; min-width: 0; padding-right: 15px;}
+            .mmc-name { font-size: 1.05rem; font-weight: bold; color: #0f172a; margin-bottom: 4px; text-align: left;}
+            .mmc-sub { font-size: 0.85rem; color: var(--text-muted); text-align: left;}
+            .mmc-arrow { color: #cbd5e1; font-size: 1.2rem; flex-shrink: 0; padding-left: 8px; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);}
 
-            .mmc-content {
-                flex: 1;
-                min-width: 0; /* Khóa tràn ngang */
-            }
-
-            .mmc-name {
-                font-size: 1.05rem;
-                font-weight: bold;
-                color: #0f172a;
-                margin-bottom: 4px;
-                text-align: left;
-            }
-
-            .mmc-sub {
-                font-size: 0.85rem;
-                color: var(--text-muted);
-                text-align: left;
-            }
-
-            .mmc-arrow {
-                color: #cbd5e1;
-                font-size: 1.2rem;
-                flex-shrink: 0;
-                padding-left: 8px;
-            }
-
-            /* --- MODAL CHI TIẾT MOBILE (KHÔNG DÙNG POSITION FIXED CHO TR NỮA) --- */
+            /* --- MODAL CHI TIẾT ĐỘC LẬP TRÊN MOBILE --- */
             #mobileDetailModal {
-                position: fixed;
-                top: 0; left: 0; right: 0; bottom: 0;
-                background: #f1f5f9;
-                z-index: 10000;
-                display: flex;
-                flex-direction: column;
-                width: 100vw;
-                height: 100vh;
-                overflow: hidden;
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f1f5f9; z-index: 10000;
+                display: flex; flex-direction: column; width: 100vw; height: 100vh; overflow: hidden;
             }
-
             .mdm-header {
-                background: #fff;
-                padding: 16px;
-                border-bottom: 1px solid #e2e8f0;
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                gap: 12px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-                flex-shrink: 0;
+                background: #fff; padding: 16px; border-bottom: 1px solid #e2e8f0; display: flex;
+                justify-content: space-between; align-items: flex-start; gap: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0;
             }
-
-            .mdm-title-wrap {
-                flex: 1;
-                min-width: 0;
-                text-align: left;
-            }
-            .mdm-title {
-                font-size: 1.15rem;
-                font-weight: bold;
-                color: #0f172a;
-            }
-            .mdm-sub {
-                font-size: 0.9rem;
-                color: var(--text-muted);
-                margin-top: 4px;
-            }
-
+            .mdm-title-wrap { flex: 1; min-width: 0; text-align: left;}
+            .mdm-title { font-size: 1.15rem; font-weight: bold; color: #0f172a; line-height: 1.3;}
+            .mdm-sub { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
             .mdm-close {
-                background: #e2e8f0;
-                border: none;
-                width: 36px; height: 36px;
-                border-radius: 50%;
-                display: flex; align-items: center; justify-content: center;
-                font-size: 1.2rem; color: #475569;
+                background: #e2e8f0; border: none; width: 36px; height: 36px; border-radius: 50%;
+                display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #475569;
                 flex-shrink: 0; cursor: pointer;
             }
-
-            .mdm-body {
-                flex: 1;
-                overflow-y: auto;
-                padding: 16px;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            /* Các section bên trong Modal Chi tiết */
+            .mdm-body { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
+            
             .mdm-section {
-                background: #fff;
-                border-radius: 12px;
-                padding: 16px;
-                margin-bottom: 16px;
-                border: 1px solid #e2e8f0;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-                width: 100%; min-width: 0;
+                background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); width: 100%; min-width: 0;
             }
-
-            .mdm-label {
-                display: block; font-weight: bold; font-size: 0.95rem; color: #475569; margin-bottom: 10px;
-                border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; text-align: left;
-            }
-
+            .mdm-label { display: block; font-weight: bold; font-size: 0.95rem; color: #475569; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; text-align: left;}
             .mdm-section .hk-select { min-height: 44px; font-size: 1rem; }
+            
+            .mdm-section .assignment-list-inline li { flex-direction: column; background: #f8fafc; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); border-radius: 10px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+            .mdm-section .action-group { width: 100%; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+            .mdm-section .btn-action-assign { flex: 1 1 calc(50% - 8px); padding: 10px 4px; font-size: 0.9rem; font-weight: 600; min-height: 40px; border-radius: 8px; }
 
-            /* Định dạng lại list phân công trong Modal */
-            .mdm-section .assignment-list-inline li {
-                flex-direction: column;
-                background: #f8fafc;
-                border: 1px solid #cbd5e1;
-                border-left: 4px solid var(--primary);
-                border-radius: 10px;
-                padding: 14px;
-                margin-bottom: 14px;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-            }
-            .mdm-section .action-group {
-                width: 100%; margin-top: 12px; padding-top: 12px;
-                border-top: 1px dashed #cbd5e1;
-                flex-wrap: wrap; justify-content: space-between; gap: 8px;
-            }
-            .mdm-section .btn-action-assign {
-                flex: 1 1 calc(50% - 8px); /* Luôn chia 2 cột an toàn */
-                padding: 10px 4px; font-size: 0.9rem; font-weight: 600;
-                min-height: 40px; border-radius: 8px;
-            }
+            .btn-add-large { width: 100%; min-height: 48px; font-size: 1.05rem; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2); border: none; padding: 12px; }
 
-            .btn-add-large {
-                width: 100%; min-height: 48px; font-size: 1.05rem; border-radius: 10px; font-weight: bold;
-                box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2); border: none; padding: 12px;
-            }
-
-            /* --- FORM MODAL (THÊM/SỬA) TỐI ƯU MOBILE --- */
-            #assignModal .modal-content {
-                width: 92vw !important; max-width: 450px !important; padding: 20px 16px !important;
-                max-height: 90vh !important; overflow-y: auto !important; border-radius: 16px !important;
-                margin: 0 auto;
-            }
+            #assignModal .modal-content { width: 96vw !important; max-width: 450px !important; padding: 20px 16px !important; max-height: 90vh !important; overflow-y: auto !important; border-radius: 16px !important; margin: 0 auto; }
             .flex-row-mobile-col { flex-direction: column; gap: 12px; display: flex; width: 100%; }
             #assignModal .form-group { margin-bottom: 12px; width: 100%; }
             #assignModal input, #assignModal select, #assignModal textarea { min-height: 44px; font-size: 1rem; width: 100%; }
@@ -345,8 +196,8 @@
 
     <main style="opacity: 0; transition: opacity 0.3s ease;">
         
-        <div class="section-title" style="margin-top: 0; margin-bottom: 1rem; text-align: left;">
-            <h1 style="font-size: 1.3rem;">Quản lý Phân công & Đề xuất</h1>
+        <div class="section-title" style="margin-top: 0; margin-bottom: 1rem; text-align: center;">
+            <h1 style="font-size: 1.35rem;">Quản lý Phân công & Đề xuất</h1>
         </div>
 
         <div class="container">
@@ -372,13 +223,10 @@
 
             <div id="summaryCard" class="summary-card">
                 <h3 style="margin-bottom: 0.8rem; font-size: 1rem; text-align: left;"><i class="fas fa-chart-pie" style="color:var(--primary); margin-right:5px;"></i> Tổng quan Tín chỉ</h3>
-                
                 <div id="specTotalsDiv" style="margin-bottom: 1rem; font-size: 0.85rem; display: flex; flex-wrap: wrap; gap: 8px;"></div>
-
                 <div id="hkBreakdownDiv" style="display: none; border-top: 1px dashed var(--border); padding-top: 1rem;">
                     <h4 style="margin-bottom: 0.2rem; font-size: 0.95rem; text-align: left;">Phân bổ 4 Học kỳ: <span id="summaryMajorName" style="color: var(--primary);"></span></h4>
                     <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; text-align: left;">* Đã cộng gộp học phần nhóm <strong>"Chung"</strong>.</p>
-                    
                     <div id="hkBarsContainer">
                         <div class="hk-bar-container"><div class="hk-bar-label">Học kỳ 1</div><div class="hk-bar-track"><div id="bar-hk1" class="hk-bar-fill" style="width: 0%;"></div></div><div class="hk-bar-value" id="val-hk1">0 TC</div></div>
                         <div class="hk-bar-container"><div class="hk-bar-label">Học kỳ 2</div><div class="hk-bar-track"><div id="bar-hk2" class="hk-bar-fill" style="width: 0%;"></div></div><div class="hk-bar-value" id="val-hk2">0 TC</div></div>
@@ -402,7 +250,7 @@
                                 <th style="width: 80px; text-align: left;">Học kỳ</th>
                                 <th style="width: 140px; text-align: left;">Tiến độ</th>
                                 <th style="width: auto; text-align: left;">Chi tiết Phân công & Đề xuất</th>
-                                <th style="width: 80px;">Thao tác</th>
+                                <th style="width: 90px; text-align:center;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="modulesTableBody">
@@ -517,6 +365,11 @@
         document.addEventListener("DOMContentLoaded", () => {
             
             let currentUserId = null;
+            let canApprove = false; // "duoc-phan-cong"
+            let canPropose = false; // "duoc-de-xuat" hoặc "duoc-phan-cong"
+            
+            let isInitialLoadForNotifications = true;
+            let previousPendingIds = new Set();
 
             window.showToast = function (message, isError = false) {
                 const container = document.getElementById("toastContainer");
@@ -535,6 +388,20 @@
             function escapeHtml(value) {
                 if (value == null) return "";
                 return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            }
+
+            // HÀM PHÁT THÔNG BÁO WEB
+            function sendWebNotification(title, body) {
+                if (!("Notification" in window)) return;
+                if (Notification.permission === "granted") {
+                    new Notification(title, { body: body, icon: 'images/logo_Bộ môn.png' });
+                } else if (Notification.permission !== "denied") {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === "granted") {
+                            new Notification(title, { body: body, icon: 'images/logo_Bộ môn.png' });
+                        }
+                    });
+                }
             }
 
             // HÀM MỞ/ĐÓNG POPUP MOBILE ĐỘC LẬP
@@ -592,20 +459,31 @@
                         if (isOfficial) {
                             if (hasPending) {
                                 actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:left; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
-                            } else {
+                            } else if (canPropose) {
                                 actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)"><i class="fas fa-pen"></i> Sửa</button>`;
                                 actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
                             }
                         } else {
                             if (trangThai === "Chờ xóa") {
-                                actionButtons += `<button class="btn-action-assign approve-delete" onclick="approveAssignment('${assignId}')">Duyệt Xóa</button>`;
-                                actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')"><i class="fas fa-undo"></i> Hủy</button>`;
+                                if (canApprove) {
+                                    actionButtons += `<button class="btn-action-assign approve-delete" onclick="approveAssignment('${assignId}')">Duyệt Xóa</button>`;
+                                }
+                                if (canPropose) {
+                                    actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')"><i class="fas fa-undo"></i> Hủy</button>`;
+                                }
                             } else { 
-                                actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')">Duyệt</button>`;
-                                actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i></button>`;
-                                actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i></button>`;
+                                if (canApprove) {
+                                    actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')">Duyệt</button>`;
+                                }
+                                if (canPropose) {
+                                    actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i></button>`;
+                                    actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i></button>`;
+                                }
                             }
                         }
+
+                        // Nếu không có quyền duyệt và cũng k có quyền đề xuất thì không hiện action group
+                        const renderActionGroup = actionButtons !== "" ? `<div class="action-group">${actionButtons}</div>` : "";
 
                         assignListHtml += `
                             <li>
@@ -618,7 +496,7 @@
                                     </span>
                                     ${noteHtml}
                                 </div>
-                                <div class="action-group">${actionButtons}</div>
+                                ${renderActionGroup}
                             </li>`;
                     });
                     assignListHtml += `</ul>`;
@@ -632,11 +510,15 @@
                 if (khTong > 0) taughtPercent = Math.round((taughtSessions / khTong) * 100);
                 else if (taughtSessions > 0) taughtPercent = 100;
 
-                let btnAddState = "";
-                if (assignedLT >= khLT && assignedTH >= khTH && khTong > 0) {
-                    btnAddState = `disabled style="background: var(--text-muted); cursor: not-allowed; border:none; color:#fff;" title="Đã phân công đủ số buổi"`;
-                } else {
-                    btnAddState = `class="btn-add-large btn-primary" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"`;
+                let btnAddContainer = "";
+                if (canPropose) {
+                    let btnAddState = "";
+                    if (assignedLT >= khLT && assignedTH >= khTH && khTong > 0) {
+                        btnAddState = `disabled style="background: var(--text-muted); cursor: not-allowed; border:none; color:#fff;" title="Đã phân công đủ số buổi"`;
+                    } else {
+                        btnAddState = `class="btn-add-large btn-primary" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"`;
+                    }
+                    btnAddContainer = `<div style="margin-top: 16px; padding-bottom: 24px;"><button ${btnAddState}><i class="fas fa-plus"></i> Thêm Đề xuất Mới</button></div>`;
                 }
 
                 const hkSelectHtml = `
@@ -685,9 +567,7 @@
                         <label class="mdm-label">Chi tiết Phân công & Đề xuất</label>
                         ${assignListHtml}
                     </div>
-                    <div style="margin-top: 16px; padding-bottom: 24px;">
-                        <button ${btnAddState}><i class="fas fa-plus"></i> Thêm Đề xuất Mới</button>
-                    </div>
+                    ${btnAddContainer}
                 `;
 
                 const modal = document.getElementById('mobileDetailModal');
@@ -741,9 +621,14 @@
                         currentUserId = authData.user.id;
                     }
 
-                    const { data: classData, error: classError } = await supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh');
-                    if (classError) throw classError;
-                    classesList = classData || [];
+                    const [resClass, resInst, resAcc] = await Promise.all([
+                        supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh'),
+                        supabase.from('giang-vien').select('ma-giang-vien, ho-ten').order('ho-ten', { ascending: true }),
+                        supabase.from('tai-khoan-he-thong').select('id, ma-giang-vien, "duoc-phan-cong", "duoc-de-xuat"')
+                    ]);
+
+                    if (resClass.error) throw resClass.error;
+                    classesList = resClass.data || [];
                     classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
                     classesList.forEach(cls => {
                         const option = document.createElement("option"); option.value = cls["ma-lop"]; 
@@ -751,15 +636,45 @@
                         classSelect.appendChild(option);
                     });
 
-                    const { data: instData, error: instError } = await supabase.from('giang-vien').select('ma-giang-vien, ho-ten').order('ho-ten', { ascending: true });
-                    if (instError) throw instError;
-                    instructorsList = instData || [];
+                    instructorsList = resInst.data || [];
                     instructorSelect.innerHTML = `<option value="">-- Chọn Giảng viên --</option>`;
                     instructorsList.forEach(inst => {
                         const option = document.createElement("option"); option.value = inst["ma-giang-vien"]; 
                         option.textContent = `${inst["ho-ten"]}`; 
                         instructorSelect.appendChild(option);
                     });
+
+                    // Kiểm tra Quyền Hạn
+                    const accountList = resAcc.data || [];
+                    if (currentUserId) {
+                        const myAcc = accountList.find(a => String(a.id) === String(currentUserId));
+                        if (myAcc) {
+                            canApprove = myAcc['duoc-phan-cong'] === true;
+                            canPropose = myAcc['duoc-de-xuat'] === true || canApprove; // Có quyền duyệt thì mặc định có quyền đề xuất
+                        }
+                    }
+
+                    // Yêu cầu quyền gửi thông báo Web nếu tài khoản có chức năng Duyệt
+                    if (canApprove && "Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+                        Notification.requestPermission();
+                    }
+
+                    // Kích hoạt Realtime Supabase (Optional) để push notification lập tức khi có người thêm mới
+                    if (canApprove) {
+                        window.supabaseClient
+                            .channel('public:de-xuat-phan-cong')
+                            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'de-xuat-phan-cong' }, payload => {
+                                if (payload.new['trang-thai'] === 'Chờ duyệt') {
+                                    sendWebNotification("Có đề xuất mới!", "Một đề xuất phân công vừa được gửi và đang chờ bạn duyệt.");
+                                    // Tự động tải lại bảng nếu đang ở cùng một lớp
+                                    if (currentSelectedClass && String(currentSelectedClass['ma-lop']).trim() === String(payload.new['ma-lop']).trim()) {
+                                        loadClassData(true);
+                                    }
+                                }
+                            })
+                            .subscribe();
+                    }
+
                 } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
             }
 
@@ -817,12 +732,32 @@
                     }
 
                     if (dxData) {
+                        const currentPendingIds = new Set();
+                        let newPendingCount = 0;
+
                         dxData.filter(a => String(a['ma-lop']).trim() === maLopClean && a['trang-thai'] !== 'Đã duyệt').forEach(dx => {
                             dx.isOfficial = false;
                             dx._proposalId = dx.id;
                             dx.trangThaiDisplay = dx['trang-thai'] || "Chờ duyệt";
                             currentAssignmentsData.push(dx);
+
+                            // Lọc các bản đề xuất đang chờ
+                            if (dx['trang-thai'] === 'Chờ duyệt' || dx['trang-thai'] === 'Chờ xóa') {
+                                currentPendingIds.add(dx.id);
+                                if (!previousPendingIds.has(dx.id)) newPendingCount++;
+                            }
                         });
+
+                        // Gửi thông báo nếu có Quyền duyệt và có đề xuất mới
+                        if (canApprove) {
+                            if (!isInitialLoadForNotifications && newPendingCount > 0) {
+                                sendWebNotification("Đề xuất mới!", `Lớp ${currentSelectedClass['ten-lop']} có ${newPendingCount} đề xuất chờ bạn duyệt.`);
+                            } else if (isInitialLoadForNotifications && currentPendingIds.size > 0) {
+                                sendWebNotification("Thông báo Đề xuất", `Đang có ${currentPendingIds.size} đề xuất phân công chờ bạn duyệt.`);
+                            }
+                            previousPendingIds = currentPendingIds;
+                            isInitialLoadForNotifications = false;
+                        }
                     }
 
                     const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('*');
@@ -843,14 +778,6 @@
                     updateSpecializationFilter();
                     updateSummary(); 
                     renderModulesTable();
-                    
-                    // Nếu mobile modal đang mở thì refresh lại giao diện bên trong modal
-                    const mobileModal = document.getElementById('mobileDetailModal');
-                    if (mobileModal && !mobileModal.classList.contains('hidden')) {
-                        // Lấy mã học phần đang mở (có thể parse lại từ tiêu đề hoặc gán attribute)
-                        // Tạm thời đơn giản: đóng modal nếu reload ngầm
-                        // closeMobileDetailModal(); 
-                    }
                     
                 } catch (error) { 
                     modulesTableBody.innerHTML = `<tr><td colspan="6" class="text-left text-danger" style="padding: 10px;">Lỗi tải dữ liệu. Lỗi: ${escapeHtml(error.message || "")}</td></tr>`; 
@@ -1017,6 +944,10 @@
                         let assignedLT = 0, assignedTH = 0, assignListHtml = `<div class="text-muted" style="font-style:italic; padding: 8px 0; text-align:left;">Chưa có phân công</div>`;
                         let taughtSessions = 0; 
                         
+                        // Kiểm tra xem học phần này có đang dính trạng thái "Chờ duyệt" hay không để tô nền nổi bật
+                        const hasPendingModule = moduleAssignments.some(a => !a.isOfficial && a.trangThaiDisplay !== "Đã duyệt");
+                        const highlightClass = hasPendingModule ? "highlight-pending" : "";
+
                         if (moduleAssignments.length > 0) {
                             assignListHtml = `<ul class="assignment-list-inline">`;
                             
@@ -1057,21 +988,25 @@
 
                                 if (isOfficial) {
                                     if (hasPending) {
-                                        actionButtons = `<span style="font-size: 0.7rem; color: #f59e0b; font-style: italic; width:100%; text-align:right;">Đang chờ duyệt sửa/xóa...</span>`;
-                                    } else {
+                                        actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:left; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
+                                    } else if (canPropose) {
                                         actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Chờ duyệt)"><i class="fas fa-pen"></i></button>`;
                                         actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Chờ xóa)"><i class="fas fa-trash-alt"></i></button>`;
                                     }
                                 } else {
                                     if (trangThai === "Chờ xóa") {
-                                        actionButtons += `<button class="btn-action-assign approve-delete" onclick="approveAssignment('${assignId}')">Duyệt Xóa</button>`;
-                                        actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')"><i class="fas fa-undo"></i></button>`;
+                                        if (canApprove) actionButtons += `<button class="btn-action-assign approve-delete" onclick="approveAssignment('${assignId}')">Duyệt Xóa</button>`;
+                                        if (canPropose) actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')"><i class="fas fa-undo"></i></button>`;
                                     } else { 
-                                        actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')">Duyệt</button>`;
-                                        actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i></button>`;
-                                        actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i></button>`;
+                                        if (canApprove) actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')">Duyệt</button>`;
+                                        if (canPropose) {
+                                            actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i></button>`;
+                                            actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i></button>`;
+                                        }
                                     }
                                 }
+
+                                const renderActionGroup = actionButtons !== "" ? `<div class="action-group">${actionButtons}</div>` : "";
 
                                 assignListHtml += `
                                     <li>
@@ -1084,7 +1019,7 @@
                                             </span>
                                             ${noteHtml}
                                         </div>
-                                        <div class="action-group">${actionButtons}</div>
+                                        ${renderActionGroup}
                                     </li>`;
                             });
                             assignListHtml += `</ul>`;
@@ -1098,11 +1033,17 @@
                         if (khTong > 0) taughtPercent = Math.round((taughtSessions / khTong) * 100);
                         else if (taughtSessions > 0) taughtPercent = 100;
 
-                        let btnAddState = "";
-                        if (assignedLT >= khLT && assignedTH >= khTH && khTong > 0) {
-                            btnAddState = `disabled style="background: var(--text-muted); cursor: not-allowed; border:none; color:#fff; width:100%; min-height: 36px;" title="Đã phân công đủ số buổi"`;
-                        } else {
-                            btnAddState = `class="btn-primary" style="border:none; width: 100%; min-height: 36px;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"`;
+                        let actionTdHtml = "";
+                        let actionMobileHtml = "";
+
+                        if (canPropose) {
+                            if (assignedLT >= khLT && assignedTH >= khTH && khTong > 0) {
+                                actionTdHtml = `<button disabled style="background: var(--text-muted); cursor: not-allowed; border:none; color:#fff; width:100%; min-height: 36px;" title="Đã phân công đủ số buổi"><i class="fas fa-check"></i> Đủ</button>`;
+                                actionMobileHtml = actionTdHtml;
+                            } else {
+                                actionTdHtml = `<button class="btn-primary" style="border:none; width: 100%; min-height: 36px;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"><i class="fas fa-plus"></i></button>`;
+                                actionMobileHtml = `<button class="btn-add-large btn-primary" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"><i class="fas fa-plus"></i> Thêm Đề xuất Mới</button>`;
+                            }
                         }
 
                         // --- DESKTOP TABLE ROW ---
@@ -1137,6 +1078,8 @@
 
                         const tr = document.createElement("tr");
                         tr.id = `row-${btoa(rawMaHp).replace(/=/g, '')}`; 
+                        if (highlightClass) tr.classList.add(highlightClass);
+
                         tr.innerHTML = `
                             <td class="text-center">${escapeHtml(mod["stt"] || "")}</td>
                             <td>
@@ -1146,16 +1089,14 @@
                             <td>${hkSelectHtml}</td>
                             <td style="padding: 0.5rem 0.8rem;">${progressHtml}</td>
                             <td style="vertical-align: top;">${assignListHtml}</td>
-                            <td style="vertical-align: middle; text-align:center;">
-                                <button ${btnAddState}><i class="fas fa-plus"></i></button>
-                            </td>
+                            <td style="vertical-align: middle; text-align:center;">${actionTdHtml}</td>
                         `;
                         modulesTableBody.appendChild(tr);
 
                         // --- MOBILE CARD LIST ITEM ---
                         if(mobileModuleListContainer) {
                             const mCard = document.createElement('div');
-                            mCard.className = 'mobile-module-card';
+                            mCard.className = `mobile-module-card ${highlightClass}`;
                             mCard.onclick = () => window.openMobileDetailModal(rawMaHp);
                             mCard.innerHTML = `
                                 <div class="mmc-stt">${escapeHtml(mod["stt"] || "")}</div>
@@ -1183,7 +1124,6 @@
                 
                 const mobileModal = document.getElementById('mobileDetailModal');
                 if (mobileModal && !mobileModal.classList.contains('hidden')) {
-                    // Nếu cần có thể làm mới content bên trong Modal ở đây
                     window.openMobileDetailModal(maHpRaw);
                 }
             }
@@ -1464,6 +1404,7 @@
                     setTimeout(() => studentSelect.value = assignment["ma-hoc-vien"] || "", 50);
                 }
 
+                // CỘNG DỒN NHƯNG LOẠI TRỪ BẢN ĐANG SỬA
                 const allAssignsForModule = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let otherLT = 0, otherTH = 0;
                 const countedProposalIds = new Set();
