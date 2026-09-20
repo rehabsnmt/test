@@ -286,7 +286,7 @@
             
             // QUYỀN TRUY CẬP CỦA TỔ TRƯỞNG / QUẢN LÝ
             const ADMIN_UIDS = [
-                "7347234a-0a43-45ea-ac0d-fa0d9d001ea4",
+                 "7347234a-0a43-45ea-ac0d-fa0d9d001ea4",
                 "296da1b4-8cac-41b6-a960-702b42f00265",
                 "5b8d12c9-1e9f-400d-aa19-11ec2e2ffca5",
                 "80b5aa88-a3e6-41a6-9718-3fd795c82190",
@@ -468,6 +468,7 @@
                 try {
                     const supabase = window.supabaseClient;
 
+                    // Lấy User và Phân quyền UI
                     const { data: authData } = await supabase.auth.getUser();
                     if (authData && authData.user) { currentUserId = authData.user.id; }
                     
@@ -480,6 +481,7 @@
                         btnTogglePool.style.display = "none";
                     }
 
+                    // Tải dữ liệu từ DB
                     const [resClass, resInst, resRoom, resHosp, resAcc] = await Promise.all([
                         supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh'),
                         supabase.from('giang-vien').select('ma-giang-vien, ho-ten'),
@@ -853,8 +855,11 @@
                                 if (confirm("Gỡ thẻ này khỏi lịch và đưa về Hàng đợi?")) {
                                     try {
                                         const payload = { "ngay": null, "gio-bat-dau": null, "gio-ket-thuc": null, "ma-phong-hoc": null, "ma-benh-vien": null, "nguoi-xep": null };
-                                        const { error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', draggedCardInfo.schId);
+                                        
+                                        const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', draggedCardInfo.schId).select();
                                         if (error) throw error;
+                                        if (!data || data.length === 0) throw new Error("Thẻ không tồn tại hoặc đã bị xóa trước đó!");
+                                        
                                         window.showToast("Đã đưa thẻ về Hàng đợi!");
                                         refreshGlobalData(true); 
                                     } catch (err) { window.showToast("Lỗi: " + err.message, true); }
@@ -905,8 +910,10 @@
                 };
 
                 try {
-                    const { error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', sch.id);
+                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', sch.id).select();
                     if (error) throw error;
+                    if (!data || data.length === 0) throw new Error("Không thể cập nhật! Dữ liệu có thể đã bị xóa.");
+                    
                     window.showToast("Đã dời lịch học!");
                     refreshGlobalData(true); 
                 } catch (err) { window.showToast("Lỗi dời lịch: " + err.message, true); }
@@ -994,8 +1001,9 @@
                 const payload = { "ngay": null, "gio-bat-dau": null, "gio-ket-thuc": null, "ma-phong-hoc": null, "ma-benh-vien": null, "nguoi-xep": null };
 
                 try {
-                    const { error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', schId);
+                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', schId).select();
                     if (error) throw error;
+                    if (!data || data.length === 0) throw new Error("Lỗi: Không tìm thấy dữ liệu để gỡ.");
                     
                     window.showToast("Đã gỡ lịch!");
                     scheduleModal.classList.add('hidden');
@@ -1033,8 +1041,9 @@
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cập nhật...';
                     btn.disabled = true;
 
-                    const { error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', schId);
+                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', schId).select();
                     if (error) throw error;
+                    if (!data || data.length === 0) throw new Error("Cập nhật thất bại. Thẻ có thể đã bị xóa.");
                     
                     window.showToast("Ghi nhận lịch thành công!");
                     scheduleModal.classList.add('hidden');
