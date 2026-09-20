@@ -44,8 +44,14 @@
         .calendar-table td.time-col { background: #f8fafc; font-weight: bold; text-align: center; vertical-align: middle; color: var(--text-muted); width: 70px; font-size: 0.85rem; padding: 10px 0; }
         
         /* KHU VỰC THẢ (TỪNG Ô BUỔI TRÊN LỊCH) */
-        .dropzone { min-height: 120px; height: 100%; padding: 6px; background: #fff; transition: background 0.2s ease; position: relative; display: flex; flex-direction: column; gap: 6px; }
+        .dropzone { min-height: 120px; height: 100%; padding: 6px; background: #fff; transition: background 0.2s ease; position: relative; gap: 6px; }
         .dropzone.dragover { background: #f0fdf4 !important; box-shadow: inset 0 0 0 2px #22c55e; }
+        
+        /* CỘT KHO: Hiển thị dạng danh sách cột dọc */
+        .dropzone[data-action="pool"] { display: flex; flex-direction: column; }
+        
+        /* CỘT LỊCH: Hiển thị dạng lưới tự chia dòng, ÉP CÁC THẺ CÙNG CHIỀU CAO THEO THẺ DÀI NHẤT */
+        .dropzone[data-action="grid"] { display: grid; grid-template-columns: 1fr; grid-auto-rows: 1fr; align-content: start; }
 
         /* THẺ HỌC PHẦN - CĂN TRÁI VÀ ÉP XUỐNG DÒNG TOÀN BỘ */
         .class-card { 
@@ -94,21 +100,6 @@
         .cc-loc { display: block; }
 
         .cc-note { margin-top: 5px; padding-top: 5px; border-top: 1px dashed rgba(0,0,0,0.1); font-style: italic; color: #64748b; font-size: 0.7rem; white-space: normal !important; overflow-wrap: break-word; word-break: break-word; line-height: 1.3; }
-
-        /* TÍNH NĂNG HOVER TOOLTIP CHO KHO LỊCH (POOL) */
-        .card-tooltip {
-            display: none; width: 250px; background-color: #1e293b; color: #f8fafc; text-align: left;
-            border-radius: 6px; padding: 10px; position: absolute; z-index: 9999;
-            bottom: calc(100% + 5px); left: 50%; transform: translateX(-50%);
-            opacity: 0; transition: opacity 0.2s; font-size: 0.75rem; line-height: 1.4;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); pointer-events: none;
-        }
-        .card-tooltip::after {
-            content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px;
-            border-width: 5px; border-style: solid; border-color: #1e293b transparent transparent transparent;
-        }
-        .dropzone[data-action="pool"] .class-card:hover .card-tooltip { display: block; visibility: visible; opacity: 1; }
-        .class-card.dragging .card-tooltip { display: none !important; }
 
         /* CHẾ ĐỘ THU GỌN THẺ (COMPACT MODE) - CHỈ HIỆN ĐỊA ĐIỂM */
         .class-card.compact {
@@ -381,9 +372,9 @@
                1. KHỞI TẠO GRID THEO BUỔI & XỬ LÝ NGÀY TUẦN
             ================================================= */
             const sessionConfigs = [
-                { id: "Sáng", label: "Sáng", defStart: "07:30", defEnd: "11:30" },
-                { id: "Chiều", label: "Chiều", defStart: "13:30", defEnd: "17:30" },
-                { id: "Tối", label: "Tối", defStart: "18:30", defEnd: "21:30" }
+                { id: "Sáng", label: "Sáng<br><small>07:30 - 11:30</small>", defStart: "07:30", defEnd: "11:30" },
+                { id: "Chiều", label: "Chiều<br><small>13:30 - 17:30</small>", defStart: "13:30", defEnd: "17:30" },
+                { id: "Tối", label: "Tối<br><small>18:30 - 21:30</small>", defStart: "18:30", defEnd: "21:30" }
             ];
 
             function generateCalendarGrid() {
@@ -542,7 +533,7 @@
                3. TẢI VÀ ĐỒNG BỘ TOÀN BỘ CSDL LỊCH HỌC
             ================================================= */
             async function refreshGlobalData(isSilent = false) {
-                if (!isSilent) unassignedPool.innerHTML = `<div style="text-align: center; margin-top: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>`;
+                if (!isSilent && isAdmin) unassignedPool.innerHTML = `<div style="text-align: center; margin-top: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>`;
                 
                 try {
                     const supabase = window.supabaseClient;
@@ -754,6 +745,7 @@
                     }
                 });
                 
+                // Thu gọn các thẻ nếu ô đó có nhiều hơn 1 thẻ
                 document.querySelectorAll('.grid-zone').forEach(zone => {
                     const cardsInZone = zone.querySelectorAll('.class-card');
                     if (cardsInZone.length > 1) {
@@ -769,7 +761,8 @@
                 const bgStyle = `background-color: ${colorObj.bg}; border-left-color: ${colorObj.border};`;
                 
                 const isOnGrid = schData && schData.ngay;
-                // Nếu thẻ đang nằm ở Pool thì hiện Ghi chú, nếu trên Lịch thì ẩn Ghi chú
+                
+                // Ghi chú chỉ hiển thị nếu đang ở Hàng đợi
                 const noteHtml = (ghiChu && !isOnGrid) ? `<div class="cc-note"><i class="fas fa-sticky-note" style="margin-right:4px;"></i>${ghiChu}</div>` : '';
                 
                 let timeLocHtml = "";
@@ -785,25 +778,13 @@
                         </div>`;
                 }
 
-                // Tooltip rà chuột ở Hàng đợi
-                const tooltipHtml = !isOnGrid ? `
-                    <div class="card-tooltip">
-                        <b style="color:#38bdf8; font-size:0.85rem;">${tenHp}</b><br>
-                        <div style="margin-top:4px;"><b>Lớp:</b> ${tenLop}</div>
-                        <div><b>ĐT:</b> ${targetText}</div>
-                        <div><b>GV:</b> ${tenGv}</div>
-                        <div style="margin-top:4px; color:#94a3b8;"><i>${ghiChu || 'Không có ghi chú'}</i></div>
-                    </div>
-                ` : '';
-
-                // Chỉ hiện bút sửa nếu đã phân quyền và thẻ nằm trên lịch
+                // Nút chỉnh sửa (chỉ tài khoản quản lý và thẻ đã xếp mới có)
                 const editBtnHtml = (isOnGrid && isAdmin) ? `<button class="btn-edit" title="Chỉnh sửa Lịch"><i class="fas fa-pencil-alt"></i></button>` : '';
                 const draggableAttr = isAdmin ? 'draggable="true"' : '';
                 const dragClass = isAdmin ? 'draggable' : '';
 
                 return `
                     <div class="class-card ${dragClass}" ${draggableAttr} id="${cardId}" data-schid="${schId}" style="${bgStyle}">
-                        ${tooltipHtml}
                         <div class="card-actions">
                             ${editBtnHtml}
                             <div class="cc-type-badge ${type === 'LT' ? 'type-lt' : 'type-th'}">${type} ${sessionIndex}/${totalSessions}</div>
@@ -870,8 +851,10 @@
                             const sch = allSchedulesData.find(s => String(s.id) === String(draggedCardInfo.schId));
 
                             if (sch && sch.ngay) {
+                                // LƯU NGẦM KHI DỜI LỊCH (SILENT UPDATE)
                                 updateScheduleTimeSilently(sch, targetDate, defStart, defEnd, targetSession);
                             } else {
+                                // MỞ POPUP KHI KÉO TỪ HÀNG ĐỢI VÀO
                                 openModalForSchedule(draggedCardInfo.schId, targetDate, defStart, defEnd, true, sch);
                             }
                         }
