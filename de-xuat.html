@@ -367,9 +367,6 @@
             let currentUserId = null;
             let canApprove = false; // "duoc-phan-cong"
             let canPropose = false; // "duoc-de-xuat" hoặc "duoc-phan-cong"
-            
-            let isInitialLoadForNotifications = true;
-            let previousPendingIds = new Set();
 
             window.showToast = function (message, isError = false) {
                 const container = document.getElementById("toastContainer");
@@ -388,20 +385,6 @@
             function escapeHtml(value) {
                 if (value == null) return "";
                 return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-            }
-
-            // HÀM PHÁT THÔNG BÁO WEB
-            function sendWebNotification(title, body) {
-                if (!("Notification" in window)) return;
-                if (Notification.permission === "granted") {
-                    new Notification(title, { body: body, icon: 'images/logo_Bộ môn.png' });
-                } else if (Notification.permission !== "denied") {
-                    Notification.requestPermission().then(permission => {
-                        if (permission === "granted") {
-                            new Notification(title, { body: body, icon: 'images/logo_Bộ môn.png' });
-                        }
-                    });
-                }
             }
 
             // HÀM MỞ/ĐÓNG POPUP MOBILE ĐỘC LẬP
@@ -458,7 +441,7 @@
 
                         if (isOfficial) {
                             if (hasPending) {
-                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:left; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
+                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:center; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
                             } else if (canPropose) {
                                 actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)"><i class="fas fa-pen"></i> Sửa</button>`;
                                 actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
@@ -482,7 +465,6 @@
                             }
                         }
 
-                        // Nếu không có quyền duyệt và cũng k có quyền đề xuất thì không hiện action group
                         const renderActionGroup = actionButtons !== "" ? `<div class="action-group">${actionButtons}</div>` : "";
 
                         assignListHtml += `
@@ -654,27 +636,6 @@
                         }
                     }
 
-                    // Yêu cầu quyền gửi thông báo Web nếu tài khoản có chức năng Duyệt
-                    if (canApprove && "Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
-                        Notification.requestPermission();
-                    }
-
-                    // Kích hoạt Realtime Supabase (Optional) để push notification lập tức khi có người thêm mới
-                    if (canApprove) {
-                        window.supabaseClient
-                            .channel('public:de-xuat-phan-cong')
-                            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'de-xuat-phan-cong' }, payload => {
-                                if (payload.new['trang-thai'] === 'Chờ duyệt') {
-                                    sendWebNotification("Có đề xuất mới!", "Một đề xuất phân công vừa được gửi và đang chờ bạn duyệt.");
-                                    // Tự động tải lại bảng nếu đang ở cùng một lớp
-                                    if (currentSelectedClass && String(currentSelectedClass['ma-lop']).trim() === String(payload.new['ma-lop']).trim()) {
-                                        loadClassData(true);
-                                    }
-                                }
-                            })
-                            .subscribe();
-                    }
-
                 } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
             }
 
@@ -732,32 +693,12 @@
                     }
 
                     if (dxData) {
-                        const currentPendingIds = new Set();
-                        let newPendingCount = 0;
-
                         dxData.filter(a => String(a['ma-lop']).trim() === maLopClean && a['trang-thai'] !== 'Đã duyệt').forEach(dx => {
                             dx.isOfficial = false;
                             dx._proposalId = dx.id;
                             dx.trangThaiDisplay = dx['trang-thai'] || "Chờ duyệt";
                             currentAssignmentsData.push(dx);
-
-                            // Lọc các bản đề xuất đang chờ
-                            if (dx['trang-thai'] === 'Chờ duyệt' || dx['trang-thai'] === 'Chờ xóa') {
-                                currentPendingIds.add(dx.id);
-                                if (!previousPendingIds.has(dx.id)) newPendingCount++;
-                            }
                         });
-
-                        // Gửi thông báo nếu có Quyền duyệt và có đề xuất mới
-                        if (canApprove) {
-                            if (!isInitialLoadForNotifications && newPendingCount > 0) {
-                                sendWebNotification("Đề xuất mới!", `Lớp ${currentSelectedClass['ten-lop']} có ${newPendingCount} đề xuất chờ bạn duyệt.`);
-                            } else if (isInitialLoadForNotifications && currentPendingIds.size > 0) {
-                                sendWebNotification("Thông báo Đề xuất", `Đang có ${currentPendingIds.size} đề xuất phân công chờ bạn duyệt.`);
-                            }
-                            previousPendingIds = currentPendingIds;
-                            isInitialLoadForNotifications = false;
-                        }
                     }
 
                     const { data: semesterData, error: semesterError } = await supabase.from('lop-hoc-phan').select('*');
@@ -988,20 +929,20 @@
 
                                 if (isOfficial) {
                                     if (hasPending) {
-                                        actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:left; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
+                                        actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:right; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
                                     } else if (canPropose) {
-                                        actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Chờ duyệt)"><i class="fas fa-pen"></i></button>`;
-                                        actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Chờ xóa)"><i class="fas fa-trash-alt"></i></button>`;
+                                        actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Chờ duyệt)"><i class="fas fa-pen"></i> Sửa</button>`;
+                                        actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Chờ xóa)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
                                     }
                                 } else {
                                     if (trangThai === "Chờ xóa") {
                                         if (canApprove) actionButtons += `<button class="btn-action-assign approve-delete" onclick="approveAssignment('${assignId}')">Duyệt Xóa</button>`;
-                                        if (canPropose) actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')"><i class="fas fa-undo"></i></button>`;
+                                        if (canPropose) actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')"><i class="fas fa-undo"></i> Hủy</button>`;
                                     } else { 
                                         if (canApprove) actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')">Duyệt</button>`;
                                         if (canPropose) {
-                                            actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i></button>`;
-                                            actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i></button>`;
+                                            actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i> Sửa</button>`;
+                                            actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i> Xóa</button>`;
                                         }
                                     }
                                 }
@@ -1034,15 +975,12 @@
                         else if (taughtSessions > 0) taughtPercent = 100;
 
                         let actionTdHtml = "";
-                        let actionMobileHtml = "";
-
+                        
                         if (canPropose) {
                             if (assignedLT >= khLT && assignedTH >= khTH && khTong > 0) {
                                 actionTdHtml = `<button disabled style="background: var(--text-muted); cursor: not-allowed; border:none; color:#fff; width:100%; min-height: 36px;" title="Đã phân công đủ số buổi"><i class="fas fa-check"></i> Đủ</button>`;
-                                actionMobileHtml = actionTdHtml;
                             } else {
-                                actionTdHtml = `<button class="btn-primary" style="border:none; width: 100%; min-height: 36px;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"><i class="fas fa-plus"></i></button>`;
-                                actionMobileHtml = `<button class="btn-add-large btn-primary" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"><i class="fas fa-plus"></i> Thêm Đề xuất Mới</button>`;
+                                actionTdHtml = `<button class="btn-primary" style="border:none; width: 100%; min-height: 36px;" onclick="openAssignModal('${rawMaHp}', '${tenHp}', ${khLT}, ${khTH})"><i class="fas fa-plus"></i> Thêm</button>`;
                             }
                         }
 
