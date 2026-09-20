@@ -450,10 +450,10 @@
 
                         if (isOfficial) {
                             if (hasPending) {
-                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:center; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
+                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:left; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
                             } else if (canPropose) {
-                                actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)"><i class="fas fa-pen"></i> Sửa</button>`;
-                                actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
+                                actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Chờ duyệt)"><i class="fas fa-pen"></i> Sửa</button>`;
+                                actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Chờ xóa)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
                             }
                         } else {
                             if (trangThai === "Chờ xóa") {
@@ -569,7 +569,7 @@
 
                 const modal = document.getElementById('mobileDetailModal');
                 modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; // Tránh scroll màn hình bên dưới
+                document.body.style.overflow = 'hidden'; 
             };
 
             window.closeMobileDetailModal = function() {
@@ -1319,7 +1319,7 @@
                 practiceSessions.max = remainTH; practiceSessions.value = 0;
                 hintLT.textContent = `Còn lại: ${remainLT}`; hintTH.textContent = `Còn lại: ${remainTH}`;
 
-                assignModal.style.zIndex = "10001"; 
+                assignModal.style.zIndex = "10001"; // Đảm bảo nổi lên trên Mobile Modal
                 assignModal.classList.remove("hidden");
             };
 
@@ -1425,7 +1425,6 @@
 
                 try {
                     const supabase = window.supabaseClient;
-                    
                     const payloadsToInsert = [];
                     const payloadsToUpdate = []; 
                     let groupId = generateUUID(); 
@@ -1467,9 +1466,6 @@
                             // CHỈ AUTO NẾU SỐ BUỔI CHƯƠNG TRÌNH KHỚP NHAU HOÀN TOÀN
                             if (sibKhLT === currentSelectedModule.khLT && sibKhTH === currentSelectedModule.khTH) {
                                 
-                                const { data: existPc } = await supabase.from('phan-cong-giang-day').select('id').eq('ma-lop', sib["ma-lop"]).eq('ma-hoc-phan', savedMaHp);
-                                if (existPc && existPc.length > 0) continue; 
-
                                 const sibPayload = {
                                     ...mainPayload, 
                                     "ma-lop": sib["ma-lop"],
@@ -1477,15 +1473,20 @@
                                     "nhom-de-xuat": groupId
                                 };
 
-                                const { data: existDx } = await supabase.from('de-xuat-phan-cong')
-                                    .select('id, nhom-de-xuat')
-                                    .eq('ma-lop', sib["ma-lop"])
-                                    .eq('ma-hoc-phan', savedMaHp)
-                                    .neq('trang-thai', 'Đã duyệt');
+                                if (editingAssignmentId) {
+                                    // NẾU ĐANG SỬA: Chỉ update các lớp đồng thời TRONG CÙNG 1 NHÓM UUID (Tránh đè mất GV khác)
+                                    const { data: existDxSameGroup } = await supabase.from('de-xuat-phan-cong')
+                                        .select('id')
+                                        .eq('ma-lop', sib["ma-lop"])
+                                        .eq('nhom-de-xuat', groupId);
 
-                                if (existDx && existDx.length > 0) {
-                                    payloadsToUpdate.push({ id: existDx[0].id, payload: sibPayload });
+                                    if (existDxSameGroup && existDxSameGroup.length > 0) {
+                                        payloadsToUpdate.push({ id: existDxSameGroup[0].id, payload: sibPayload });
+                                    } else {
+                                        payloadsToInsert.push(sibPayload);
+                                    }
                                 } else {
+                                    // NẾU THÊM MỚI: Luôn insert
                                     payloadsToInsert.push(sibPayload);
                                 }
                             }
@@ -1496,7 +1497,7 @@
                     for (const item of payloadsToUpdate) {
                         const { data, error } = await supabase.from('de-xuat-phan-cong').update(item.payload).eq('id', item.id).select();
                         if (error) throw error;
-                        if (!data || data.length === 0) throw new Error("Lỗi cập nhật đồng thời (bản ghi có thể đã bị xóa).");
+                        if (!data || data.length === 0) throw new Error("Lỗi cập nhật (bản ghi có thể đã bị xóa).");
                     }
 
                     // Execute Inserts
