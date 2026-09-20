@@ -333,10 +333,6 @@
                     <label for="assignNote" style="text-align: left; display: block;">Ghi chú (Tùy chọn)</label>
                     <textarea id="assignNote" rows="2" placeholder="Ghi chú đề xuất..."></textarea>
                 </div>
-                
-                <!-- VÙNG HIỂN THỊ ĐỀ XUẤT ĐỒNG THỜI (DÀNH CHO LỚP CHUNG MÃ GỐC) -->
-                <div id="simultaneousProposalsDiv" style="display:none; padding: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; margin-top: 1rem; width: 100%;">
-                </div>
 
                 <div style="margin-top: 2rem; display: flex; justify-content: space-between; gap: 12px; width: 100%;">
                     <button type="button" class="btn-warning" id="btnCancelModal" style="color: #fff; background: var(--text-muted); flex: 1; border-radius: 8px; font-weight: bold; font-size: 1rem; padding: 12px;">Hủy</button>
@@ -454,7 +450,7 @@
 
                         if (isOfficial) {
                             if (hasPending) {
-                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:left; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
+                                actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:center; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
                             } else if (canPropose) {
                                 actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)"><i class="fas fa-pen"></i> Sửa</button>`;
                                 actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
@@ -478,7 +474,6 @@
                             }
                         }
 
-                        // Nếu không có quyền duyệt và cũng k có quyền đề xuất thì không hiện action group
                         const renderActionGroup = actionButtons !== "" ? `<div class="action-group">${actionButtons}</div>` : "";
 
                         assignListHtml += `
@@ -1285,69 +1280,6 @@
                 } catch (err) { window.showToast("Lỗi xóa dữ liệu: " + err.message, true); }
             };
 
-            /* =================================================
-               HÀM KIỂM TRA LỚP CHUNG MÃ GỐC VÀ RENDER CHECKBOX
-            ================================================= */
-            async function checkSimultaneousOptions(maHpRaw, currentGroupId = null) {
-                const maHp = String(maHpRaw).trim();
-                const maLopGoc = currentSelectedClass["ma-lop-goc"];
-                if (!maLopGoc) return null;
-
-                const siblingClasses = classesList.filter(c => c["ma-lop-goc"] === maLopGoc && c["ma-lop"] !== currentSelectedClass["ma-lop"]);
-                if (siblingClasses.length === 0) return null;
-
-                let html = `<label style="display:block; font-weight:bold; margin-bottom: 8px; color: var(--primary); text-align:left;">Đề xuất phân công đồng thời:</label>`;
-                let hasValidSibling = false;
-
-                for (const sib of siblingClasses) {
-                    if (!sib["chuong-trinh"]) continue;
-
-                    const { data: currData } = await window.supabaseClient.from(sib["chuong-trinh"]).select('so-buoi-ly-thuyet, so-buoi-thuc-hanh').eq('ma-hoc-phan', maHp);
-                    if (!currData || currData.length === 0) continue;
-
-                    const sibKhLT = parseInt(currData[0]['so-buoi-ly-thuyet']) || 0;
-                    const sibKhTH = parseInt(currData[0]['so-buoi-thuc-hanh']) || 0;
-
-                    const { data: existPc } = await window.supabaseClient.from('phan-cong-giang-day').select('id').eq('ma-lop', sib["ma-lop"]).eq('ma-hoc-phan', maHp);
-                    const hasPc = existPc && existPc.length > 0;
-
-                    const { data: existDx } = await window.supabaseClient.from('de-xuat-phan-cong')
-                        .select('id, nhom-de-xuat')
-                        .eq('ma-lop', sib["ma-lop"])
-                        .eq('ma-hoc-phan', maHp)
-                        .neq('trang-thai', 'Đã duyệt');
-                    
-                    const hasDx = existDx && existDx.length > 0;
-
-                    let warningHtml = "";
-                    if (hasPc || hasDx) {
-                        let warns = [];
-                        if (hasPc) warns.push("Đã có phân công chính thức");
-                        if (hasDx) warns.push("Đang có đề xuất chờ duyệt");
-                        warningHtml = `<div style="color: #ef4444; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-exclamation-circle"></i> ${warns.join(', ')}</div>`;
-                    }
-
-                    let isChecked = false;
-                    // Tự động check nếu nó đang ở chung 1 nhóm đề xuất
-                    if (hasDx && currentGroupId && existDx[0]['nhom-de-xuat'] === currentGroupId) {
-                        isChecked = true;
-                    }
-
-                    hasValidSibling = true;
-                    html += `
-                        <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px; font-weight: normal; cursor: pointer; line-height: 1.4; text-align:left;">
-                            <input type="checkbox" class="sibling-proposal-cb" value="${sib["ma-lop"]}" data-lt="${sibKhLT}" data-th="${sibKhTH}" ${isChecked ? 'checked' : ''} style="margin-top: 3px; max-width:20px;">
-                            <div style="flex: 1; min-width:0;">
-                                <span>Cho lớp <strong>${sib["ten-lop"]}</strong> <span class="text-muted">(LT: ${sibKhLT}, TH: ${sibKhTH})</span></span>
-                                ${warningHtml}
-                            </div>
-                        </label>
-                    `;
-                }
-
-                return hasValidSibling ? html : null;
-            }
-
             window.openAssignModal = function(maHpRaw, tenHp, khLT, khTH) {
                 if (!currentSelectedClass) return;
                 const maHp = String(maHpRaw).trim();
@@ -1387,28 +1319,8 @@
                 practiceSessions.max = remainTH; practiceSessions.value = 0;
                 hintLT.textContent = `Còn lại: ${remainLT}`; hintTH.textContent = `Còn lại: ${remainTH}`;
 
-                assignModal.style.zIndex = "10001"; // Đảm bảo nổi lên trên Mobile Modal
+                assignModal.style.zIndex = "10001"; 
                 assignModal.classList.remove("hidden");
-
-                // KIỂM TRA ĐỀ XUẤT ĐỒNG THỜI
-                const simultaneousDiv = document.getElementById("simultaneousProposalsDiv");
-                simultaneousDiv.innerHTML = "";
-                simultaneousDiv.style.display = "none";
-
-                if (currentSelectedClass["ma-lop-goc"]) {
-                    simultaneousDiv.style.display = "block";
-                    simultaneousDiv.innerHTML = `<div class="text-muted" style="text-align:left;"><i class="fas fa-spinner fa-spin"></i> Đang kiểm tra các lớp liên kết...</div>`;
-
-                    checkSimultaneousOptions(maHpRaw).then(html => {
-                        if (html) {
-                            simultaneousDiv.innerHTML = html;
-                        } else {
-                            simultaneousDiv.style.display = "none";
-                        }
-                    }).catch(err => {
-                        simultaneousDiv.style.display = "none";
-                    });
-                }
             };
 
             window.editAssignment = function(assignId, isOfficialParam) {
@@ -1477,31 +1389,6 @@
 
                 assignModal.style.zIndex = "10001";
                 assignModal.classList.remove("hidden");
-
-                // KIỂM TRA ĐỀ XUẤT ĐỒNG THỜI KHI SỬA
-                const simultaneousDiv = document.getElementById("simultaneousProposalsDiv");
-                simultaneousDiv.innerHTML = "";
-                simultaneousDiv.style.display = "none";
-
-                let currentGroupId = null;
-                if (assignment['nhom-de-xuat']) {
-                    currentGroupId = assignment['nhom-de-xuat'];
-                }
-
-                if (currentSelectedClass["ma-lop-goc"]) {
-                    simultaneousDiv.style.display = "block";
-                    simultaneousDiv.innerHTML = `<div class="text-muted" style="text-align:left;"><i class="fas fa-spinner fa-spin"></i> Đang kiểm tra các lớp liên kết...</div>`;
-
-                    checkSimultaneousOptions(maHp, currentGroupId).then(html => {
-                        if (html) {
-                            simultaneousDiv.innerHTML = html;
-                        } else {
-                            simultaneousDiv.style.display = "none";
-                        }
-                    }).catch(err => {
-                        simultaneousDiv.style.display = "none";
-                    });
-                }
             };
 
             function closeModal() { assignModal.classList.add("hidden"); currentSelectedModule = null; editingAssignmentId = null; }
@@ -1538,6 +1425,9 @@
 
                 try {
                     const supabase = window.supabaseClient;
+                    
+                    const payloadsToInsert = [];
+                    const payloadsToUpdate = []; 
                     let groupId = generateUUID(); 
 
                     const mainPayload = {
@@ -1546,73 +1436,79 @@
                         "trang-thai": "Chờ duyệt" 
                     };
 
-                    const checkedSibs = document.querySelectorAll('.sibling-proposal-cb:checked');
-
                     if (editingAssignmentId) {
                         const existingProp = currentAssignmentsData.find(a => String(a._proposalId) === String(editingAssignmentId));
                         if (existingProp && existingProp['nhom-de-xuat']) {
                             groupId = existingProp['nhom-de-xuat'];
                         }
-
-                        if (checkedSibs.length > 0) {
-                            mainPayload["nhom-de-xuat"] = groupId;
-                        }
-
-                        const { data, error } = await supabase.from('de-xuat-phan-cong').update(mainPayload).eq('id', editingAssignmentId).select();
-                        if (error) throw error;
-                        if (!data || data.length === 0) throw new Error("Lỗi: Không tìm thấy đề xuất để cập nhật trên hệ thống.");
-                        
+                        mainPayload["nhom-de-xuat"] = groupId;
+                        payloadsToUpdate.push({ id: editingAssignmentId, payload: mainPayload });
                     } else {
                         mainPayload["ma-lop"] = currentSelectedClass["ma-lop"];
                         mainPayload["ma-hoc-phan"] = savedMaHp;
-                        
-                        if (checkedSibs.length > 0) {
-                            mainPayload["nhom-de-xuat"] = groupId;
-                        }
+                        mainPayload["nhom-de-xuat"] = groupId;
+                        payloadsToInsert.push(mainPayload);
+                    }
 
-                        const { data, error } = await supabase.from('de-xuat-phan-cong').insert([mainPayload]).select();
+                    // AUTO SIMULTANEOUS ASSIGNMENT (KIỂM TRA CÙNG MÃ LỚP GỐC & CÙNG SỐ BUỔI CHƯƠNG TRÌNH)
+                    if (currentSelectedClass["ma-lop-goc"]) {
+                        const maLopGoc = currentSelectedClass["ma-lop-goc"];
+                        const siblingClasses = classesList.filter(c => c["ma-lop-goc"] === maLopGoc && c["ma-lop"] !== currentSelectedClass["ma-lop"]);
+                        
+                        for (const sib of siblingClasses) {
+                            if (!sib["chuong-trinh"]) continue;
+                            
+                            const { data: currData } = await supabase.from(sib["chuong-trinh"]).select('so-buoi-ly-thuyet, so-buoi-thuc-hanh').eq('ma-hoc-phan', savedMaHp);
+                            if (!currData || currData.length === 0) continue;
+                            
+                            const sibKhLT = parseInt(currData[0]['so-buoi-ly-thuyet']) || 0;
+                            const sibKhTH = parseInt(currData[0]['so-buoi-thuc-hanh']) || 0;
+                            
+                            // CHỈ AUTO NẾU SỐ BUỔI CHƯƠNG TRÌNH KHỚP NHAU HOÀN TOÀN
+                            if (sibKhLT === currentSelectedModule.khLT && sibKhTH === currentSelectedModule.khTH) {
+                                
+                                const { data: existPc } = await supabase.from('phan-cong-giang-day').select('id').eq('ma-lop', sib["ma-lop"]).eq('ma-hoc-phan', savedMaHp);
+                                if (existPc && existPc.length > 0) continue; 
+
+                                const sibPayload = {
+                                    ...mainPayload, 
+                                    "ma-lop": sib["ma-lop"],
+                                    "ma-hoc-phan": savedMaHp,
+                                    "nhom-de-xuat": groupId
+                                };
+
+                                const { data: existDx } = await supabase.from('de-xuat-phan-cong')
+                                    .select('id, nhom-de-xuat')
+                                    .eq('ma-lop', sib["ma-lop"])
+                                    .eq('ma-hoc-phan', savedMaHp)
+                                    .neq('trang-thai', 'Đã duyệt');
+
+                                if (existDx && existDx.length > 0) {
+                                    payloadsToUpdate.push({ id: existDx[0].id, payload: sibPayload });
+                                } else {
+                                    payloadsToInsert.push(sibPayload);
+                                }
+                            }
+                        }
+                    }
+
+                    // Execute Updates
+                    for (const item of payloadsToUpdate) {
+                        const { data, error } = await supabase.from('de-xuat-phan-cong').update(item.payload).eq('id', item.id).select();
+                        if (error) throw error;
+                        if (!data || data.length === 0) throw new Error("Lỗi cập nhật đồng thời (bản ghi có thể đã bị xóa).");
+                    }
+
+                    // Execute Inserts
+                    if (payloadsToInsert.length > 0) {
+                        const { data, error } = await supabase.from('de-xuat-phan-cong').insert(payloadsToInsert).select();
                         if (error) throw error;
                         if (!data || data.length === 0) throw new Error("Lỗi: Không thể thêm đề xuất mới vào hệ thống.");
                     }
-
-                    // XỬ LÝ LỚP ĐỒNG THỜI KHI SỬA HOẶC THÊM MỚI
-                    if (checkedSibs.length > 0) {
-                        for (const cb of checkedSibs) {
-                            const sibMaLop = cb.value;
-                            const sibLT = parseInt(cb.dataset.lt);
-                            const sibTH = parseInt(cb.dataset.th);
-
-                            const sibPayload = {
-                                "ma-lop": sibMaLop,
-                                "ma-hoc-phan": savedMaHp,
-                                "ma-giang-vien": maGv,
-                                "so-buoi-ly-thuyet": sibLT,
-                                "so-buoi-thuc-hanh": sibTH,
-                                "ghi-chu": note,
-                                "doi-tuong": doiTuong,
-                                "loai-nhom": loaiNhom,
-                                "ten-nhom": tenNhom,
-                                "ma-hoc-vien": maHv,
-                                "ho-ten": hoTenHv,
-                                "trang-thai": "Chờ duyệt",
-                                "nhom-de-xuat": groupId
-                            };
-
-                            const { data: existDx } = await supabase.from('de-xuat-phan-cong')
-                                .select('id')
-                                .eq('ma-lop', sibMaLop)
-                                .eq('ma-hoc-phan', savedMaHp)
-                                .neq('trang-thai', 'Đã duyệt');
-
-                            if (existDx && existDx.length > 0) {
-                                // NẾU ĐÃ CÓ ĐỀ XUẤT -> TIẾN HÀNH CẬP NHẬT
-                                await supabase.from('de-xuat-phan-cong').update(sibPayload).eq('id', existDx[0].id);
-                            } else {
-                                // NẾU CHƯA CÓ -> THÊM MỚI
-                                await supabase.from('de-xuat-phan-cong').insert([sibPayload]);
-                            }
-                        }
-                        window.showToast(`Đã lưu và cập nhật đồng thời cho ${checkedSibs.length} lớp liên kết!`);
+                    
+                    const totalAffected = payloadsToInsert.length + payloadsToUpdate.length;
+                    if (totalAffected > 1) {
+                        window.showToast(`Đã lưu thành công (Tự động đồng bộ ${totalAffected} lớp)!`);
                     } else {
                         window.showToast(editingAssignmentId ? "Đã lưu đề xuất thay đổi!" : "Đã thêm đề xuất mới!");
                     }
