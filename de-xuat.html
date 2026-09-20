@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="description" content="Quản lý Đề xuất Phân công - Bộ môn Phục hồi chức năng.">
 
     <meta http-equiv="Content-Security-Policy" content="
@@ -22,11 +22,14 @@
 
     <style>
         /* =========================================
-           ÉP BUỘC GIAO DIỆN FULL MÀN HÌNH
+           ÉP BUỘC GIAO DIỆN FULL MÀN HÌNH VÀ BẢO VỆ CHỐNG TRÀN
         ========================================= */
+        html, body { max-width: 100vw; overflow-x: hidden; }
+        *, *::before, *::after { box-sizing: border-box; }
+
         main { max-width: 100% !important; padding: 1rem 2% 2rem !important; }
         .container { max-width: 100% !important; padding: 0 !important; }
-        #modulesTable th, #modulesTable td { padding: 0.5rem 0.4rem; font-size: 0.82rem; vertical-align: middle; white-space: normal !important; overflow-wrap: break-word; line-height: 1.4; }
+        #modulesTable th, #modulesTable td { padding: 0.5rem 0.4rem; font-size: 0.82rem; vertical-align: middle; white-space: normal !important; overflow-wrap: break-word; word-wrap: break-word; line-height: 1.4; }
 
         /* =========================================
            CÁC STYLE CƠ BẢN
@@ -43,8 +46,7 @@
         .progress-bar { height: 100%; background-color: var(--primary); transition: width 0.3s ease; }
         .progress-bar.complete { background-color: #16a34a; } 
         .progress-bar.over { background-color: var(--accent); } 
-        
-        .progress-bar.taught { background-color: #38bdf8; } /* Thanh tiến độ đã giảng dạy */
+        .progress-bar.taught { background-color: #38bdf8; }
 
         /* Danh sách GV & Nút Thao tác */
         .assignment-list-inline { list-style: none; padding: 0; margin: 0; font-size: 0.8rem; text-align: left; }
@@ -88,49 +90,58 @@
            GIAO DIỆN ĐIỆN THOẠI (RESPONSIVE TABLE CARD)
         ========================================= */
         @media (max-width: 768px) {
+            html { font-size: 13px; } /* Thu nhỏ font chữ chung để không gian thoáng hơn */
+            main { padding: 10px 5px 20px 5px !important; }
+            .card { padding: 12px !important; }
+            
             .filter-section { flex-direction: column; align-items: stretch; gap: 12px; }
-            .filter-section .form-group { width: 100%; }
+            .filter-section .form-group { width: 100%; min-width: 0; }
+            
+            .table-responsive { overflow-x: hidden !important; border: none; }
             
             #modulesTable thead { display: none; }
-            #modulesTable, #modulesTable tbody { display: block; width: 100%; }
+            #modulesTable, #modulesTable tbody, #modulesTable tr, #modulesTable td { 
+                display: block; width: 100%; 
+            }
             
             #modulesTable tr:not(.group-header-row) {
                 display: grid;
-                grid-template-columns: auto 1fr;
+                grid-template-columns: 36px 1fr;
                 grid-template-areas: 
                     "stt ten"
                     "stt hk"
                     "tiendo tiendo"
                     "thaotac thaotac"
                     "chitiet chitiet";
-                gap: 10px 12px;
+                gap: 8px 12px;
                 background: #fff;
                 border: 1px solid var(--border);
                 border-radius: 12px;
-                padding: 16px;
-                margin-bottom: 20px;
+                padding: 14px 12px;
+                margin-bottom: 16px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             }
 
-            #modulesTable td { border: none !important; padding: 0 !important; display: block; width: 100%; }
+            #modulesTable td { border: none !important; padding: 0 !important; text-align: left !important; min-width: 0; }
 
             /* 1. STT */
             #modulesTable tr:not(.group-header-row) td:nth-child(1) {
                 grid-area: stt;
-                font-size: 1.1rem; font-weight: 900; color: var(--primary);
+                font-size: 1rem; font-weight: 900; color: var(--primary);
                 background: var(--primary-light);
-                width: 40px; height: 40px;
+                width: 36px; height: 36px;
                 display: flex; align-items: center; justify-content: center;
                 border-radius: 50%;
                 align-self: start;
             }
-
+            
             /* Tên Học Phần */
             #modulesTable tr:not(.group-header-row) td:nth-child(2) {
                 grid-area: ten;
+                min-width: 0; /* Khóa tràn ngang */
             }
             #modulesTable tr:not(.group-header-row) td:nth-child(2) strong {
-                font-size: 1.1rem; color: #0f172a; line-height: 1.3; display: block;
+                font-size: 1.05rem; color: #0f172a; line-height: 1.3; display: block;
             }
             #modulesTable tr:not(.group-header-row) td:nth-child(2) .text-muted {
                 font-size: 0.85rem; margin-top: 4px; display: block;
@@ -140,12 +151,12 @@
             #modulesTable tr:not(.group-header-row) td:nth-child(3) {
                 grid-area: hk;
                 display: flex; align-items: center; gap: 8px;
-                margin-top: -4px;
+                margin-top: 0;
             }
             #modulesTable tr:not(.group-header-row) td:nth-child(3)::before {
                 content: "Học kỳ:"; font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
             }
-            .hk-select { width: auto; min-width: 80px; padding: 4px 8px; font-size: 0.85rem; border-radius: 6px; }
+            .hk-select { width: auto; flex: 1; max-width: 120px; padding: 4px 8px; font-size: 0.85rem; border-radius: 6px; }
 
             /* 2. Tiến độ */
             #modulesTable tr:not(.group-header-row) td:nth-child(4) {
@@ -163,7 +174,7 @@
                 margin-top: 4px;
             }
             #modulesTable tr:not(.group-header-row) td:nth-child(6) button {
-                width: 100%; padding: 12px; font-size: 1rem; border-radius: 8px; font-weight: bold;
+                width: 100% !important; padding: 12px; font-size: 1rem; border-radius: 8px; font-weight: bold;
             }
 
             /* 4. Chi tiết phân công */
@@ -194,9 +205,11 @@
                 display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between;
             }
             .action-group button { 
-                flex: 1; min-width: calc(50% - 4px); padding: 10px 8px; 
+                flex: 1 1 45%; /* Sẽ dãn lấp đầy và chia 2 cột an toàn */
+                padding: 10px 6px; 
                 text-align: center; justify-content: center; font-size: 0.85rem; 
                 border-radius: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; 
+                white-space: normal; line-height: 1.2;
             }
             
             .btn-action-assign.approve { background: #dcfce7; border-color: #86efac; color: #16a34a; }
@@ -262,8 +275,8 @@
             </div>
 
             <div class="card" style="padding: 1rem;">
-                <div class="table-responsive" style="margin-top: 0; overflow-x: auto;">
-                    <table id="modulesTable" style="table-layout: fixed; width: 100%;">
+                <div class="table-responsive" style="margin-top: 0;">
+                    <table id="modulesTable">
                         <thead>
                             <tr>
                                 <th style="width: 35px; text-align: center;">TT</th>
@@ -390,7 +403,7 @@
             let classesList = [], instructorsList = [], studentsList = [], groupsList = [];
             let currentSelectedClass = null, currentSelectedModule = null; 
             let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {}; 
-            let allSchedulesData = []; 
+            let allSchedulesData = []; // Bảng Thời khóa biểu để đo Tiến độ hoàn thành
             
             let editingAssignmentId = null;
             let isEditingOfficial = false;
@@ -453,6 +466,9 @@
 
             classSelect.addEventListener("change", () => { specSelect.value = ""; summaryCard.style.display = "none"; loadClassData(false); });
 
+            /* =================================================
+               2. TẢI VÀ GỘP DỮ LIỆU TỪ CẢ 3 BẢNG (KÈM TKB)
+            ================================================= */
             async function loadClassData(isSilentReload = false) {
                 const maLop = classSelect.value;
                 if (!maLop) {
@@ -474,12 +490,15 @@
                     if (curError) throw curError;
                     currentCurriculumData = curriculumData || [];
 
+                    // 1. Tải bảng Chính thức
                     const { data: pcData, error: pcError } = await supabase.from('phan-cong-giang-day').select('*');
                     if (pcError) throw pcError;
 
+                    // 2. Tải bảng Đệm/Đề xuất
                     const { data: dxData, error: dxError } = await supabase.from('de-xuat-phan-cong').select('*');
                     if (dxError) throw dxError;
                     
+                    // 3. Tải bảng Thời khóa biểu (để đếm tiến độ thực tế đã dạy)
                     const { data: tkbData, error: tkbError } = await supabase.from('thoi-khoa-bieu').select('*');
                     if (tkbError) throw tkbError;
                     allSchedulesData = tkbData || [];
@@ -625,6 +644,9 @@
                 } catch (err) { window.showToast("Lỗi cập nhật bảng lop-hoc-phan: " + err.message, true); loadClassData(true); }
             };
 
+            /* =================================================
+               4. RENDER BẢNG VÀ TÍNH TOÁN TIẾN ĐỘ THỰC TẾ
+            ================================================= */
             function isPastSession(ngay, gioKt) {
                 if (!ngay || !gioKt) return false;
                 const sessionDate = new Date(`${ngay}T${gioKt}`);
@@ -646,7 +668,7 @@
 
                 for (const [groupName, mods] of Object.entries(groups)) {
                     const groupTr = document.createElement("tr");
-                    groupTr.className = "group-header-row";
+                    groupTr.className = "group-header-row"; // Dùng để css ẩn/hiện trên di động
                     groupTr.innerHTML = `<td colspan="6" class="text-left" style="background-color: var(--primary-light); color: var(--primary-hover); padding: 0.5rem 0.6rem;"><i class="fas fa-layer-group" style="margin-right: 5px;"></i> <strong>${escapeHtml(groupName)}</strong></td>`;
                     modulesTableBody.appendChild(groupTr);
 
@@ -663,7 +685,7 @@
                         const moduleAssignments = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === rawMaHp);
                         
                         let assignedLT = 0, assignedTH = 0, assignListHtml = `<span class="text-muted" style="font-style:italic;">Chưa có phân công</span>`;
-                        let taughtSessions = 0;
+                        let taughtSessions = 0; // Biến đếm số buổi đã dạy
                         
                         if (moduleAssignments.length > 0) {
                             assignListHtml = `<ul class="assignment-list-inline">`;
@@ -677,6 +699,7 @@
                                     assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0;
                                     assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0;
                                     
+                                    // Đếm các buổi học đã dạy từ bảng Thời khóa biểu (dựa theo Bản chính thức)
                                     const aSchedules = allSchedulesData.filter(s => String(s['id-phan-cong']) === String(a.id));
                                     aSchedules.forEach(sch => {
                                         if (isPastSession(sch['ngay'], sch['gio-ket-thuc'])) {
@@ -744,6 +767,7 @@
                         let percent = 0; if (khTong > 0) percent = Math.round((assignedTong / khTong) * 100); else if (assignedTong > 0) percent = 100;
                         let pColor = percent === 100 ? "complete" : (percent > 100 ? "over" : "");
 
+                        // Tính phần trăm Giảng dạy thực tế
                         let taughtPercent = 0;
                         if (khTong > 0) taughtPercent = Math.round((taughtSessions / khTong) * 100);
                         else if (taughtSessions > 0) taughtPercent = 100;
@@ -810,6 +834,7 @@
                 }
             }
 
+            // Reload ngầm màn hình cục bộ khi thao tác
             async function reloadAndFocus(maHpRaw) {
                 await loadClassData(true); 
                 const rowId = `row-${btoa(maHpRaw).replace(/=/g, '')}`;
@@ -886,6 +911,7 @@
                6. GIAO THỨC DUYỆT / SỬA / XÓA ĐỒNG BỘ CÓ VERIFY TỪ DB
             ================================================= */
             
+            // Hủy Yêu cầu Xóa
             window.cancelDeleteProposal = async function(assignId) {
                 if (!confirm("Bạn muốn hủy yêu cầu xóa và khôi phục phân công chính thức này?")) return;
                 const assignment = currentAssignmentsData.find(a => !a.isOfficial && String(a._proposalId) === String(assignId));
@@ -900,6 +926,7 @@
                 } catch (err) { window.showToast("Lỗi: " + err.message, true); }
             };
 
+            // Nút Duyệt Chính
             window.approveAssignment = async function(assignId) {
                 const proposal = currentAssignmentsData.find(a => !a.isOfficial && String(a._proposalId) === String(assignId));
                 if (!proposal) return;
@@ -1027,11 +1054,15 @@
                 instructorSelect.value = ""; assignNote.value = "";
                 targetTypeSelect.value = "ca-lop"; targetTypeSelect.dispatchEvent(new Event('change'));
 
+                // CỘNG DỒN SỐ BUỔI CỦA BẢN CHÍNH THỨC + BẢN ĐỀ XUẤT CHỜ DUYỆT
                 const allAssignsForModule = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let assignedLT = 0, assignedTH = 0;
+                
+                // Set để tránh cộng trùng 1 ID (Trường hợp sửa đề xuất của bản chính thức)
                 const countedProposalIds = new Set();
                 
                 allAssignsForModule.forEach(a => {
+                    // Ưu tiên bản Đề xuất chờ duyệt trước
                     if (!a.isOfficial && a.trangThaiDisplay !== "Chờ xóa") {
                         assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0;
                         assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0;
@@ -1040,6 +1071,7 @@
                 });
                 
                 allAssignsForModule.forEach(a => {
+                    // Cộng nốt các bản Chính thức mà không có đề xuất thay thế chờ duyệt
                     if (a.isOfficial && !countedProposalIds.has(String(a._proposalId))) {
                         assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0;
                         assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0;
@@ -1094,6 +1126,7 @@
                     setTimeout(() => studentSelect.value = assignment["ma-hoc-vien"] || "", 50);
                 }
 
+                // CỘNG DỒN NHƯNG LOẠI TRỪ BẢN ĐANG SỬA
                 const allAssignsForModule = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let otherLT = 0, otherTH = 0;
                 const countedProposalIds = new Set();
