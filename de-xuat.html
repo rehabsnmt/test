@@ -22,10 +22,16 @@
 
     <style>
         /* =========================================
-           ÉP BUỘC GIAO DIỆN FULL MÀN HÌNH & KHÓA TRÀN NGANG
+           ÉP BUỘC GIAO DIỆN FULL MÀN HÌNH VÀ BẢO VỆ CHỐNG TRÀN
         ========================================= */
-        html, body { max-width: 100vw; overflow-x: hidden; }
-        *, *::before, *::after { box-sizing: border-box; }
+        html, body { 
+            max-width: 100vw; 
+            overflow-x: hidden; 
+            width: 100%; 
+            margin: 0; 
+            padding: 0; 
+        }
+        *, *::before, *::after { box-sizing: border-box !important; }
 
         main { max-width: 100% !important; padding: 1rem 2% 2rem !important; }
         .container { max-width: 100% !important; padding: 0 !important; }
@@ -41,12 +47,12 @@
         .hk-select:focus { border-color: var(--primary); outline: none; }
 
         /* Thanh tiến độ bảng */
-        .progress-wrapper { display: flex; align-items: center; gap: 5px; margin-top: 3px; }
-        .progress-container { flex: 1; background-color: var(--border); border-radius: var(--radius-pill); height: 6px; overflow: hidden; margin: 0; }
+        .progress-wrapper { display: flex; align-items: center; gap: 5px; margin-top: 3px; width: 100%; }
+        .progress-container { flex: 1; background-color: var(--border); border-radius: var(--radius-pill); height: 6px; overflow: hidden; margin: 0; min-width: 0; }
         .progress-bar { height: 100%; background-color: var(--primary); transition: width 0.3s ease; }
         .progress-bar.complete { background-color: #16a34a; } 
         .progress-bar.over { background-color: var(--accent); } 
-        .progress-bar.taught { background-color: #38bdf8; } /* Thanh tiến độ đã giảng dạy */
+        .progress-bar.taught { background-color: #38bdf8; }
 
         /* Danh sách GV & Nút Thao tác */
         .assignment-list-inline { list-style: none; padding: 0; margin: 0; font-size: 0.8rem; text-align: left; }
@@ -87,142 +93,152 @@
         .highlight-row { background-color: var(--primary-light) !important; transition: background-color 0.5s ease; }
 
         /* =========================================
-           GIAO DIỆN ĐIỆN THOẠI (THẺ CARD CHUYÊN BIỆT)
+           GIAO DIỆN ĐIỆN THOẠI (THẺ CARD TỐI ƯU 9:16 CHỐNG TRÀN)
         ========================================= */
         @media (max-width: 768px) {
-            html { font-size: 14px; } /* Thu nhỏ font tổng thể cho thoáng */
+            html { font-size: 13px; } 
             main { padding: 10px 5px 20px 5px !important; }
-            .card { padding: 12px !important; border-radius: 12px; }
+            .card { padding: 10px !important; border-radius: 10px; width: 100%; max-width: 100vw; overflow: hidden; }
             
-            .filter-section { flex-direction: column; align-items: stretch; gap: 12px; }
+            .filter-section { flex-direction: column; align-items: stretch; gap: 10px; }
             .filter-section .form-group { width: 100%; min-width: 0; }
             
-            .table-responsive { overflow: visible !important; border: none; }
+            .table-responsive { overflow: visible !important; border: none; width: 100%; }
             
             #modulesTable thead { display: none; }
             #modulesTable, #modulesTable tbody, #modulesTable tr, #modulesTable td { 
-                display: block; width: 100%; 
+                display: block; width: 100%; margin: 0; padding: 0;
             }
             
             /* Bản thân mỗi dòng trở thành 1 thẻ Card khổng lồ */
             #modulesTable tr:not(.group-header-row) {
+                display: grid;
+                grid-template-columns: 28px minmax(0, 1fr); /* Cốt lõi chống tràn: minmax(0, 1fr) */
+                grid-template-areas: 
+                    "stt ten"
+                    "stt hk"
+                    "tiendo tiendo"
+                    "thaotac thaotac"
+                    "chitiet chitiet";
+                gap: 8px 10px;
                 background: #ffffff;
                 border: 1px solid #e2e8f0;
-                border-radius: 14px;
-                padding: 20px 16px;
-                margin-bottom: 24px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-                position: relative;
+                border-radius: 12px;
+                padding: 12px;
+                margin-bottom: 16px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
             }
 
-            #modulesTable td { border: none !important; padding: 0 !important; text-align: left !important; min-width: 0; }
+            #modulesTable td { border: none !important; padding: 0 !important; text-align: left !important; width: 100%; max-width: 100%; overflow: hidden; }
 
-            /* 1. STT - Nổi bật ở góc phải trên */
+            /* 1. STT */
             #modulesTable tr:not(.group-header-row) td:nth-child(1) {
-                position: absolute;
-                top: 16px;
-                right: 16px;
+                grid-area: stt;
+                font-size: 0.95rem; font-weight: 900; color: var(--primary);
                 background: var(--primary-light);
-                color: var(--primary);
-                width: 32px; height: 32px;
-                border-radius: 50%;
+                width: 28px; height: 28px;
                 display: flex; align-items: center; justify-content: center;
-                font-weight: 800;
-                font-size: 0.95rem;
-                z-index: 2;
+                border-radius: 50%;
+                align-self: start;
+                margin-top: 2px;
             }
             
             /* 2. Tên Học Phần */
             #modulesTable tr:not(.group-header-row) td:nth-child(2) {
-                padding-right: 40px !important; /* Chừa chỗ cho thẻ STT */
-                margin-bottom: 16px;
-                padding-bottom: 14px !important;
-                border-bottom: 1px dashed var(--border-light);
+                grid-area: ten;
+                min-width: 0; 
+                word-wrap: break-word;
+                overflow-wrap: break-word;
             }
             #modulesTable tr:not(.group-header-row) td:nth-child(2) strong {
-                font-size: 1.2rem; color: #0f172a; line-height: 1.4; display: block;
+                font-size: 1.05rem; color: #0f172a; line-height: 1.3; display: block; white-space: normal;
             }
             #modulesTable tr:not(.group-header-row) td:nth-child(2) .text-muted {
-                font-size: 0.9rem; margin-top: 6px; display: block; font-weight: 500;
+                font-size: 0.8rem; margin-top: 4px; display: block;
             }
 
             /* 3. Học kỳ */
             #modulesTable tr:not(.group-header-row) td:nth-child(3) {
-                display: flex; align-items: center; justify-content: space-between;
-                margin-bottom: 16px;
-                background: #f8fafc;
-                padding: 10px 14px !important;
-                border-radius: 8px;
-                border: 1px solid #f1f5f9;
+                grid-area: hk;
+                display: flex; align-items: center; gap: 8px;
+                margin-top: -2px;
             }
             #modulesTable tr:not(.group-header-row) td:nth-child(3)::before {
-                content: "Học kỳ giảng dạy:"; font-size: 0.9rem; font-weight: 600; color: #475569;
+                content: "Học kỳ:"; font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
             }
-            .hk-select { width: auto; min-width: 100px; padding: 6px 12px; font-size: 0.95rem; border-radius: 6px; font-weight: bold; color: var(--primary); border-color: var(--primary-light); }
+            .hk-select { width: 100%; max-width: 100%; flex: 1; padding: 4px 8px; font-size: 0.85rem; border-radius: 6px; }
 
             /* 4. Tiến độ */
             #modulesTable tr:not(.group-header-row) td:nth-child(4) {
-                background: #f0fdf4;
-                padding: 16px !important;
+                grid-area: tiendo;
+                background: #f8fafc;
+                padding: 10px !important;
                 border-radius: 8px;
-                border: 1px solid #dcfce7;
-                margin-bottom: 16px;
+                border: 1px solid #e2e8f0;
+                margin-top: 2px;
+                width: 100%;
             }
-            
-            /* 5. Chi tiết phân công (Các nhóm GV) */
+
+            /* 5. Thao tác */
+            #modulesTable tr:not(.group-header-row) td:nth-child(6) {
+                grid-area: thaotac;
+                margin-top: 2px;
+                width: 100%;
+            }
+            #modulesTable tr:not(.group-header-row) td:nth-child(6) button {
+                width: 100% !important; padding: 10px; font-size: 0.95rem; border-radius: 8px; font-weight: bold;
+            }
+
+            /* 6. Chi tiết phân công */
             #modulesTable tr:not(.group-header-row) td:nth-child(5) {
-                margin-bottom: 16px;
+                grid-area: chitiet;
+                margin-top: 2px;
+                width: 100%;
             }
             #modulesTable tr:not(.group-header-row) td:nth-child(5) > span.text-muted {
-                display: block; text-align: center; padding: 14px; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1; font-weight: 500;
+                display: block; text-align: center; padding: 8px; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1; font-size: 0.85rem;
             }
             
-            .assignment-list-inline { margin-top: 0; }
+            .assignment-list-inline { margin-top: 0; width: 100%; }
             .assignment-list-inline li {
                 flex-direction: column;
                 background: #fff;
-                border: 1px solid #e2e8f0;
+                border: 1px solid var(--border-light);
                 border-left: 4px solid var(--primary);
                 border-radius: 8px;
-                padding: 16px;
-                margin-bottom: 12px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+                padding: 10px;
+                margin-bottom: 10px;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                width: 100%;
             }
-            .assignment-list-inline li:last-child { margin-bottom: 0; }
+            .assignment-list-inline li:last-child { border-bottom: 1px solid var(--border-light); margin-bottom: 0; }
+            .assignment-list-inline li > div:first-child { width: 100%; min-width: 0; overflow-wrap: break-word; }
             
-            /* Dàn lại các Nút Thao tác (Sửa, Xóa, Duyệt) bên trong thẻ Phân công */
             .action-group {
-                width: 100%; margin-top: 14px; padding-top: 14px;
-                border-top: 1px dashed #e2e8f0;
-                display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between;
+                width: 100%; margin-top: 8px; padding-top: 8px;
+                border-top: 1px dashed var(--border-light);
+                display: flex; flex-wrap: wrap; gap: 6px; justify-content: stretch;
             }
-            .btn-action-assign { 
-                flex: 1 1 45%; /* Chia đều 2 cột, nếu có 3 nút thì nút số 3 tự lấp đầy dòng dưới */
-                padding: 12px 8px !important; 
-                text-align: center; justify-content: center; font-size: 0.95rem; 
-                border-radius: 6px; border: 1px solid #e2e8f0 !important; 
-                background: #f8fafc !important; color: #475569 !important;
-                font-weight: 600; display: flex; align-items: center; gap: 6px;
+            .action-group button { 
+                flex: 1 1 calc(50% - 6px); /* Luôn chia 2 cột an toàn */
+                padding: 8px 4px; 
+                text-align: center; justify-content: center; font-size: 0.8rem; 
+                border-radius: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; 
+                white-space: normal; line-height: 1.2; margin: 0;
             }
+            
             .btn-action-assign.approve { background: #dcfce7 !important; border-color: #86efac !important; color: #16a34a !important; }
             .btn-action-assign.approve-delete { background: #fee2e2 !important; border-color: #fca5a5 !important; color: #dc2626 !important; }
             
-            /* 6. Thao tác (Nút Thêm) ở cuối thẻ bự */
-            #modulesTable tr:not(.group-header-row) td:nth-child(6) {
-                border-top: 1px solid #e2e8f0 !important;
-                padding-top: 16px !important;
-            }
-            #modulesTable tr:not(.group-header-row) td:nth-child(6) button {
-                width: 100% !important; padding: 14px; font-size: 1.05rem; border-radius: 8px; font-weight: bold;
-            }
-
-            /* Tiêu đề nhóm học phần (Chuyên ngành) */
-            #modulesTable tr.group-header-row { display: block; margin-top: 30px; margin-bottom: 16px; background: transparent !important; }
+            #modulesTable tr.group-header-row { display: block; margin-top: 20px; margin-bottom: 12px; background: transparent !important; }
             #modulesTable tr.group-header-row td { 
                 display: block; width: 100%; box-sizing: border-box; 
-                border-radius: 8px; padding: 14px 16px !important; 
-                font-size: 1.15rem; background: var(--primary) !important; color: white !important; 
-                box-shadow: 0 4px 6px rgba(0,0,0,0.15); text-align: center !important;
+                border-radius: 8px; padding: 10px 12px !important; 
+                font-size: 1.05rem; background: var(--primary) !important; color: white !important; 
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center !important;
             }
         }
     </style>
@@ -313,14 +329,14 @@
             <form id="assignForm">
                 <div class="form-group">
                     <label for="instructorSelect">Chọn Giảng viên <span class="text-danger">*</span></label>
-                    <select id="instructorSelect" required>
+                    <select id="instructorSelect" required style="width: 100%; max-width: 100%;">
                         <option value="">-- Đang tải giảng viên --</option>
                     </select>
                 </div>
 
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="targetTypeSelect">Đối tượng giảng dạy</label>
-                    <select id="targetTypeSelect" style="border-color: var(--primary);">
+                    <select id="targetTypeSelect" style="border-color: var(--primary); width: 100%; max-width: 100%;">
                         <option value="ca-lop">Cả lớp</option>
                         <option value="nhom">Nhóm học viên</option>
                         <option value="ca-nhan">Từng học viên</option>
@@ -331,11 +347,11 @@
                     <div style="display: flex; gap: 1rem;">
                         <div class="form-group" style="flex: 1; margin: 0;">
                             <label for="groupTypeSelect" style="font-size: 0.8rem;">Loại nhóm <span class="text-danger">*</span></label>
-                            <select id="groupTypeSelect"><option value="">- Loại -</option></select>
+                            <select id="groupTypeSelect" style="width: 100%; max-width: 100%;"><option value="">- Loại -</option></select>
                         </div>
                         <div class="form-group" style="flex: 1; margin: 0;">
                             <label for="groupNameSelect" style="font-size: 0.8rem;">Tên nhóm <span class="text-danger">*</span></label>
-                            <select id="groupNameSelect"><option value="">- Tên -</option></select>
+                            <select id="groupNameSelect" style="width: 100%; max-width: 100%;"><option value="">- Tên -</option></select>
                         </div>
                     </div>
                     <div id="groupMembersDiv" style="margin-top: 5px; font-size: 0.8rem; display: none;">
@@ -348,19 +364,19 @@
                 <div id="studentTargetDiv" style="display: none; margin-bottom: 1rem; background: var(--bg-page); padding: 10px; border-radius: 6px;">
                     <div class="form-group" style="margin: 0;">
                         <label for="studentSelect" style="font-size: 0.8rem;">Chọn Học viên <span class="text-danger">*</span></label>
-                        <select id="studentSelect"><option value="">- Học viên -</option></select>
+                        <select id="studentSelect" style="width: 100%; max-width: 100%;"><option value="">- Học viên -</option></select>
                     </div>
                 </div>
 
                 <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                     <div class="form-group" style="flex: 1;">
                         <label for="theorySessions">Lý thuyết (LT) <span class="text-danger">*</span></label>
-                        <input type="number" id="theorySessions" min="0" value="0" required>
+                        <input type="number" id="theorySessions" min="0" value="0" required style="width: 100%; max-width: 100%;">
                         <small id="hintLT" class="text-muted" style="display: block; margin-top: 4px; font-weight: 600; color: var(--primary);">Còn lại: 0</small>
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label for="practiceSessions">Thực hành (TH) <span class="text-danger">*</span></label>
-                        <input type="number" id="practiceSessions" min="0" value="0" required>
+                        <input type="number" id="practiceSessions" min="0" value="0" required style="width: 100%; max-width: 100%;">
                         <small id="hintTH" class="text-muted" style="display: block; margin-top: 4px; font-weight: 600; color: var(--primary);">Còn lại: 0</small>
                     </div>
                 </div>
@@ -494,15 +510,12 @@
                     if (curError) throw curError;
                     currentCurriculumData = curriculumData || [];
 
-                    // 1. Tải bảng Chính thức
                     const { data: pcData, error: pcError } = await supabase.from('phan-cong-giang-day').select('*');
                     if (pcError) throw pcError;
 
-                    // 2. Tải bảng Đệm/Đề xuất
                     const { data: dxData, error: dxError } = await supabase.from('de-xuat-phan-cong').select('*');
                     if (dxError) throw dxError;
                     
-                    // 3. Tải bảng Thời khóa biểu (để đếm tiến độ thực tế đã dạy)
                     const { data: tkbData, error: tkbError } = await supabase.from('thoi-khoa-bieu').select('*');
                     if (tkbError) throw tkbError;
                     allSchedulesData = tkbData || [];
@@ -648,9 +661,6 @@
                 } catch (err) { window.showToast("Lỗi cập nhật bảng lop-hoc-phan: " + err.message, true); loadClassData(true); }
             };
 
-            /* =================================================
-               4. RENDER BẢNG VÀ TÍNH TOÁN TIẾN ĐỘ THỰC TẾ
-            ================================================= */
             function isPastSession(ngay, gioKt) {
                 if (!ngay || !gioKt) return false;
                 const sessionDate = new Date(`${ngay}T${gioKt}`);
@@ -672,8 +682,8 @@
 
                 for (const [groupName, mods] of Object.entries(groups)) {
                     const groupTr = document.createElement("tr");
-                    groupTr.className = "group-header-row"; // Dùng để css ẩn/hiện trên di động
-                    groupTr.innerHTML = `<td colspan="6" class="text-left" style="background-color: var(--primary-light); color: var(--primary-hover); padding: 0.5rem 0.6rem;"><i class="fas fa-layer-group" style="margin-right: 5px;"></i> <strong>${escapeHtml(groupName)}</strong></td>`;
+                    groupTr.className = "group-header-row"; 
+                    groupTr.innerHTML = `<td colspan="6" class="text-left"><i class="fas fa-layer-group" style="margin-right: 5px;"></i> <strong>${escapeHtml(groupName)}</strong></td>`;
                     modulesTableBody.appendChild(groupTr);
 
                     mods.forEach(mod => {
@@ -689,7 +699,7 @@
                         const moduleAssignments = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === rawMaHp);
                         
                         let assignedLT = 0, assignedTH = 0, assignListHtml = `<span class="text-muted" style="font-style:italic;">Chưa có phân công</span>`;
-                        let taughtSessions = 0; // Biến đếm số buổi đã dạy
+                        let taughtSessions = 0;
                         
                         if (moduleAssignments.length > 0) {
                             assignListHtml = `<ul class="assignment-list-inline">`;
@@ -703,7 +713,6 @@
                                     assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0;
                                     assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0;
                                     
-                                    // Đếm các buổi học đã dạy từ bảng Thời khóa biểu (dựa theo Bản chính thức)
                                     const aSchedules = allSchedulesData.filter(s => String(s['id-phan-cong']) === String(a.id));
                                     aSchedules.forEach(sch => {
                                         if (isPastSession(sch['ngay'], sch['gio-ket-thuc'])) {
@@ -720,7 +729,7 @@
                                 else if (a["doi-tuong"] === "ca-nhan") targetText = `HV: ${escapeHtml(a["ho-ten"])}`;
 
                                 let noteHtml = "";
-                                if (aNote) { noteHtml = `<div style="font-size: 0.75rem; color: #d97706; margin-top: 2px;"><i class="fas fa-sticky-note"></i> Ghi chú: ${aNote}</div>`; }
+                                if (aNote) { noteHtml = `<div style="font-size: 0.75rem; color: #d97706; margin-top: 4px;"><i class="fas fa-sticky-note"></i> Ghi chú: ${aNote}</div>`; }
 
                                 let badgeHtml = "";
                                 if (trangThai === "Chính thức") badgeHtml = `<span class="badge official">Chính thức</span>`;
@@ -732,7 +741,7 @@
 
                                 if (isOfficial) {
                                     if (hasPending) {
-                                        actionButtons = `<span style="font-size: 0.7rem; color: #f59e0b; font-style: italic;">Đang chờ duyệt sửa/xóa...</span>`;
+                                        actionButtons = `<span style="font-size: 0.7rem; color: #f59e0b; font-style: italic; display:block; padding: 4px;">Đang chờ duyệt sửa/xóa...</span>`;
                                     } else {
                                         actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Sẽ đưa vào hàng đợi Chờ duyệt)"><i class="fas fa-pen"></i></button>`;
                                         actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Sẽ đưa vào hàng đợi Chờ xóa)"><i class="fas fa-trash-alt"></i></button>`;
@@ -754,7 +763,7 @@
                                             <i class="fas fa-user-tie" style="color:var(--primary); font-size:0.8rem;"></i> 
                                             <strong>${escapeHtml(getInstructorName(a["ma-giang-vien"]))}</strong> 
                                             ${badgeHtml}
-                                            <span class="text-muted" style="font-size:0.75rem; display:block; margin-left:18px;">
+                                            <span class="text-muted" style="font-size:0.75rem; display:block; margin-top: 4px;">
                                                 LT:${aLT} | TH:${aTH} | <span style="color:var(--accent); font-weight:500;">${targetText}</span>
                                             </span>
                                             ${noteHtml}
@@ -771,7 +780,6 @@
                         let percent = 0; if (khTong > 0) percent = Math.round((assignedTong / khTong) * 100); else if (assignedTong > 0) percent = 100;
                         let pColor = percent === 100 ? "complete" : (percent > 100 ? "over" : "");
 
-                        // Tính phần trăm Giảng dạy thực tế
                         let taughtPercent = 0;
                         if (khTong > 0) taughtPercent = Math.round((taughtSessions / khTong) * 100);
                         else if (taughtSessions > 0) taughtPercent = 100;
@@ -784,10 +792,9 @@
                         }
 
                         const nameHtml = `
-                            <div style="text-align: left; padding-right: 5px;">
+                            <div style="text-align: left; padding-right: 5px; min-width: 0;">
                                 <strong style="color: var(--text-dark); font-size: 0.9rem;">${tenHp}</strong>
-                                <br>
-                                <span class="text-muted" style="font-size: 0.8rem;">${tinChi} TC | ${escapeHtml(mod["chuyen-nganh"] || "Chung")}</span>
+                                <span class="text-muted" style="font-size: 0.8rem; margin-top: 2px;">${tinChi} TC | ${escapeHtml(mod["chuyen-nganh"] || "Chung")}</span>
                             </div>
                         `;
 
@@ -838,7 +845,6 @@
                 }
             }
 
-            // Reload ngầm màn hình cục bộ khi thao tác
             async function reloadAndFocus(maHpRaw) {
                 await loadClassData(true); 
                 const rowId = `row-${btoa(maHpRaw).replace(/=/g, '')}`;
@@ -915,7 +921,6 @@
                6. GIAO THỨC DUYỆT / SỬA / XÓA ĐỒNG BỘ CÓ VERIFY TỪ DB
             ================================================= */
             
-            // Hủy Yêu cầu Xóa
             window.cancelDeleteProposal = async function(assignId) {
                 if (!confirm("Bạn muốn hủy yêu cầu xóa và khôi phục phân công chính thức này?")) return;
                 const assignment = currentAssignmentsData.find(a => !a.isOfficial && String(a._proposalId) === String(assignId));
@@ -930,7 +935,6 @@
                 } catch (err) { window.showToast("Lỗi: " + err.message, true); }
             };
 
-            // Nút Duyệt Chính
             window.approveAssignment = async function(assignId) {
                 const proposal = currentAssignmentsData.find(a => !a.isOfficial && String(a._proposalId) === String(assignId));
                 if (!proposal) return;
