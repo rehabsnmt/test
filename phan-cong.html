@@ -242,12 +242,6 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             
-                    // UID của những người có quyền DUYỆT
-            const APPROVER_UIDS = [
-                "7347234a-0a43-45ea-ac0d-fa0d9d001ea4", 
-                "296da1b4-8cac-41b6-a960-702b42f00265"
-            ];
-            
             let currentUserId = null;
 
             window.showToast = function (message, isError = false) {
@@ -510,8 +504,6 @@
                 const groups = {};
                 filteredMods.forEach(mod => { const groupName = String(mod["nhom-hoc-phan"] || "Chưa phân nhóm").trim(); if (!groups[groupName]) groups[groupName] = []; groups[groupName].push(mod); });
 
-                const isApprover = (currentUserId === APPROVER_UID);
-
                 for (const [groupName, mods] of Object.entries(groups)) {
                     const groupTr = document.createElement("tr");
                     groupTr.innerHTML = `<td colspan="6" class="text-left" style="background-color: var(--primary-light); color: var(--primary-hover); padding: 0.5rem 0.6rem;"><i class="fas fa-layer-group" style="margin-right: 5px;"></i> <strong>${escapeHtml(groupName)}</strong></td>`;
@@ -571,14 +563,10 @@
                                     }
                                 } else {
                                     if (trangThai === "Chờ xóa") {
-                                        if (isApprover) {
-                                            actionButtons += `<button class="btn-action-assign approve-delete" onclick="approveAssignment('${assignId}')" title="Duyệt Xóa (Xóa khỏi Phân công)">Duyệt Xóa</button>`;
-                                        }
+                                        actionButtons += `<button class="btn-action-assign approve-delete" onclick="approveAssignment('${assignId}')" title="Duyệt Xóa (Xóa khỏi Phân công)">Duyệt Xóa</button>`;
                                         actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')" title="Hủy yêu cầu xóa"><i class="fas fa-undo"></i> Hủy</button>`;
                                     } else { // Chờ duyệt
-                                        if (isApprover) {
-                                            actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')" title="Duyệt (Cập nhật sang bảng Chính thức)">Duyệt</button>`;
-                                        }
+                                        actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')" title="Duyệt (Cập nhật sang bảng Chính thức)">Duyệt</button>`;
                                         actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)" title="Sửa lại Đề xuất này"><i class="fas fa-pen"></i></button>`;
                                         actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)" title="Xóa/Hủy đề xuất này"><i class="fas fa-times"></i></button>`;
                                     }
@@ -733,7 +721,7 @@
             });
 
             /* =================================================
-               6. GIAO THỨC DUYỆT / SỬA / XÓA ĐỒNG BỘ
+               6. GIAO THỨC DUYỆT / SỬA / XÓA ĐỒNG BỘ CÓ VERIFY TỪ DB
             ================================================= */
             
             // Hủy Yêu cầu Xóa
@@ -742,8 +730,10 @@
                 const assignment = currentAssignmentsData.find(a => !a.isOfficial && String(a._proposalId) === String(assignId));
                 if (!assignment) return;
                 try {
-                    const { error } = await window.supabaseClient.from('de-xuat-phan-cong').update({ "trang-thai": "Đã duyệt" }).eq('id', assignId);
+                    const { data, error } = await window.supabaseClient.from('de-xuat-phan-cong').update({ "trang-thai": "Đã duyệt" }).eq('id', assignId).select();
                     if (error) throw error;
+                    if (!data || data.length === 0) throw new Error("Không tìm thấy dữ liệu để hoàn tác trên hệ thống.");
+                    
                     window.showToast("Đã hủy đề xuất xóa!");
                     reloadAndFocus(String(assignment["ma-hoc-phan"]).trim());
                 } catch (err) { window.showToast("Lỗi: " + err.message, true); }
@@ -766,8 +756,9 @@
                         const { error: errPc } = await supabase.from('phan-cong-giang-day').delete().eq('id-de-xuat', assignId);
                         if (errPc && !errPc.message.includes("does not exist")) throw errPc;
 
-                        const { error: errDx } = await supabase.from('de-xuat-phan-cong').delete().eq('id', assignId);
+                        const { data: dxData, error: errDx } = await supabase.from('de-xuat-phan-cong').delete().eq('id', assignId).select();
                         if (errDx) throw errDx;
+                        if (!dxData || dxData.length === 0) throw new Error("Không tìm thấy đề xuất cần xóa (có thể đã bị xóa trước đó).");
 
                         window.showToast("Đã duyệt xóa phân công thành công!");
                         reloadAndFocus(maHp);
@@ -793,20 +784,23 @@
                         if (checkErr && !checkErr.message.includes("column id-de-xuat does not exist")) throw checkErr;
 
                         if (existingPC && existingPC.length > 0) {
-                            const { error: updPcErr } = await supabase.from('phan-cong-giang-day').update(pcPayload).eq('id', existingPC[0].id);
+                            const { data: pcData, error: updPcErr } = await supabase.from('phan-cong-giang-day').update(pcPayload).eq('id', existingPC[0].id).select();
                             if (updPcErr) throw updPcErr;
+                            if (!pcData || pcData.length === 0) throw new Error("Không thể ghi đè bảng Phân công chính thức!");
                         } else {
-                            const { error: insErr } = await supabase.from('phan-cong-giang-day').insert([pcPayload]);
+                            const { data: pcData, error: insErr } = await supabase.from('phan-cong-giang-day').insert([pcPayload]).select();
                             if (insErr) {
                                 if (insErr.message.includes("id-de-xuat")) {
                                     throw new Error("Cột 'id-de-xuat' bị thiếu trong bảng 'phan-cong-giang-day' trên Supabase.");
                                 }
                                 throw insErr;
                             }
+                            if (!pcData || pcData.length === 0) throw new Error("Không thể thêm vào bảng Phân công chính thức!");
                         }
 
-                        const { error: updErr } = await supabase.from('de-xuat-phan-cong').update({ "trang-thai": "Đã duyệt" }).eq('id', assignId);
+                        const { data: dxData, error: updErr } = await supabase.from('de-xuat-phan-cong').update({ "trang-thai": "Đã duyệt" }).eq('id', assignId).select();
                         if (updErr) throw updErr;
+                        if (!dxData || dxData.length === 0) throw new Error("Không thể cập nhật trạng thái đề xuất!");
 
                         window.showToast("Đã duyệt và đồng bộ phân công thành công!");
                         reloadAndFocus(maHp);
@@ -826,8 +820,10 @@
                     const supabase = window.supabaseClient;
                     if (isOfficialParam) {
                         if (!confirm("Bạn muốn ĐỀ XUẤT XÓA phân công chính thức này? Yêu cầu sẽ được đưa vào hàng đợi duyệt.")) return;
-                        const { error } = await supabase.from('de-xuat-phan-cong').update({ "trang-thai": "Chờ xóa" }).eq('id', assignId);
+                        const { data, error } = await supabase.from('de-xuat-phan-cong').update({ "trang-thai": "Chờ xóa" }).eq('id', assignId).select();
                         if (error) throw error;
+                        if (!data || data.length === 0) throw new Error("Không tìm thấy phân công trên hệ thống để yêu cầu xóa.");
+                        
                         window.showToast("Đã gửi đề xuất xóa!");
                     } else {
                         const trangThai = targetRecord["trang-thai"] || "Chờ duyệt";
@@ -840,13 +836,17 @@
                                     "ghi-chu": pc["ghi-chu"], "doi-tuong": pc["doi-tuong"], "loai-nhom": pc["loai-nhom"], "ten-nhom": pc["ten-nhom"],
                                     "ma-hoc-vien": pc["ma-hoc-vien"], "ho-ten": pc["ho-ten"], "trang-thai": "Đã duyệt"
                                 };
-                                const { error } = await supabase.from('de-xuat-phan-cong').update(revertPayload).eq('id', assignId);
+                                const { data, error } = await supabase.from('de-xuat-phan-cong').update(revertPayload).eq('id', assignId).select();
                                 if (error) throw error;
+                                if (!data || data.length === 0) throw new Error("Lỗi không tìm thấy đề xuất để hủy.");
+                                
                                 window.showToast("Đã hủy thay đổi, khôi phục bản chính thức!");
                             } else {
                                 if (!confirm("Bạn có chắc chắn muốn xóa vĩnh viễn đề xuất mới này?")) return;
-                                const { error } = await supabase.from('de-xuat-phan-cong').delete().eq('id', assignId);
+                                const { data, error } = await supabase.from('de-xuat-phan-cong').delete().eq('id', assignId).select();
                                 if (error) throw error;
+                                if (!data || data.length === 0) throw new Error("Lỗi không tìm thấy đề xuất để xóa.");
+                                
                                 window.showToast("Đã xóa đề xuất!"); 
                             }
                         }
@@ -974,14 +974,16 @@
                     };
 
                     if (editingAssignmentId) {
-                        const { error } = await supabase.from('de-xuat-phan-cong').update(payload).eq('id', editingAssignmentId);
+                        const { data, error } = await supabase.from('de-xuat-phan-cong').update(payload).eq('id', editingAssignmentId).select();
                         if (error) throw error;
+                        if (!data || data.length === 0) throw new Error("Lỗi: Không tìm thấy đề xuất để cập nhật trên hệ thống.");
                         window.showToast("Đã lưu đề xuất thay đổi!");
                     } else {
                         payload["ma-lop"] = currentSelectedClass["ma-lop"];
                         payload["ma-hoc-phan"] = currentSelectedModule.maHp;
-                        const { error } = await supabase.from('de-xuat-phan-cong').insert([payload]);
+                        const { data, error } = await supabase.from('de-xuat-phan-cong').insert([payload]).select();
                         if (error) throw error;
+                        if (!data || data.length === 0) throw new Error("Lỗi: Không thể thêm đề xuất mới vào hệ thống.");
                         window.showToast("Đã thêm đề xuất mới!");
                     }
                     closeModal(); 
