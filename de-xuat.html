@@ -88,149 +88,122 @@
            GIAO DIỆN ĐIỆN THOẠI (RESPONSIVE TABLE CARD)
         ========================================= */
         @media (max-width: 768px) {
+            .filter-section { flex-direction: column; align-items: stretch; gap: 12px; }
+            .filter-section .form-group { width: 100%; }
+            
             #modulesTable thead { display: none; }
             #modulesTable, #modulesTable tbody { display: block; width: 100%; }
             
-            /* Cấu trúc Grid thông minh cho từng dòng dữ liệu (Card) */
             #modulesTable tr:not(.group-header-row) {
                 display: grid;
                 grid-template-columns: auto 1fr;
                 grid-template-areas: 
                     "stt ten"
-                    "hk hk"
+                    "stt hk"
                     "tiendo tiendo"
                     "thaotac thaotac"
                     "chitiet chitiet";
-                gap: 8px;
+                gap: 10px 12px;
                 background: #fff;
                 border: 1px solid var(--border);
-                border-radius: 8px;
-                padding: 12px;
-                margin-bottom: 15px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                border-radius: 12px;
+                padding: 16px;
+                margin-bottom: 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             }
 
-            #modulesTable td {
-                border: none !important;
-                padding: 0 !important;
-                text-align: left !important;
-                display: block;
-            }
-            
-            /* 1. Thứ tự */
+            #modulesTable td { border: none !important; padding: 0 !important; display: block; width: 100%; }
+
+            /* 1. STT */
             #modulesTable tr:not(.group-header-row) td:nth-child(1) {
                 grid-area: stt;
-                font-weight: bold;
-                color: var(--primary);
-                font-size: 1rem;
-                display: flex;
-                align-items: flex-start;
+                font-size: 1.1rem; font-weight: 900; color: var(--primary);
+                background: var(--primary-light);
+                width: 40px; height: 40px;
+                display: flex; align-items: center; justify-content: center;
+                border-radius: 50%;
+                align-self: start;
             }
-            #modulesTable tr:not(.group-header-row) td:nth-child(1)::after {
-                content: " - ";
-                color: var(--text-dark);
-                margin-left: 5px;
-            }
-            
-            /* 2. Tên học phần */
+
+            /* Tên Học Phần */
             #modulesTable tr:not(.group-header-row) td:nth-child(2) {
                 grid-area: ten;
-                align-self: center;
+            }
+            #modulesTable tr:not(.group-header-row) td:nth-child(2) strong {
+                font-size: 1.1rem; color: #0f172a; line-height: 1.3; display: block;
             }
             #modulesTable tr:not(.group-header-row) td:nth-child(2) .text-muted {
-                display: block;
-                margin-top: 2px;
+                font-size: 0.85rem; margin-top: 4px; display: block;
             }
 
-            /* 3. Học kỳ */
+            /* Học kỳ */
             #modulesTable tr:not(.group-header-row) td:nth-child(3) {
                 grid-area: hk;
-                display: flex;
-                align-items: center;
-                gap: 10px;
+                display: flex; align-items: center; gap: 8px;
+                margin-top: -4px;
             }
             #modulesTable tr:not(.group-header-row) td:nth-child(3)::before {
-                content: "Học kỳ:";
-                font-size: 0.8rem;
-                color: var(--text-muted);
-                font-weight: bold;
+                content: "Học kỳ:"; font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
             }
-            #modulesTable tr:not(.group-header-row) td:nth-child(3) select {
-                width: auto;
-                min-width: 100px;
-                padding: 6px;
-            }
+            .hk-select { width: auto; min-width: 80px; padding: 4px 8px; font-size: 0.85rem; border-radius: 6px; }
 
-            /* 4. Tiến độ */
+            /* 2. Tiến độ */
             #modulesTable tr:not(.group-header-row) td:nth-child(4) {
                 grid-area: tiendo;
-                border-top: 1px dashed var(--border-light) !important;
-                padding-top: 12px !important;
+                background: #f8fafc;
+                padding: 12px !important;
+                border-radius: 8px;
+                border: 1px solid #e2e8f0;
+                margin-top: 4px;
             }
 
-            /* 5. Thao tác (Nút Thêm) */
+            /* 3. Thao tác */
             #modulesTable tr:not(.group-header-row) td:nth-child(6) {
                 grid-area: thaotac;
-                margin-top: 6px;
-                margin-bottom: 6px;
+                margin-top: 4px;
             }
             #modulesTable tr:not(.group-header-row) td:nth-child(6) button {
-                width: 100% !important; 
-                padding: 10px !important;
-                font-size: 0.95rem !important;
-                border-radius: 6px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 8px;
+                width: 100%; padding: 12px; font-size: 1rem; border-radius: 8px; font-weight: bold;
             }
 
-            /* 6. Chi tiết phân công */
+            /* 4. Chi tiết phân công */
             #modulesTable tr:not(.group-header-row) td:nth-child(5) {
                 grid-area: chitiet;
-                background: #f8fafc;
-                border-radius: 6px;
-                padding: 12px !important;
-                border: 1px solid var(--border-light) !important;
+                margin-top: 4px;
             }
-
-            /* Tiêu đề Nhóm Học Phần */
-            #modulesTable tr.group-header-row {
-                display: block;
-                margin-bottom: 12px;
-                margin-top: 18px;
+            #modulesTable tr:not(.group-header-row) td:nth-child(5) > span.text-muted {
+                display: block; text-align: center; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1;
             }
-            #modulesTable tr.group-header-row td {
-                border-radius: 6px;
-                display: block;
-                width: 100%;
-                box-sizing: border-box;
-            }
-
-            /* Căn chỉnh lại nhóm nút bên trong Chi tiết phân công cho di động */
+            
+            .assignment-list-inline { margin-top: 0; }
             .assignment-list-inline li {
                 flex-direction: column;
-                gap: 10px;
-                padding-bottom: 12px;
-                margin-bottom: 12px;
-            }
-            .action-group {
-                width: 100%;
-                justify-content: flex-start;
-                flex-wrap: wrap;
                 background: #fff;
-                padding: 8px;
-                border-radius: 6px;
                 border: 1px solid var(--border-light);
-                gap: 8px;
+                border-left: 4px solid var(--primary);
+                border-radius: 8px;
+                padding: 12px;
+                margin-bottom: 12px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             }
-            .action-group button {
-                flex: 1;
-                text-align: center;
-                padding: 8px;
-                min-width: calc(50% - 10px);
-                justify-content: center;
+            .assignment-list-inline li:last-child { border-bottom: 1px solid var(--border-light); margin-bottom: 0; }
+            
+            .action-group {
+                width: 100%; margin-top: 10px; padding-top: 10px;
+                border-top: 1px dashed var(--border-light);
+                display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between;
             }
+            .action-group button { 
+                flex: 1; min-width: calc(50% - 4px); padding: 10px 8px; 
+                text-align: center; justify-content: center; font-size: 0.85rem; 
+                border-radius: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; 
+            }
+            
+            .btn-action-assign.approve { background: #dcfce7; border-color: #86efac; color: #16a34a; }
+            .btn-action-assign.approve-delete { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+            
+            #modulesTable tr.group-header-row { display: block; margin-top: 24px; margin-bottom: 16px; }
+            #modulesTable tr.group-header-row td { display: block; width: 100%; box-sizing: border-box; border-radius: 8px; padding: 12px 16px !important; font-size: 1.05rem; }
         }
     </style>
 </head>
@@ -417,7 +390,7 @@
             let classesList = [], instructorsList = [], studentsList = [], groupsList = [];
             let currentSelectedClass = null, currentSelectedModule = null; 
             let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {}; 
-            let allSchedulesData = []; // Bảng Thời khóa biểu để đo Tiến độ hoàn thành
+            let allSchedulesData = []; 
             
             let editingAssignmentId = null;
             let isEditingOfficial = false;
@@ -480,9 +453,6 @@
 
             classSelect.addEventListener("change", () => { specSelect.value = ""; summaryCard.style.display = "none"; loadClassData(false); });
 
-            /* =================================================
-               2. TẢI VÀ GỘP DỮ LIỆU TỪ CẢ 3 BẢNG (KÈM TKB)
-            ================================================= */
             async function loadClassData(isSilentReload = false) {
                 const maLop = classSelect.value;
                 if (!maLop) {
@@ -504,15 +474,12 @@
                     if (curError) throw curError;
                     currentCurriculumData = curriculumData || [];
 
-                    // 1. Tải bảng Chính thức
                     const { data: pcData, error: pcError } = await supabase.from('phan-cong-giang-day').select('*');
                     if (pcError) throw pcError;
 
-                    // 2. Tải bảng Đệm/Đề xuất
                     const { data: dxData, error: dxError } = await supabase.from('de-xuat-phan-cong').select('*');
                     if (dxError) throw dxError;
                     
-                    // 3. Tải bảng Thời khóa biểu (để đếm tiến độ thực tế đã dạy)
                     const { data: tkbData, error: tkbError } = await supabase.from('thoi-khoa-bieu').select('*');
                     if (tkbError) throw tkbError;
                     allSchedulesData = tkbData || [];
@@ -658,9 +625,6 @@
                 } catch (err) { window.showToast("Lỗi cập nhật bảng lop-hoc-phan: " + err.message, true); loadClassData(true); }
             };
 
-            /* =================================================
-               4. RENDER BẢNG VÀ TÍNH TOÁN TIẾN ĐỘ THỰC TẾ
-            ================================================= */
             function isPastSession(ngay, gioKt) {
                 if (!ngay || !gioKt) return false;
                 const sessionDate = new Date(`${ngay}T${gioKt}`);
@@ -682,7 +646,7 @@
 
                 for (const [groupName, mods] of Object.entries(groups)) {
                     const groupTr = document.createElement("tr");
-                    groupTr.className = "group-header-row"; // Dùng để css ẩn/hiện trên di động
+                    groupTr.className = "group-header-row";
                     groupTr.innerHTML = `<td colspan="6" class="text-left" style="background-color: var(--primary-light); color: var(--primary-hover); padding: 0.5rem 0.6rem;"><i class="fas fa-layer-group" style="margin-right: 5px;"></i> <strong>${escapeHtml(groupName)}</strong></td>`;
                     modulesTableBody.appendChild(groupTr);
 
@@ -699,7 +663,7 @@
                         const moduleAssignments = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === rawMaHp);
                         
                         let assignedLT = 0, assignedTH = 0, assignListHtml = `<span class="text-muted" style="font-style:italic;">Chưa có phân công</span>`;
-                        let taughtSessions = 0; // Biến đếm số buổi đã dạy
+                        let taughtSessions = 0;
                         
                         if (moduleAssignments.length > 0) {
                             assignListHtml = `<ul class="assignment-list-inline">`;
@@ -713,7 +677,6 @@
                                     assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0;
                                     assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0;
                                     
-                                    // Đếm các buổi học đã dạy từ bảng Thời khóa biểu (dựa theo Bản chính thức)
                                     const aSchedules = allSchedulesData.filter(s => String(s['id-phan-cong']) === String(a.id));
                                     aSchedules.forEach(sch => {
                                         if (isPastSession(sch['ngay'], sch['gio-ket-thuc'])) {
@@ -781,7 +744,6 @@
                         let percent = 0; if (khTong > 0) percent = Math.round((assignedTong / khTong) * 100); else if (assignedTong > 0) percent = 100;
                         let pColor = percent === 100 ? "complete" : (percent > 100 ? "over" : "");
 
-                        // Tính phần trăm Giảng dạy thực tế
                         let taughtPercent = 0;
                         if (khTong > 0) taughtPercent = Math.round((taughtSessions / khTong) * 100);
                         else if (taughtSessions > 0) taughtPercent = 100;
@@ -848,7 +810,6 @@
                 }
             }
 
-            // Reload ngầm màn hình cục bộ khi thao tác
             async function reloadAndFocus(maHpRaw) {
                 await loadClassData(true); 
                 const rowId = `row-${btoa(maHpRaw).replace(/=/g, '')}`;
@@ -925,7 +886,6 @@
                6. GIAO THỨC DUYỆT / SỬA / XÓA ĐỒNG BỘ CÓ VERIFY TỪ DB
             ================================================= */
             
-            // Hủy Yêu cầu Xóa
             window.cancelDeleteProposal = async function(assignId) {
                 if (!confirm("Bạn muốn hủy yêu cầu xóa và khôi phục phân công chính thức này?")) return;
                 const assignment = currentAssignmentsData.find(a => !a.isOfficial && String(a._proposalId) === String(assignId));
@@ -940,7 +900,6 @@
                 } catch (err) { window.showToast("Lỗi: " + err.message, true); }
             };
 
-            // Nút Duyệt Chính
             window.approveAssignment = async function(assignId) {
                 const proposal = currentAssignmentsData.find(a => !a.isOfficial && String(a._proposalId) === String(assignId));
                 if (!proposal) return;
@@ -1068,15 +1027,11 @@
                 instructorSelect.value = ""; assignNote.value = "";
                 targetTypeSelect.value = "ca-lop"; targetTypeSelect.dispatchEvent(new Event('change'));
 
-                // CỘNG DỒN SỐ BUỔI CỦA BẢN CHÍNH THỨC + BẢN ĐỀ XUẤT CHỜ DUYỆT
                 const allAssignsForModule = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let assignedLT = 0, assignedTH = 0;
-                
-                // Set để tránh cộng trùng 1 ID (Trường hợp sửa đề xuất của bản chính thức)
                 const countedProposalIds = new Set();
                 
                 allAssignsForModule.forEach(a => {
-                    // Ưu tiên bản Đề xuất chờ duyệt trước
                     if (!a.isOfficial && a.trangThaiDisplay !== "Chờ xóa") {
                         assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0;
                         assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0;
@@ -1085,7 +1040,6 @@
                 });
                 
                 allAssignsForModule.forEach(a => {
-                    // Cộng nốt các bản Chính thức mà không có đề xuất thay thế chờ duyệt
                     if (a.isOfficial && !countedProposalIds.has(String(a._proposalId))) {
                         assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0;
                         assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0;
@@ -1140,7 +1094,6 @@
                     setTimeout(() => studentSelect.value = assignment["ma-hoc-vien"] || "", 50);
                 }
 
-                // CỘNG DỒN NHƯNG LOẠI TRỪ BẢN ĐANG SỬA
                 const allAssignsForModule = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let otherLT = 0, otherTH = 0;
                 const countedProposalIds = new Set();
