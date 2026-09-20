@@ -98,6 +98,7 @@
         }
         .cc-time { display: block; margin-bottom: 2px; }
         .cc-loc { display: block; }
+        .cc-scheduler { display: block; margin-top: 3px; font-size: 0.65rem; color: var(--primary); font-weight: bold; }
 
         .cc-note { margin-top: 5px; padding-top: 5px; border-top: 1px dashed rgba(0,0,0,0.1); font-style: italic; color: #64748b; font-size: 0.7rem; white-space: normal !important; overflow-wrap: break-word; word-break: break-word; line-height: 1.3; }
 
@@ -109,7 +110,8 @@
         .class-card.compact .cc-info,
         .class-card.compact .cc-note,
         .class-card.compact .card-actions,
-        .class-card.compact .cc-time {
+        .class-card.compact .cc-time,
+        .class-card.compact .cc-scheduler {
             display: none !important;
         }
         .class-card.compact .cc-time-loc {
@@ -334,7 +336,7 @@
             }
 
             // --- TRẠNG THÁI DỮ LIỆU ---
-            let classesList = [], instructorsList = [], roomsList = [], hospitalsList = [];
+            let classesList = [], instructorsList = [], roomsList = [], hospitalsList = [], accountList = [];
             let masterCurriculumMap = {}, masterSemesterMap = {};
             let allAssignmentsData = [], allSchedulesData = []; 
             
@@ -463,7 +465,6 @@
                 try {
                     const supabase = window.supabaseClient;
 
-                    // Lấy User và Phân quyền UI
                     const { data: authData } = await supabase.auth.getUser();
                     if (authData && authData.user) { currentUserId = authData.user.id; }
                     
@@ -476,18 +477,19 @@
                         btnTogglePool.style.display = "none";
                     }
 
-                    // Tải dữ liệu từ DB
-                    const [resClass, resInst, resRoom, resHosp] = await Promise.all([
+                    const [resClass, resInst, resRoom, resHosp, resAcc] = await Promise.all([
                         supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh'),
                         supabase.from('giang-vien').select('ma-giang-vien, ho-ten'),
                         supabase.from('phong-hoc').select('ma-phong-hoc, ten-phong-hoc'),
-                        supabase.from('benh-vien').select('ma-benh-vien, ten-benh-vien')
+                        supabase.from('benh-vien').select('ma-benh-vien, ten-benh-vien'),
+                        supabase.from('tai-khoan-he-thong').select('id, ma-giang-vien')
                     ]);
 
                     classesList = resClass.data || [];
                     instructorsList = resInst.data || [];
                     roomsList = resRoom.data || [];
                     hospitalsList = resHosp.data || [];
+                    accountList = resAcc.data || [];
 
                     classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
                     gridClassFilter.innerHTML = `<option value="">-- Tất cả các lớp --</option>`;
@@ -530,6 +532,15 @@
                 if(type === 'phong') { const r = roomsList.find(x => String(x['ma-phong-hoc']) === String(id)); return r ? r['ten-phong-hoc'] : id; }
                 if(type === 'vien') { const h = hospitalsList.find(x => String(x['ma-benh-vien']) === String(id)); return h ? h['ten-benh-vien'] : id; }
                 return '';
+            }
+            
+            function getSchedulerName(uuid) {
+                if (!uuid) return "Admin";
+                const acc = accountList.find(x => String(x.id) === String(uuid));
+                if (acc && acc['ma-giang-vien']) {
+                    return getInstructorName(acc['ma-giang-vien']);
+                }
+                return "Admin";
             }
 
             /* =================================================
@@ -769,15 +780,21 @@
                 const noteHtml = (ghiChu && !isOnGrid) ? `<div class="cc-note"><i class="fas fa-sticky-note" style="margin-right:4px;"></i>${ghiChu}</div>` : '';
                 
                 let timeLocHtml = "";
+                let schedulerHtml = "";
+
                 if (isOnGrid) {
                     const locType = schData['ma-phong-hoc'] ? 'phong' : 'vien';
                     const locId = schData['ma-phong-hoc'] || schData['ma-benh-vien'];
                     const locName = getLocName(locType, locId) || 'Chưa chọn địa điểm';
+                    const schedulerName = getSchedulerName(schData['nguoi-xep']);
                     
+                    schedulerHtml = `<div class="cc-scheduler"><i class="fas fa-user-edit"></i> Xếp: ${escapeHtml(schedulerName)}</div>`;
+
                     timeLocHtml = `
                         <div class="cc-time-loc">
                             <div class="cc-time"><i class="far fa-clock"></i> <span>${formatAMPM(String(schData['gio-bat-dau']).substring(0,5))} - ${formatAMPM(String(schData['gio-ket-thuc']).substring(0,5))}</span></div>
                             <div class="cc-loc"><i class="fas fa-map-marker-alt"></i> <span>${escapeHtml(locName)}</span></div>
+                            ${schedulerHtml}
                         </div>`;
                 }
 
