@@ -344,7 +344,7 @@
         </div>
     </div>
 
-    <!-- MODAL CHI TIẾT DÀNH RIÊNG CHO MOBILE (KHÔNG DÙNG TR FIXED) -->
+    <!-- MODAL CHI TIẾT DÀNH RIÊNG CHO MOBILE -->
     <div id="mobileDetailModal" class="hidden">
         <div class="mdm-header">
             <div class="mdm-title-wrap">
@@ -569,7 +569,7 @@
 
                 const modal = document.getElementById('mobileDetailModal');
                 modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; 
+                document.body.style.overflow = 'hidden'; // Tránh scroll màn hình bên dưới
             };
 
             window.closeMobileDetailModal = function() {
@@ -1152,15 +1152,24 @@
             ================================================= */
             
             window.cancelDeleteProposal = async function(assignId) {
-                if (!confirm("Bạn muốn hủy yêu cầu xóa và khôi phục phân công chính thức này?")) return;
+                if (!confirm("Bạn muốn hủy yêu cầu xóa và khôi phục phân công chính thức này (áp dụng cho các lớp đồng thời)?")) return;
                 const assignment = currentAssignmentsData.find(a => !a.isOfficial && String(a._proposalId) === String(assignId));
                 if (!assignment) return;
+                
+                const groupId = assignment["nhom-de-xuat"];
+                
                 try {
-                    const { data, error } = await window.supabaseClient.from('de-xuat-phan-cong').update({ "trang-thai": "Đã duyệt" }).eq('id', assignId).select();
+                    let targetIds = [assignId];
+                    if (groupId) {
+                        const { data: groupProposals } = await window.supabaseClient.from('de-xuat-phan-cong').select('id').eq('nhom-de-xuat', groupId);
+                        if (groupProposals && groupProposals.length > 0) targetIds = groupProposals.map(g => g.id);
+                    }
+
+                    const { data, error } = await window.supabaseClient.from('de-xuat-phan-cong').update({ "trang-thai": "Đã duyệt" }).in('id', targetIds).select();
                     if (error) throw error;
                     if (!data || data.length === 0) throw new Error("Không tìm thấy dữ liệu trên hệ thống để hoàn tác.");
                     
-                    window.showToast("Đã hủy đề xuất xóa!");
+                    window.showToast("Đã hủy đề xuất xóa đồng thời!");
                     reloadAndFocus(String(assignment["ma-hoc-phan"]).trim());
                 } catch (err) { window.showToast("Lỗi: " + err.message, true); }
             };
@@ -1171,59 +1180,67 @@
 
                 const maHp = String(proposal["ma-hoc-phan"]).trim();
                 const trangThai = proposal["trang-thai"] || "Chờ duyệt";
+                const groupId = proposal["nhom-de-xuat"];
 
                 try {
                     const supabase = window.supabaseClient;
+                    
+                    let proposalsToProcess = [proposal];
+                    if (groupId) {
+                        const { data: groupProposals, error: groupErr } = await supabase.from('de-xuat-phan-cong').select('*').eq('nhom-de-xuat', groupId);
+                        if (!groupErr && groupProposals && groupProposals.length > 0) {
+                            proposalsToProcess = groupProposals;
+                        }
+                    }
+                    const proposalIds = proposalsToProcess.map(p => p.id);
 
                     if (trangThai === "Chờ xóa") {
-                        if (!confirm("Xác nhận DUYỆT XÓA? Phân công này sẽ bị xóa hoàn toàn khỏi hệ thống.")) return;
+                        if (!confirm("Xác nhận DUYỆT XÓA? Phân công của (các) lớp liên kết sẽ bị xóa hoàn toàn khỏi hệ thống.")) return;
                         
-                        const { error: errPc } = await supabase.from('phan-cong-giang-day').delete().eq('id-de-xuat', assignId);
+                        const { error: errPc } = await supabase.from('phan-cong-giang-day').delete().in('id-de-xuat', proposalIds);
                         if (errPc && !errPc.message.includes("does not exist")) throw errPc;
 
-                        const { data: dxData, error: errDx } = await supabase.from('de-xuat-phan-cong').delete().eq('id', assignId).select();
+                        const { data: dxData, error: errDx } = await supabase.from('de-xuat-phan-cong').delete().in('id', proposalIds).select();
                         if (errDx) throw errDx;
                         if (!dxData || dxData.length === 0) throw new Error("Không tìm thấy đề xuất cần xóa (có thể đã bị xóa trước đó).");
 
-                        window.showToast("Đã duyệt xóa phân công thành công!");
+                        window.showToast("Đã duyệt xóa phân công đồng thời thành công!");
                         reloadAndFocus(maHp);
                     } else {
-                        if (!confirm("Bạn có chắc chắn muốn DUYỆT đề xuất này và ghi đè sang bảng Phân công chính thức?")) return;
+                        if (!confirm("Bạn có chắc chắn muốn DUYỆT đề xuất này? Hệ thống sẽ cập nhật sang bảng Phân công chính thức cho tất cả lớp liên kết.")) return;
                         
-                        const pcPayload = {
-                            "ma-lop": proposal["ma-lop"],
-                            "ma-hoc-phan": proposal["ma-hoc-phan"],
-                            "ma-giang-vien": proposal["ma-giang-vien"],
-                            "so-buoi-ly-thuyet": proposal["so-buoi-ly-thuyet"],
-                            "so-buoi-thuc-hanh": proposal["so-buoi-thuc-hanh"],
-                            "ghi-chu": proposal["ghi-chu"],
-                            "doi-tuong": proposal["doi-tuong"],
-                            "loai-nhom": proposal["loai-nhom"],
-                            "ten-nhom": proposal["ten-nhom"],
-                            "ma-hoc-vien": proposal["ma-hoc-vien"],
-                            "ho-ten": proposal["ho-ten"],
-                            "id-de-xuat": assignId 
-                        };
+                        for (const p of proposalsToProcess) {
+                            const pcPayload = {
+                                "ma-lop": p["ma-lop"],
+                                "ma-hoc-phan": p["ma-hoc-phan"],
+                                "ma-giang-vien": p["ma-giang-vien"],
+                                "so-buoi-ly-thuyet": p["so-buoi-ly-thuyet"],
+                                "so-buoi-thuc-hanh": p["so-buoi-thuc-hanh"],
+                                "ghi-chu": p["ghi-chu"],
+                                "doi-tuong": p["doi-tuong"],
+                                "loai-nhom": p["loai-nhom"],
+                                "ten-nhom": p["ten-nhom"],
+                                "ma-hoc-vien": p["ma-hoc-vien"],
+                                "ho-ten": p["ho-ten"],
+                                "id-de-xuat": p.id 
+                            };
 
-                        const { data: existingPC, error: checkErr } = await supabase.from('phan-cong-giang-day').select('id').eq('id-de-xuat', assignId);
-                        if (checkErr && !checkErr.message.includes("column id-de-xuat does not exist")) throw checkErr;
+                            const { data: existingPC, error: checkErr } = await supabase.from('phan-cong-giang-day').select('id').eq('id-de-xuat', p.id);
+                            if (checkErr && !checkErr.message.includes("column id-de-xuat does not exist")) throw checkErr;
 
-                        if (existingPC && existingPC.length > 0) {
-                            const { data: pcData, error: updPcErr } = await supabase.from('phan-cong-giang-day').update(pcPayload).eq('id', existingPC[0].id).select();
-                            if (updPcErr) throw updPcErr;
-                            if (!pcData || pcData.length === 0) throw new Error("Không thể ghi đè bảng Phân công chính thức!");
-                        } else {
-                            const { data: pcData, error: insErr } = await supabase.from('phan-cong-giang-day').insert([pcPayload]).select();
-                            if (insErr) {
-                                if (insErr.message.includes("id-de-xuat")) {
-                                    throw new Error("Cột 'id-de-xuat' bị thiếu trong bảng 'phan-cong-giang-day' trên Supabase.");
+                            if (existingPC && existingPC.length > 0) {
+                                const { error: updPcErr } = await supabase.from('phan-cong-giang-day').update(pcPayload).eq('id', existingPC[0].id);
+                                if (updPcErr) throw updPcErr;
+                            } else {
+                                const { error: insErr } = await supabase.from('phan-cong-giang-day').insert([pcPayload]);
+                                if (insErr) {
+                                    if (insErr.message.includes("id-de-xuat")) throw new Error("Cột 'id-de-xuat' bị thiếu trong bảng 'phan-cong-giang-day' trên Supabase.");
+                                    throw insErr;
                                 }
-                                throw insErr;
                             }
-                            if (!pcData || pcData.length === 0) throw new Error("Không thể thêm vào bảng Phân công chính thức!");
                         }
 
-                        const { data: dxData, error: updErr } = await supabase.from('de-xuat-phan-cong').update({ "trang-thai": "Đã duyệt" }).eq('id', assignId).select();
+                        const { data: dxData, error: updErr } = await supabase.from('de-xuat-phan-cong').update({ "trang-thai": "Đã duyệt" }).in('id', proposalIds).select();
                         if (updErr) throw updErr;
                         if (!dxData || dxData.length === 0) throw new Error("Không thể cập nhật trạng thái đề xuất!");
 
@@ -1240,39 +1257,50 @@
                 if (!targetRecord) return;
                 
                 const maHp = String(targetRecord["ma-hoc-phan"]).trim();
+                const groupId = targetRecord["nhom-de-xuat"];
 
                 try {
                     const supabase = window.supabaseClient;
+                    
+                    let targetIds = [assignId];
+                    if (groupId) {
+                        const { data: groupProposals } = await supabase.from('de-xuat-phan-cong').select('id').eq('nhom-de-xuat', groupId);
+                        if (groupProposals && groupProposals.length > 0) targetIds = groupProposals.map(g => g.id);
+                    }
+
                     if (isOfficialParam) {
-                        if (!confirm("Bạn muốn ĐỀ XUẤT XÓA phân công chính thức này? Yêu cầu sẽ được đưa vào hàng đợi duyệt.")) return;
-                        const { data, error } = await supabase.from('de-xuat-phan-cong').update({ "trang-thai": "Chờ xóa" }).eq('id', assignId).select();
+                        if (!confirm("Bạn muốn ĐỀ XUẤT XÓA phân công chính thức này (áp dụng cho các lớp đồng thời)? Yêu cầu sẽ được đưa vào hàng đợi duyệt.")) return;
+                        const { data, error } = await supabase.from('de-xuat-phan-cong').update({ "trang-thai": "Chờ xóa" }).in('id', targetIds).select();
                         if (error) throw error;
                         if (!data || data.length === 0) throw new Error("Không tìm thấy phân công trên hệ thống để yêu cầu xóa.");
                         
-                        window.showToast("Đã gửi đề xuất xóa!");
+                        window.showToast("Đã gửi đề xuất xóa đồng thời!");
                     } else {
                         const trangThai = targetRecord["trang-thai"] || "Chờ duyệt";
                         if (trangThai === "Chờ duyệt") {
                             if (hasOfficial) {
-                                if (!confirm("Đây là bản đề xuất chỉnh sửa. Bạn có muốn HỦY thay đổi và hoàn tác về bản Chính thức không?")) return;
-                                const pc = currentAssignmentsData.find(a => a.isOfficial && String(a._proposalId) === assignIdStr);
-                                const revertPayload = {
-                                    "ma-giang-vien": pc["ma-giang-vien"], "so-buoi-ly-thuyet": pc["so-buoi-ly-thuyet"], "so-buoi-thuc-hanh": pc["so-buoi-thuc-hanh"],
-                                    "ghi-chu": pc["ghi-chu"], "doi-tuong": pc["doi-tuong"], "loai-nhom": pc["loai-nhom"], "ten-nhom": pc["ten-nhom"],
-                                    "ma-hoc-vien": pc["ma-hoc-vien"], "ho-ten": pc["ho-ten"], "trang-thai": "Đã duyệt"
-                                };
-                                const { data, error } = await supabase.from('de-xuat-phan-cong').update(revertPayload).eq('id', assignId).select();
-                                if (error) throw error;
-                                if (!data || data.length === 0) throw new Error("Lỗi không tìm thấy đề xuất để hủy.");
+                                if (!confirm("Đây là bản đề xuất chỉnh sửa. Bạn có muốn HỦY thay đổi và hoàn tác về bản Chính thức (áp dụng cho cả lớp liên kết)?")) return;
                                 
-                                window.showToast("Đã hủy thay đổi, khôi phục bản chính thức!");
+                                for (let id of targetIds) {
+                                    const { data: pcRows } = await supabase.from('phan-cong-giang-day').select('*').eq('id-de-xuat', id);
+                                    if (pcRows && pcRows.length > 0) {
+                                        const pc = pcRows[0];
+                                        const revertPayload = {
+                                            "ma-giang-vien": pc["ma-giang-vien"], "so-buoi-ly-thuyet": pc["so-buoi-ly-thuyet"], "so-buoi-thuc-hanh": pc["so-buoi-thuc-hanh"],
+                                            "ghi-chu": pc["ghi-chu"], "doi-tuong": pc["doi-tuong"], "loai-nhom": pc["loai-nhom"], "ten-nhom": pc["ten-nhom"],
+                                            "ma-hoc-vien": pc["ma-hoc-vien"], "ho-ten": pc["ho-ten"], "trang-thai": "Đã duyệt"
+                                        };
+                                        await supabase.from('de-xuat-phan-cong').update(revertPayload).eq('id', id);
+                                    }
+                                }
+                                window.showToast("Đã hủy thay đổi, khôi phục bản chính thức đồng thời!");
                             } else {
-                                if (!confirm("Bạn có chắc chắn muốn xóa vĩnh viễn đề xuất mới này?")) return;
-                                const { data, error } = await supabase.from('de-xuat-phan-cong').delete().eq('id', assignId).select();
+                                if (!confirm("Bạn có chắc chắn muốn xóa vĩnh viễn đề xuất mới này (áp dụng cho cả lớp liên kết)?")) return;
+                                const { data, error } = await supabase.from('de-xuat-phan-cong').delete().in('id', targetIds).select();
                                 if (error) throw error;
                                 if (!data || data.length === 0) throw new Error("Lỗi không tìm thấy đề xuất để xóa.");
                                 
-                                window.showToast("Đã xóa đề xuất!"); 
+                                window.showToast("Đã xóa đề xuất đồng thời!"); 
                             }
                         }
                     }
@@ -1292,9 +1320,10 @@
                 instructorSelect.value = ""; assignNote.value = "";
                 targetTypeSelect.value = "ca-lop"; targetTypeSelect.dispatchEvent(new Event('change'));
 
+                // Để tạo mới, ta KHÔNG LOẠI TRỪ các đề xuất hiện có, cho phép add thêm GV thứ 2, 3 độc lập.
+                // Tính số buổi CÒN LẠI (tổng số buổi trừ đi các buổi đã phân công chính thức HOẶC đang chờ duyệt CỦA GV KHÁC)
                 const allAssignsForModule = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let assignedLT = 0, assignedTH = 0;
-                
                 const countedProposalIds = new Set();
                 
                 allAssignsForModule.forEach(a => {
@@ -1361,6 +1390,7 @@
                     setTimeout(() => studentSelect.value = assignment["ma-hoc-vien"] || "", 50);
                 }
 
+                // CỘNG DỒN NHƯNG LOẠI TRỪ BẢN ĐANG SỬA
                 const allAssignsForModule = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let otherLT = 0, otherTH = 0;
                 const countedProposalIds = new Set();
@@ -1449,7 +1479,7 @@
                         payloadsToInsert.push(mainPayload);
                     }
 
-                    // AUTO SIMULTANEOUS ASSIGNMENT (KIỂM TRA CÙNG MÃ LỚP GỐC & CÙNG SỐ BUỔI CHƯƠNG TRÌNH)
+                    // AUTO SIMULTANEOUS ASSIGNMENT KHÔNG CẦN CHỌN
                     if (currentSelectedClass["ma-lop-goc"]) {
                         const maLopGoc = currentSelectedClass["ma-lop-goc"];
                         const siblingClasses = classesList.filter(c => c["ma-lop-goc"] === maLopGoc && c["ma-lop"] !== currentSelectedClass["ma-lop"]);
@@ -1466,6 +1496,9 @@
                             // CHỈ AUTO NẾU SỐ BUỔI CHƯƠNG TRÌNH KHỚP NHAU HOÀN TOÀN
                             if (sibKhLT === currentSelectedModule.khLT && sibKhTH === currentSelectedModule.khTH) {
                                 
+                                const { data: existPc } = await supabase.from('phan-cong-giang-day').select('id').eq('ma-lop', sib["ma-lop"]).eq('ma-hoc-phan', savedMaHp);
+                                if (existPc && existPc.length > 0) continue; 
+
                                 const sibPayload = {
                                     ...mainPayload, 
                                     "ma-lop": sib["ma-lop"],
@@ -1474,7 +1507,7 @@
                                 };
 
                                 if (editingAssignmentId) {
-                                    // NẾU ĐANG SỬA: Chỉ update các lớp đồng thời TRONG CÙNG 1 NHÓM UUID (Tránh đè mất GV khác)
+                                    // Sửa các lớp trong cùng 1 cụm group-id
                                     const { data: existDxSameGroup } = await supabase.from('de-xuat-phan-cong')
                                         .select('id')
                                         .eq('ma-lop', sib["ma-lop"])
@@ -1486,21 +1519,21 @@
                                         payloadsToInsert.push(sibPayload);
                                     }
                                 } else {
-                                    // NẾU THÊM MỚI: Luôn insert
+                                    // Thêm mới hoàn toàn độc lập
                                     payloadsToInsert.push(sibPayload);
                                 }
                             }
                         }
                     }
 
-                    // Execute Updates
+                    // Thực thi Update
                     for (const item of payloadsToUpdate) {
                         const { data, error } = await supabase.from('de-xuat-phan-cong').update(item.payload).eq('id', item.id).select();
                         if (error) throw error;
                         if (!data || data.length === 0) throw new Error("Lỗi cập nhật (bản ghi có thể đã bị xóa).");
                     }
 
-                    // Execute Inserts
+                    // Thực thi Insert
                     if (payloadsToInsert.length > 0) {
                         const { data, error } = await supabase.from('de-xuat-phan-cong').insert(payloadsToInsert).select();
                         if (error) throw error;
