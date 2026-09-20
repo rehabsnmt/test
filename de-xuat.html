@@ -367,6 +367,9 @@
             let currentUserId = null;
             let canApprove = false; // "duoc-phan-cong"
             let canPropose = false; // "duoc-de-xuat" hoặc "duoc-phan-cong"
+            
+            let isInitialLoadForNotifications = true;
+            let previousPendingIds = new Set();
 
             window.showToast = function (message, isError = false) {
                 const container = document.getElementById("toastContainer");
@@ -465,6 +468,7 @@
                             }
                         }
 
+                        // Nếu không có quyền duyệt và cũng k có quyền đề xuất thì không hiện action group
                         const renderActionGroup = actionButtons !== "" ? `<div class="action-group">${actionButtons}</div>` : "";
 
                         assignListHtml += `
@@ -503,15 +507,21 @@
                     btnAddContainer = `<div style="margin-top: 16px; padding-bottom: 24px;"><button ${btnAddState}><i class="fas fa-plus"></i> Thêm Đề xuất Mới</button></div>`;
                 }
 
-                const hkSelectHtml = `
-                    <select class="hk-select" onchange="updateSemester('${rawMaHp}', this.value)">
-                        <option value="">- Chọn Học kỳ -</option>
-                        <option value="1" ${hocKy === '1' ? 'selected' : ''}>Học kỳ 1</option>
-                        <option value="2" ${hocKy === '2' ? 'selected' : ''}>Học kỳ 2</option>
-                        <option value="3" ${hocKy === '3' ? 'selected' : ''}>Học kỳ 3</option>
-                        <option value="4" ${hocKy === '4' ? 'selected' : ''}>Học kỳ 4</option>
-                    </select>
-                `;
+                let hkSelectHtml = "";
+                if (canPropose) {
+                    hkSelectHtml = `
+                        <select class="hk-select" onchange="updateSemester('${rawMaHp}', this.value)">
+                            <option value="">- Chọn Học kỳ -</option>
+                            <option value="1" ${hocKy === '1' ? 'selected' : ''}>Học kỳ 1</option>
+                            <option value="2" ${hocKy === '2' ? 'selected' : ''}>Học kỳ 2</option>
+                            <option value="3" ${hocKy === '3' ? 'selected' : ''}>Học kỳ 3</option>
+                            <option value="4" ${hocKy === '4' ? 'selected' : ''}>Học kỳ 4</option>
+                        </select>
+                    `;
+                } else {
+                    const displayHk = hocKy ? `Học kỳ ${hocKy}` : `<span class="text-muted" style="font-weight: normal; font-style: italic;">Chưa xác định</span>`;
+                    hkSelectHtml = `<div style="font-size: 1rem; font-weight: bold; color: var(--primary);">${displayHk}</div>`;
+                }
 
                 const progressHtml = `
                     <div style="font-size: 0.95rem; margin-bottom: 6px; text-align: left; line-height: 1.4;">
@@ -931,18 +941,18 @@
                                     if (hasPending) {
                                         actionButtons = `<span style="font-size: 0.85rem; color: #f59e0b; font-style: italic; display:block; padding: 6px; text-align:right; width:100%;">Đang chờ duyệt sửa/xóa...</span>`;
                                     } else if (canPropose) {
-                                        actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Chờ duyệt)"><i class="fas fa-pen"></i> Sửa</button>`;
-                                        actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Chờ xóa)"><i class="fas fa-trash-alt"></i> Xóa</button>`;
+                                        actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', true)" title="Sửa (Chờ duyệt)"><i class="fas fa-pen"></i></button>`;
+                                        actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', true)" title="Xóa (Chờ xóa)"><i class="fas fa-trash-alt"></i></button>`;
                                     }
                                 } else {
                                     if (trangThai === "Chờ xóa") {
                                         if (canApprove) actionButtons += `<button class="btn-action-assign approve-delete" onclick="approveAssignment('${assignId}')">Duyệt Xóa</button>`;
-                                        if (canPropose) actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')"><i class="fas fa-undo"></i> Hủy</button>`;
+                                        if (canPropose) actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')"><i class="fas fa-undo"></i></button>`;
                                     } else { 
                                         if (canApprove) actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')">Duyệt</button>`;
                                         if (canPropose) {
-                                            actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i> Sửa</button>`;
-                                            actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i> Xóa</button>`;
+                                            actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)"><i class="fas fa-pen"></i></button>`;
+                                            actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)"><i class="fas fa-times"></i></button>`;
                                         }
                                     }
                                 }
@@ -985,15 +995,20 @@
                         }
 
                         // --- DESKTOP TABLE ROW ---
-                        const hkSelectHtml = `
-                            <select class="hk-select" onchange="updateSemester('${rawMaHp}', this.value)">
-                                <option value="">-</option>
-                                <option value="1" ${hocKy === '1' ? 'selected' : ''}>HK1</option>
-                                <option value="2" ${hocKy === '2' ? 'selected' : ''}>HK2</option>
-                                <option value="3" ${hocKy === '3' ? 'selected' : ''}>HK3</option>
-                                <option value="4" ${hocKy === '4' ? 'selected' : ''}>HK4</option>
-                            </select>
-                        `;
+                        let hkSelectHtml = "";
+                        if (canPropose) {
+                            hkSelectHtml = `
+                                <select class="hk-select" onchange="updateSemester('${rawMaHp}', this.value)">
+                                    <option value="">-</option>
+                                    <option value="1" ${hocKy === '1' ? 'selected' : ''}>HK1</option>
+                                    <option value="2" ${hocKy === '2' ? 'selected' : ''}>HK2</option>
+                                    <option value="3" ${hocKy === '3' ? 'selected' : ''}>HK3</option>
+                                    <option value="4" ${hocKy === '4' ? 'selected' : ''}>HK4</option>
+                                </select>
+                            `;
+                        } else {
+                            hkSelectHtml = `<div style="font-weight: bold; color: var(--text-dark); text-align: center;">${hocKy ? 'HK' + hocKy : '<span class="text-muted">-</span>'}</div>`;
+                        }
 
                         const progressHtml = `
                             <div style="font-size: 0.75rem; margin-bottom: 4px; text-align: left; line-height: 1.3;">
