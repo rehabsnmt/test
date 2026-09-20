@@ -11,28 +11,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* =========================================
-           ÉP BUỘC GIAO DIỆN FULL MÀN HÌNH VÀ BỐ CỤC
-        ========================================= */
         main { max-width: 100% !important; padding: 1rem 2% 2rem !important; }
         .container { max-width: 100% !important; padding: 0 !important; }
-        
         .top-controls { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1rem; flex-wrap: wrap; background: var(--surface); padding: 1rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
         .top-controls .form-group { margin-bottom: 0; flex: 1; min-width: 200px; }
-
         .schedule-layout { display: flex; gap: 1.5rem; align-items: flex-start; transition: all 0.3s; }
 
-        /* CỘT TRÁI: HÀNG ĐỢI (POOL) */
         .pool-column { width: 320px; flex-shrink: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); transition: all 0.3s; }
         .pool-column.hidden { display: none !important; }
         .pool-filters { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--border); display: flex; flex-direction: column; gap: 8px; }
         .pool-filters select { width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.8rem; }
-        
         .pool-header { font-weight: bold; color: var(--text-dark); margin-bottom: 0.8rem; padding-bottom: 0.5rem; display: flex; justify-content: space-between; }
         #unassignedPool { min-height: 400px; max-height: calc(100vh - 280px); overflow-y: auto; padding-right: 5px; background: var(--bg-page); border-radius: 4px; padding: 10px; border: 2px dashed transparent; transition: all 0.3s ease; }
         #unassignedPool.dragover { border-color: var(--accent); background: #fee2e2; }
 
-        /* CỘT PHẢI: KHUNG LỊCH (TIME GRID) */
         .calendar-column { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; box-shadow: var(--shadow-sm); overflow-x: auto; transition: all 0.3s; }
         .week-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .week-controls button { padding: 5px 12px; font-size: 0.85rem; }
@@ -43,89 +35,44 @@
         .calendar-table th { background: var(--primary-light); color: var(--primary-hover); padding: 8px 4px; text-align: center; font-size: 0.85rem; }
         .calendar-table td.time-col { background: #f8fafc; font-weight: bold; text-align: center; vertical-align: middle; color: var(--text-muted); width: 70px; font-size: 0.85rem; padding: 10px 0; }
         
-        /* KHU VỰC THẢ (DÙNG FLEX ĐỂ XỬ LÝ CHIỀU CAO THẺ THÔNG MINH) */
-        .dropzone { min-height: 120px; height: 100%; padding: 6px; background: #fff; transition: background 0.2s ease; position: relative; display: flex; flex-direction: column; gap: 6px; }
+        .dropzone { min-height: 120px; height: 100%; padding: 6px; background: #fff; transition: background 0.2s ease; position: relative; gap: 6px; }
         .dropzone.dragover { background: #f0fdf4 !important; box-shadow: inset 0 0 0 2px #22c55e; }
-        
-        /* THẺ ĐANG MỞ RỘNG SẼ TỰ ĐỘNG CHIA ĐỀU ĐỂ BẰNG NHAU VÀ KÍN Ô LỊCH */
-        .dropzone[data-action="grid"] .class-card:not(.compact) { flex: 1; }
+        .dropzone[data-action="pool"] { display: flex; flex-direction: column; }
+        .dropzone[data-action="grid"] { display: grid; grid-template-columns: 1fr; grid-auto-rows: 1fr; align-content: start; }
 
-        /* THẺ HỌC PHẦN - CĂN TRÁI VÀ ÉP XUỐNG DÒNG TOÀN BỘ */
         .class-card { 
             border: 1px solid var(--border); border-left-width: 5px; border-left-style: solid; 
             border-radius: 6px; padding: 8px; cursor: pointer; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; z-index: 10; 
             transition: all 0.2s; text-align: left;
             width: 100%; box-sizing: border-box; display: flex; flex-direction: column;
-            flex-shrink: 0;
-            overflow: hidden;
+            flex-shrink: 0; overflow: hidden;
         }
         .class-card:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.15); transform: translateY(-1px); }
         .class-card.draggable:active { cursor: grabbing; }
         .class-card.dragging { opacity: 0.5; }
 
-        /* NHÓM NÚT CHỨC NĂNG (GÓC PHẢI) */
-        .card-actions {
-            position: absolute; top: 6px; right: 6px;
-            display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
-            z-index: 20;
-        }
-
-        .btn-edit {
-            background: #e2e8f0; border: none; border-radius: 4px; width: 24px; height: 24px;
-            display: flex; align-items: center; justify-content: center;
-            color: #475569; font-size: 0.75rem; cursor: pointer; transition: 0.2s;
-        }
+        .card-actions { position: absolute; top: 6px; right: 6px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; z-index: 20; }
+        .btn-edit { background: #e2e8f0; border: none; border-radius: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: #475569; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
         .btn-edit:hover { background: #cbd5e1; color: #0f172a; }
 
-        .cc-type-badge { 
-            font-size: 0.65rem; padding: 3px 6px; border-radius: 4px; font-weight: bold; 
-            background: rgba(0,0,0,0.06); color: #334155; 
-        }
-
-        .cc-title { 
-            font-weight: bold; color: var(--text-dark); margin-bottom: 6px; font-size: 0.8rem; line-height: 1.4; padding-right: 40px; 
-            white-space: normal !important; overflow-wrap: break-word; word-break: break-word; text-align: left; 
-        }
+        .cc-type-badge { font-size: 0.65rem; padding: 3px 6px; border-radius: 4px; font-weight: bold; background: rgba(0,0,0,0.06); color: #334155; }
+        .cc-title { font-weight: bold; color: var(--text-dark); margin-bottom: 6px; font-size: 0.8rem; line-height: 1.4; padding-right: 40px; white-space: normal !important; overflow-wrap: break-word; word-break: break-word; text-align: left; }
         .cc-info { display: flex; align-items: flex-start; margin-bottom: 3px; color: var(--text-muted); font-size: 0.75rem; text-align: left; }
         .cc-info i { width: 14px; margin-top: 3px; color: var(--primary); font-size: 0.7rem; flex-shrink: 0; }
         .cc-info span { white-space: normal !important; overflow-wrap: break-word; word-break: break-word; display: block; flex: 1; line-height: 1.3; }
         
-        .cc-time-loc { 
-            margin-top: auto; 
-            padding-top: 5px; border-top: 1px dashed rgba(0,0,0,0.1); font-weight: 600; color: #0f172a; font-size: 0.75rem; 
-            white-space: normal !important; overflow-wrap: break-word; word-break: break-word; line-height: 1.4;
-        }
+        .cc-time-loc { margin-top: auto; padding-top: 5px; border-top: 1px dashed rgba(0,0,0,0.1); font-weight: 600; color: #0f172a; font-size: 0.75rem; white-space: normal !important; overflow-wrap: break-word; word-break: break-word; line-height: 1.4; }
         .cc-time { display: block; margin-bottom: 2px; }
         .cc-loc { display: block; }
         .cc-scheduler { display: block; margin-top: 3px; font-size: 0.65rem; color: var(--primary); font-weight: bold; }
-
         .cc-note { margin-top: 5px; padding-top: 5px; border-top: 1px dashed rgba(0,0,0,0.1); font-style: italic; color: #64748b; font-size: 0.7rem; white-space: normal !important; overflow-wrap: break-word; word-break: break-word; line-height: 1.3; }
 
-        /* CHẾ ĐỘ THU GỌN THẺ (COMPACT MODE) - NHỎ NHẤT CÓ THỂ, KHÔNG BỊ GIÃN */
-        .class-card.compact {
-            padding: 6px 8px; min-height: unset; cursor: pointer; flex: none !important;
-        }
-        .class-card.compact .cc-title,
-        .class-card.compact .cc-info,
-        .class-card.compact .cc-note,
-        .class-card.compact .card-actions,
-        .class-card.compact .cc-time,
-        .class-card.compact .cc-scheduler {
-            display: none !important;
-        }
-        .class-card.compact .cc-time-loc {
-            margin-top: 0; padding-top: 0; border-top: none;
-        }
-        .class-card.compact .cc-loc {
-            color: #0f172a; font-weight: bold; padding-right: 15px;
-        }
-        .class-card.compact::after {
-            content: '\f107'; /* fa-angle-down */
-            font-family: 'Font Awesome 6 Free'; font-weight: 900;
-            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-            color: var(--text-muted); font-size: 0.8rem;
-        }
+        .class-card.compact { padding: 6px 8px; min-height: unset; cursor: pointer; flex: none !important; }
+        .class-card.compact .cc-title, .class-card.compact .cc-info, .class-card.compact .cc-note, .class-card.compact .card-actions, .class-card.compact .cc-time, .class-card.compact .cc-scheduler { display: none !important; }
+        .class-card.compact .cc-time-loc { margin-top: 0; padding-top: 0; border-top: none; }
+        .class-card.compact .cc-loc { color: #0f172a; font-weight: bold; padding-right: 15px; }
+        .class-card.compact::after { content: '\f107'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem; }
 
         .modal-overlay { z-index: 9999; }
         .btn-danger { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
@@ -134,7 +81,6 @@
 </head>
 
 <body>
-
     <div id="header-placeholder"></div>
     <div id="toastContainer" class="toast-container"></div>
 
@@ -171,11 +117,8 @@
                         <span>Hàng đợi chờ xếp</span>
                         <span class="badge" id="poolCount" style="background:var(--primary); color:#fff; padding: 2px 8px; border-radius: 10px;">0</span>
                     </div>
-                    <!-- Dropzone để gỡ lịch -->
                     <div id="unassignedPool" class="dropzone" data-action="pool">
-                        <div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;" id="emptyPoolMsg">
-                            Vui lòng chọn lớp học...
-                        </div>
+                        <div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;" id="emptyPoolMsg">Vui lòng chọn lớp học...</div>
                     </div>
                 </div>
 
@@ -183,21 +126,17 @@
                 <div class="calendar-column">
                     <div class="week-controls">
                         <button class="btn-primary" id="btnPrevWeek"><i class="fas fa-chevron-left"></i> Tuần trước</button>
-                        
                         <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
                             <button id="btnTogglePool" class="btn-primary" style="background-color: var(--text-muted);"><i class="fas fa-columns"></i> Ẩn/Hiện Kho</button>
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 <label style="font-weight: bold; font-size: 0.85rem;">Lớp hiển thị:</label>
-                                <select id="gridClassFilter" style="max-width: 180px;">
-                                    <option value="">-- Tất cả các lớp --</option>
-                                </select>
+                                <select id="gridClassFilter" style="max-width: 180px;"><option value="">-- Tất cả các lớp --</option></select>
                             </div>
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 <label style="font-weight: bold; font-size: 0.85rem;">Tuần:</label>
                                 <input type="date" id="weekSelector">
                             </div>
                         </div>
-
                         <button class="btn-primary" id="btnNextWeek">Tuần sau <i class="fas fa-chevron-right"></i></button>
                     </div>
 
@@ -214,9 +153,7 @@
                                 <th id="th-0">CN<br><small>--</small></th>
                             </tr>
                         </thead>
-                        <tbody id="calendarGridBody">
-                            <!-- JS sẽ render 3 dòng: Sáng, Chiều, Tối -->
-                        </tbody>
+                        <tbody id="calendarGridBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -228,50 +165,26 @@
         <div class="modal-content" style="max-width: 450px; text-align: left; padding: 1.5rem;">
             <button class="modal-close" id="btnCloseModal"><i class="fas fa-times"></i></button>
             <h3 style="margin-bottom: 1rem; text-align: center; font-size: 1.2rem;">Cập nhật Lịch học</h3>
-            
             <form id="scheduleForm">
                 <input type="hidden" id="schCardId">
-
-                <div class="form-group">
-                    <label>Ngày học <span class="text-danger">*</span></label>
-                    <input type="date" id="schDate" required>
-                </div>
-
+                <div class="form-group"><label>Ngày học <span class="text-danger">*</span></label><input type="date" id="schDate" required></div>
                 <div style="display: flex; gap: 1rem;">
-                    <div class="form-group" style="flex: 1;">
-                        <label>Giờ bắt đầu <span class="text-danger">*</span></label>
-                        <input type="time" id="schStartTime" lang="en-US" required>
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label>Giờ kết thúc <span class="text-danger">*</span></label>
-                        <input type="time" id="schEndTime" lang="en-US" required>
-                    </div>
+                    <div class="form-group" style="flex: 1;"><label>Giờ bắt đầu <span class="text-danger">*</span></label><input type="time" id="schStartTime" lang="en-US" required></div>
+                    <div class="form-group" style="flex: 1;"><label>Giờ kết thúc <span class="text-danger">*</span></label><input type="time" id="schEndTime" lang="en-US" required></div>
                 </div>
-
                 <div class="form-group">
                     <label>Loại địa điểm <span class="text-danger">*</span></label>
-                    <select id="schLocationType" required>
-                        <option value="phong">Phòng học (Trường)</option>
-                        <option value="vien">Bệnh viện / Lâm sàng</option>
-                    </select>
+                    <select id="schLocationType" required><option value="phong">Phòng học (Trường)</option><option value="vien">Bệnh viện / Lâm sàng</option></select>
                 </div>
-
                 <div class="form-group">
                     <label>Chọn Địa điểm <span class="text-danger">*</span></label>
-                    <select id="schLocation" required>
-                        <option value="">-- Chọn --</option>
-                    </select>
+                    <select id="schLocation" required><option value="">-- Chọn --</option></select>
                 </div>
-
                 <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; gap: 10px;">
-                    <button type="button" class="btn-danger" id="btnRemoveFromGrid" style="display:none;">
-                        <i class="fas fa-trash-alt"></i> Gỡ khỏi Lịch
-                    </button>
+                    <button type="button" class="btn-danger" id="btnRemoveFromGrid" style="display:none;"><i class="fas fa-trash-alt"></i> Gỡ khỏi Lịch</button>
                     <div style="display: flex; gap: 10px; margin-left: auto;">
                         <button type="button" class="btn-warning" id="btnCancelModal" style="color: #fff; background: var(--text-muted); padding: 8px 12px;">Hủy</button>
-                        <button type="submit" class="btn-primary" id="btnSaveSchedule" style="padding: 8px 12px;">
-                            <i class="fas fa-save"></i> Ghi nhận
-                        </button>
+                        <button type="submit" class="btn-primary" id="btnSaveSchedule" style="padding: 8px 12px;"><i class="fas fa-save"></i> Ghi nhận</button>
                     </div>
                 </div>
             </form>
@@ -280,18 +193,8 @@
 
     <div id="footer-placeholder"></div>
     <script src="js/layout.js"></script>
-
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            
-            // QUYỀN TRUY CẬP CỦA TỔ TRƯỞNG / QUẢN LÝ
-            const ADMIN_UIDS = [
-                 "7347234a-0a43-45ea-ac0d-fa0d9d001ea4",
-                "296da1b4-8cac-41b6-a960-702b42f00265",
-                "5b8d12c9-1e9f-400d-aa19-11ec2e2ffca5",
-                "80b5aa88-a3e6-41a6-9718-3fd795c82190",
-                "257a5ac7-0dd9-4bf4-a443-1cd970f5efdd"
-            ];
             let currentUserId = null;
             let isAdmin = false;
 
@@ -319,8 +222,7 @@
                 let [h, m] = timeStr.split(':');
                 h = parseInt(h);
                 const ampm = h >= 12 ? 'PM' : 'AM';
-                h = h % 12;
-                h = h ? h : 12;
+                h = h % 12; h = h ? h : 12;
                 return String(h).padStart(2, '0') + ':' + m + ' ' + ampm;
             }
 
@@ -338,11 +240,9 @@
                 return classPalette[Math.abs(hash) % classPalette.length];
             }
 
-            // --- TRẠNG THÁI DỮ LIỆU ---
             let classesList = [], instructorsList = [], roomsList = [], hospitalsList = [], accountList = [];
             let masterCurriculumMap = {}, masterSemesterMap = {};
             let allAssignmentsData = [], allSchedulesData = []; 
-            
             let currentWeekStart = new Date();
             currentWeekStart.setHours(0,0,0,0);
             const _d = currentWeekStart.getDay();
@@ -350,7 +250,6 @@
 
             let draggedCardInfo = null;
 
-            // --- DOM ELEMENTS ---
             const pageTitle = document.getElementById("pageTitle");
             const topControlsSection = document.getElementById("topControlsSection");
             const classSelect = document.getElementById("classSelect");
@@ -372,13 +271,8 @@
             const schLocationType = document.getElementById("schLocationType"), schLocation = document.getElementById("schLocation");
             const btnRemoveFromGrid = document.getElementById("btnRemoveFromGrid");
 
-            btnTogglePool.addEventListener("click", () => {
-                poolColumn.classList.toggle("hidden");
-            });
+            btnTogglePool.addEventListener("click", () => { poolColumn.classList.toggle("hidden"); });
 
-            /* =================================================
-               1. KHỞI TẠO GRID THEO BUỔI & XỬ LÝ NGÀY TUẦN
-            ================================================= */
             const sessionConfigs = [
                 { id: "Sáng", label: "Sáng", defStart: "07:30", defEnd: "11:30" },
                 { id: "Chiều", label: "Chiều", defStart: "13:30", defEnd: "17:30" },
@@ -390,21 +284,12 @@
                 sessionConfigs.forEach(session => {
                     const tr = document.createElement("tr");
                     tr.innerHTML = `<td class="time-col">${session.label}</td>`;
-                    
                     const days = [1, 2, 3, 4, 5, 6, 0]; 
                     days.forEach(dayIndex => {
-                        tr.innerHTML += `<td>
-                            <div class="dropzone grid-zone" 
-                                 data-action="grid" 
-                                 data-dayindex="${dayIndex}" 
-                                 data-session="${session.id}" 
-                                 data-defstart="${session.defStart}" 
-                                 data-defend="${session.defEnd}"></div>
-                        </td>`;
+                        tr.innerHTML += `<td><div class="dropzone grid-zone" data-action="grid" data-dayindex="${dayIndex}" data-session="${session.id}" data-defstart="${session.defStart}" data-defend="${session.defEnd}"></div></td>`;
                     });
                     calendarGridBody.appendChild(tr);
                 });
-                
                 if (isAdmin) initDropzones();
             }
 
@@ -425,13 +310,11 @@
 
             function updateWeekHeaders() {
                 weekSelector.value = formatDateToInput(currentWeekStart);
-
                 for (let i = 0; i < 7; i++) {
                     const currentDay = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + i);
                     const dayIndex = currentDay.getDay(); 
                     const headerId = `th-${dayIndex}`;
                     const th = document.getElementById(headerId);
-                    
                     if (th) {
                         const dateStr = `${String(currentDay.getDate()).padStart(2, '0')}/${String(currentDay.getMonth()+1).padStart(2, '0')}`;
                         const title = dayIndex === 0 ? "CN" : `Thứ ${dayIndex + 1}`;
@@ -445,49 +328,25 @@
                 const [y, m, d] = e.target.value.split('-');
                 const date = new Date(y, m - 1, d);
                 const day = date.getDay();
-                const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-                date.setDate(diff);
+                date.setDate(date.getDate() - day + (day === 0 ? -6 : 1));
                 currentWeekStart = date;
-                
-                updateWeekHeaders();
-                renderGrid(); 
+                updateWeekHeaders(); renderGrid(); 
             });
-            btnPrevWeek.addEventListener("click", () => {
-                currentWeekStart.setDate(currentWeekStart.getDate() - 7);
-                updateWeekHeaders(); renderGrid();
-            });
-            btnNextWeek.addEventListener("click", () => {
-                currentWeekStart.setDate(currentWeekStart.getDate() + 7);
-                updateWeekHeaders(); renderGrid();
-            });
+            btnPrevWeek.addEventListener("click", () => { currentWeekStart.setDate(currentWeekStart.getDate() - 7); updateWeekHeaders(); renderGrid(); });
+            btnNextWeek.addEventListener("click", () => { currentWeekStart.setDate(currentWeekStart.getDate() + 7); updateWeekHeaders(); renderGrid(); });
 
-            /* =================================================
-               2. TẢI DỮ LIỆU CƠ BẢN & PHÂN QUYỀN
-            ================================================= */
             async function loadInitialData() {
                 try {
                     const supabase = window.supabaseClient;
-
-                    // Lấy User và Phân quyền UI
                     const { data: authData } = await supabase.auth.getUser();
                     if (authData && authData.user) { currentUserId = authData.user.id; }
                     
-                    isAdmin = ADMIN_UIDS.includes(currentUserId);
-                    
-                    if (!isAdmin) {
-                        pageTitle.textContent = "Xem Thời khóa biểu";
-                        topControlsSection.style.display = "none";
-                        poolColumn.classList.add("hidden");
-                        btnTogglePool.style.display = "none";
-                    }
-
-                    // Tải dữ liệu từ DB
                     const [resClass, resInst, resRoom, resHosp, resAcc] = await Promise.all([
                         supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh'),
                         supabase.from('giang-vien').select('ma-giang-vien, ho-ten'),
                         supabase.from('phong-hoc').select('ma-phong-hoc, ten-phong-hoc'),
                         supabase.from('benh-vien').select('ma-benh-vien, ten-benh-vien'),
-                        supabase.from('tai-khoan-he-thong').select('id, ma-giang-vien')
+                        supabase.from('tai-khoan-he-thong').select('id, ma-giang-vien, role')
                     ]);
 
                     classesList = resClass.data || [];
@@ -495,6 +354,21 @@
                     roomsList = resRoom.data || [];
                     hospitalsList = resHosp.data || [];
                     accountList = resAcc.data || [];
+
+                    isAdmin = false;
+                    if (currentUserId) {
+                        const myAcc = accountList.find(a => String(a.id) === String(currentUserId));
+                        if (myAcc && (myAcc.role === 'gv' || myAcc.role === 'superadmin')) { isAdmin = true; }
+                    }
+
+                    if (!isAdmin) {
+                        pageTitle.textContent = "Xem Thời khóa biểu";
+                        topControlsSection.style.display = "none";
+                        poolColumn.classList.add("hidden");
+                        btnTogglePool.style.display = "none";
+                    } else {
+                        pageTitle.textContent = "Xếp Thời khóa biểu";
+                    }
 
                     classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
                     gridClassFilter.innerHTML = `<option value="">-- Tất cả các lớp --</option>`;
@@ -506,11 +380,7 @@
                     const chuongTrinhSet = new Set(classesList.map(c => c['chuong-trinh']).filter(Boolean));
                     for (let ct of chuongTrinhSet) {
                         const { data } = await supabase.from(ct).select('ma-hoc-phan, ten-hoc-phan');
-                        if (data) {
-                            data.forEach(item => {
-                                masterCurriculumMap[String(item['ma-hoc-phan']).trim()] = item['ten-hoc-phan'];
-                            });
-                        }
+                        if (data) data.forEach(item => masterCurriculumMap[String(item['ma-hoc-phan']).trim()] = item['ten-hoc-phan']);
                     }
 
                     generateCalendarGrid();
@@ -523,11 +393,8 @@
             schLocationType.addEventListener('change', () => {
                 const type = schLocationType.value;
                 schLocation.innerHTML = '<option value="">-- Chọn --</option>';
-                if (type === 'phong') {
-                    roomsList.forEach(r => schLocation.appendChild(new Option(r['ten-phong-hoc'], r['ma-phong-hoc'])));
-                } else {
-                    hospitalsList.forEach(h => schLocation.appendChild(new Option(h['ten-benh-vien'], h['ma-benh-vien'])));
-                }
+                if (type === 'phong') { roomsList.forEach(r => schLocation.appendChild(new Option(r['ten-phong-hoc'], r['ma-phong-hoc']))); } 
+                else { hospitalsList.forEach(h => schLocation.appendChild(new Option(h['ten-benh-vien'], h['ma-benh-vien']))); }
             });
 
             function getModuleName(maHp) { return masterCurriculumMap[String(maHp).trim()] || maHp; }
@@ -538,25 +405,17 @@
                 if(type === 'vien') { const h = hospitalsList.find(x => String(x['ma-benh-vien']) === String(id)); return h ? h['ten-benh-vien'] : id; }
                 return '';
             }
-            
             function getSchedulerName(uuid) {
                 if (!uuid) return "Admin";
                 const acc = accountList.find(x => String(x.id) === String(uuid));
-                if (acc && acc['ma-giang-vien']) {
-                    return getInstructorName(acc['ma-giang-vien']);
-                }
+                if (acc && acc['ma-giang-vien']) return getInstructorName(acc['ma-giang-vien']);
                 return "Admin";
             }
 
-            /* =================================================
-               3. TẢI VÀ ĐỒNG BỘ TOÀN BỘ CSDL LỊCH HỌC
-            ================================================= */
             async function refreshGlobalData(isSilent = false) {
                 if (!isSilent && isAdmin) unassignedPool.innerHTML = `<div style="text-align: center; margin-top: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>`;
-                
                 try {
                     const supabase = window.supabaseClient;
-
                     const [resAssign, resSch, resSem] = await Promise.all([
                         supabase.from('phan-cong-giang-day').select('*').limit(10000),
                         supabase.from('thoi-khoa-bieu').select('*').limit(10000),
@@ -570,40 +429,29 @@
                         return a.id - b.id;
                     });
                     allAssignmentsData = rawAssignments;
-                    
                     allSchedulesData = resSch.data || [];
                     
                     masterSemesterMap = {};
-                    (resSem.data || []).forEach(item => { 
-                        masterSemesterMap[`${String(item['ma-lop']).trim()}_${String(item['ma-hoc-phan']).trim()}`] = item["hoc-ky"]; 
-                    });
+                    (resSem.data || []).forEach(item => { masterSemesterMap[`${String(item['ma-lop']).trim()}_${String(item['ma-hoc-phan']).trim()}`] = item["hoc-ky"]; });
 
                     if (isAdmin) {
                         await syncAllDatabaseSchedules();
                         if (!isSilent) populateModuleFilter();
                     }
-                    
                     if (isAdmin) renderPool();
                     renderGrid();
-
                 } catch (error) { window.showToast("Lỗi tải dữ liệu: " + error.message, true); }
             }
 
             async function syncAllDatabaseSchedules() {
-                let toInsert = [];
-                let toDelete = [];
-
+                let toInsert = [], toDelete = [];
                 allAssignmentsData.forEach(a => {
                     const assignsSch = allSchedulesData.filter(s => String(s['id-phan-cong']) === String(a.id));
-                    
                     ['LT', 'TH'].forEach(type => {
                         const schOfType = assignsSch.filter(s => s['loai-buoi'] === type);
                         const targetCount = parseInt(type === 'LT' ? a["so-buoi-ly-thuyet"] : a["so-buoi-thuc-hanh"]) || 0;
-                        
                         if (schOfType.length < targetCount) {
-                            for (let i = schOfType.length; i < targetCount; i++) {
-                                toInsert.push({ "id-phan-cong": a.id, "loai-buoi": type });
-                            }
+                            for (let i = schOfType.length; i < targetCount; i++) { toInsert.push({ "id-phan-cong": a.id, "loai-buoi": type }); }
                         } else if (schOfType.length > targetCount) {
                             schOfType.sort((s1, s2) => {
                                 if (!s1.ngay && s2.ngay) return -1;
@@ -611,9 +459,7 @@
                                 return 0;
                             });
                             let excess = schOfType.length - targetCount;
-                            for (let i = 0; i < excess; i++) {
-                                toDelete.push(schOfType[i].id);
-                            }
+                            for (let i = 0; i < excess; i++) { toDelete.push(schOfType[i].id); }
                         }
                     });
                 });
@@ -622,12 +468,10 @@
                     const supabase = window.supabaseClient;
                     if (toInsert.length > 0) await supabase.from('thoi-khoa-bieu').insert(toInsert);
                     if (toDelete.length > 0) await supabase.from('thoi-khoa-bieu').delete().in('id', toDelete);
-                    
                     const { data: newSchData } = await supabase.from('thoi-khoa-bieu').select('*').limit(10000);
                     allSchedulesData = newSchData || [];
                 }
 
-                // Tính Session Index
                 allAssignmentsData.forEach(a => {
                     ['LT', 'TH'].forEach(type => {
                         const schs = allSchedulesData.filter(s => String(s['id-phan-cong']) === String(a.id) && s['loai-buoi'] === type);
@@ -637,98 +481,61 @@
                             if (s1.ngay && s2.ngay) return new Date(s1.ngay + 'T' + s1['gio-bat-dau']) - new Date(s2.ngay + 'T' + s2['gio-bat-dau']);
                             return 0;
                         });
-                        schs.forEach((sch, idx) => {
-                            sch._sessionIndex = idx + 1;
-                            sch._totalSessions = schs.length;
-                        });
+                        schs.forEach((sch, idx) => { sch._sessionIndex = idx + 1; sch._totalSessions = schs.length; });
                     });
                 });
             }
 
-            /* =================================================
-               4. VẼ GIAO DIỆN (POOL & GRID)
-            ================================================= */
-            classSelect.addEventListener("change", () => {
-                populateModuleFilter();
-                renderPool();
-            });
+            classSelect.addEventListener("change", () => { populateModuleFilter(); renderPool(); });
             filterSemester.addEventListener('change', renderPool);
             filterModule.addEventListener('change', renderPool);
-
             gridClassFilter.addEventListener("change", renderGrid);
 
             function populateModuleFilter() {
                 filterModule.innerHTML = '<option value="">-- Tất cả học phần --</option>';
                 const maLopSelected = String(classSelect.value).trim();
                 if (!maLopSelected) return;
-
                 const classAssignments = allAssignmentsData.filter(a => String(a['ma-lop']).trim() === maLopSelected);
                 const uniqueMods = [...new Set(classAssignments.map(a => String(a['ma-hoc-phan']).trim()))];
-                uniqueMods.forEach(maHp => {
-                    const tenHp = escapeHtml(getModuleName(maHp));
-                    filterModule.appendChild(new Option(tenHp, maHp));
-                });
+                uniqueMods.forEach(maHp => { filterModule.appendChild(new Option(escapeHtml(getModuleName(maHp)), maHp)); });
             }
 
             function renderPool() {
                 if (!isAdmin) return;
-
-                unassignedPool.innerHTML = "";
-                let poolCardCount = 0;
-
+                unassignedPool.innerHTML = ""; let poolCardCount = 0;
                 const maLopSelected = String(classSelect.value).trim();
                 if (!maLopSelected) {
                     unassignedPool.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;">Vui lòng chọn lớp học để xem hàng đợi.</div>`;
-                    poolCount.textContent = "0";
-                    return;
+                    poolCount.textContent = "0"; return;
                 }
 
-                const fSem = filterSemester.value;
-                const fMod = filterModule.value;
-
+                const fSem = filterSemester.value; const fMod = filterModule.value;
                 allAssignmentsData.forEach(a => {
                     if (String(a['ma-lop']).trim() !== maLopSelected) return;
-                    
                     const maHp = String(a["ma-hoc-phan"]).trim();
                     const hk = String(masterSemesterMap[`${maLopSelected}_${maHp}`] || "");
-                    
                     if (fSem && hk !== fSem) return;
                     if (fMod && maHp !== fMod) return;
 
                     ['LT', 'TH'].forEach(type => {
-                        const unassignedSchs = allSchedulesData.filter(s => 
-                            String(s['id-phan-cong']) === String(a.id) && 
-                            s['loai-buoi'] === type && 
-                            (!s['ngay'] || !s['gio-bat-dau'])
-                        );
-
+                        const unassignedSchs = allSchedulesData.filter(s => String(s['id-phan-cong']) === String(a.id) && s['loai-buoi'] === type && (!s['ngay'] || !s['gio-bat-dau']));
                         unassignedSchs.forEach(sch => {
-                            const tenHp = escapeHtml(getModuleName(maHp));
-                            const tenLop = escapeHtml(getClassName(a["ma-lop"]));
-                            const tenGv = escapeHtml(getInstructorName(a["ma-giang-vien"]));
-                            let targetText = "Cả lớp";
-                            if (a["doi-tuong"] === "nhom") targetText = `Nhóm ${escapeHtml(a["ten-nhom"])}`;
-                            else if (a["doi-tuong"] === "ca-nhan") targetText = escapeHtml(a["ho-ten"]);
-
-                            const cardId = `pool-card-${sch.id}`;
-                            const cardHtml = createCardHtml(cardId, sch.id, sch['loai-buoi'], tenHp, tenLop, tenGv, targetText, a["ghi-chu"], null, sch._sessionIndex, sch._totalSessions, a["ma-lop"]);
-                            
+                            const targetText = a["doi-tuong"] === "nhom" ? `Nhóm ${escapeHtml(a["ten-nhom"])}` : (a["doi-tuong"] === "ca-nhan" ? escapeHtml(a["ho-ten"]) : "Cả lớp");
+                            const cardHtml = createCardHtml(`pool-card-${sch.id}`, sch.id, sch['loai-buoi'], escapeHtml(getModuleName(maHp)), escapeHtml(getClassName(a["ma-lop"])), escapeHtml(getInstructorName(a["ma-giang-vien"])), targetText, a["ghi-chu"], null, sch._sessionIndex, sch._totalSessions, a["ma-lop"]);
                             unassignedPool.insertAdjacentHTML('beforeend', cardHtml);
                             poolCardCount++;
                         });
                     });
                 });
 
-                if (poolCardCount === 0) { unassignedPool.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;">Hàng đợi trống. Toàn bộ môn của lớp này đã xếp lịch.</div>`; }
+                if (poolCardCount === 0) unassignedPool.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;">Hàng đợi trống. Toàn bộ môn của lớp này đã xếp lịch.</div>`;
                 poolCount.textContent = poolCardCount;
-
                 setupDragEventsForCards();
             }
 
             function renderGrid() {
                 clearGridContent();
                 const gridClass = gridClassFilter.value;
-                
                 const dateMap = {}; 
                 [1,2,3,4,5,6,0].forEach(idx => {
                     const th = document.getElementById(`th-${idx}`);
@@ -737,64 +544,41 @@
 
                 allSchedulesData.forEach(sch => {
                     if (!sch['ngay'] || !sch['gio-bat-dau']) return;
-
                     const a = allAssignmentsData.find(x => String(x.id) === String(sch['id-phan-cong']));
                     if (!a) return;
-
                     if (gridClass && String(a['ma-lop']).trim() !== gridClass) return;
 
                     const schDate = String(sch['ngay']); 
                     if (dateMap.hasOwnProperty(schDate)) {
                         const dayIndex = dateMap[schDate];
                         const sessionName = getSessionFromTime(sch['gio-bat-dau']); 
-                        
                         const targetDropzone = document.querySelector(`.dropzone[data-action="grid"][data-dayindex="${dayIndex}"][data-session="${sessionName}"]`);
                         if (targetDropzone) {
-                            const tenHp = escapeHtml(getModuleName(a["ma-hoc-phan"]));
-                            const tenLop = escapeHtml(getClassName(a["ma-lop"]));
-                            const tenGv = escapeHtml(getInstructorName(a["ma-giang-vien"]));
-                            let targetText = "Cả lớp";
-                            if (a["doi-tuong"] === "nhom") targetText = `Nhóm ${escapeHtml(a["ten-nhom"])}`;
-                            else if (a["doi-tuong"] === "ca-nhan") targetText = escapeHtml(a["ho-ten"]);
-
-                            const cardId = `grid-card-${sch.id}`;
-                            const cardHtml = createCardHtml(cardId, sch.id, sch['loai-buoi'], tenHp, tenLop, tenGv, targetText, a["ghi-chu"], sch, sch._sessionIndex, sch._totalSessions, a["ma-lop"]);
+                            const targetText = a["doi-tuong"] === "nhom" ? `Nhóm ${escapeHtml(a["ten-nhom"])}` : (a["doi-tuong"] === "ca-nhan" ? escapeHtml(a["ho-ten"]) : "Cả lớp");
+                            const cardHtml = createCardHtml(`grid-card-${sch.id}`, sch.id, sch['loai-buoi'], escapeHtml(getModuleName(a["ma-hoc-phan"])), escapeHtml(getClassName(a["ma-lop"])), escapeHtml(getInstructorName(a["ma-giang-vien"])), targetText, a["ghi-chu"], sch, sch._sessionIndex, sch._totalSessions, a["ma-lop"]);
                             targetDropzone.insertAdjacentHTML('beforeend', cardHtml);
                         }
                     }
                 });
                 
-                // Thu gọn các thẻ nếu ô đó có nhiều hơn 1 thẻ
                 document.querySelectorAll('.grid-zone').forEach(zone => {
                     const cardsInZone = zone.querySelectorAll('.class-card');
-                    if (cardsInZone.length > 1) {
-                        cardsInZone.forEach(c => c.classList.add('compact'));
-                    }
+                    if (cardsInZone.length > 1) { cardsInZone.forEach(c => c.classList.add('compact')); }
                 });
-                
                 setupDragEventsForCards(); 
             }
 
             function createCardHtml(cardId, schId, type, tenHp, tenLop, tenGv, targetText, ghiChu, schData = null, sessionIndex = 1, totalSessions = 1, maLop = null) {
                 const colorObj = getColorForClass(maLop);
                 const bgStyle = `background-color: ${colorObj.bg}; border-left-color: ${colorObj.border};`;
-                
                 const isOnGrid = schData && schData.ngay;
-                
-                // Ghi chú chỉ hiển thị nếu đang ở Hàng đợi
                 const noteHtml = (ghiChu && !isOnGrid) ? `<div class="cc-note"><i class="fas fa-sticky-note" style="margin-right:4px;"></i>${ghiChu}</div>` : '';
                 
-                let timeLocHtml = "";
-                let schedulerHtml = "";
-
+                let timeLocHtml = "", schedulerHtml = "";
                 if (isOnGrid) {
-                    const locType = schData['ma-phong-hoc'] ? 'phong' : 'vien';
                     const locId = schData['ma-phong-hoc'] || schData['ma-benh-vien'];
-                    const locName = getLocName(locType, locId) || 'Chưa chọn địa điểm';
-                    const schedulerName = getSchedulerName(schData['nguoi-xep']);
-                    
-                    schedulerHtml = `<div class="cc-scheduler"><i class="fas fa-user-edit"></i> Xếp: ${escapeHtml(schedulerName)}</div>`;
-
+                    const locName = getLocName(schData['ma-phong-hoc'] ? 'phong' : 'vien', locId) || 'Chưa chọn địa điểm';
+                    schedulerHtml = `<div class="cc-scheduler"><i class="fas fa-user-edit"></i> Xếp: ${escapeHtml(getSchedulerName(schData['nguoi-xep']))}</div>`;
                     timeLocHtml = `
                         <div class="cc-time-loc">
                             <div class="cc-time"><i class="far fa-clock"></i> <span>${formatAMPM(String(schData['gio-bat-dau']).substring(0,5))} - ${formatAMPM(String(schData['gio-ket-thuc']).substring(0,5))}</span></div>
@@ -803,7 +587,6 @@
                         </div>`;
                 }
 
-                // Nút chỉnh sửa (chỉ tài khoản quản lý và thẻ đã xếp mới có)
                 const editBtnHtml = (isOnGrid && isAdmin) ? `<button class="btn-edit" title="Chỉnh sửa Lịch"><i class="fas fa-pencil-alt"></i></button>` : '';
                 const draggableAttr = isAdmin ? 'draggable="true"' : '';
                 const dragClass = isAdmin ? 'draggable' : '';
@@ -823,121 +606,60 @@
                 `;
             }
 
-            function clearGridContent() {
-                document.querySelectorAll('.calendar-table .dropzone').forEach(dz => dz.innerHTML = '');
-            }
+            function clearGridContent() { document.querySelectorAll('.calendar-table .dropzone').forEach(dz => dz.innerHTML = ''); }
 
-            /* =================================================
-               5. CƠ CHẾ KÉO THẢ UPDATE THÔNG MINH
-            ================================================= */
             function initDropzones() {
-                const dropzones = document.querySelectorAll('.dropzone');
-                dropzones.forEach(zone => {
-                    zone.addEventListener('dragover', function(e) { 
-                        e.preventDefault(); 
-                        this.classList.add('dragover'); 
-                    });
-                    
-                    zone.addEventListener('dragleave', function(e) { 
-                        this.classList.remove('dragover'); 
-                    });
-                    
+                document.querySelectorAll('.dropzone').forEach(zone => {
+                    zone.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('dragover'); });
+                    zone.addEventListener('dragleave', function(e) { this.classList.remove('dragover'); });
                     zone.addEventListener('drop', async function(e) {
-                        e.preventDefault();
-                        this.classList.remove('dragover');
+                        e.preventDefault(); this.classList.remove('dragover');
                         if (!draggedCardInfo) return;
-
                         const action = this.dataset.action; 
-
                         if (action === 'pool') {
                             const sch = allSchedulesData.find(s => String(s.id) === String(draggedCardInfo.schId));
-                            if (sch && sch.ngay) { 
-                                if (confirm("Gỡ thẻ này khỏi lịch và đưa về Hàng đợi?")) {
-                                    try {
-                                        const payload = { "ngay": null, "gio-bat-dau": null, "gio-ket-thuc": null, "ma-phong-hoc": null, "ma-benh-vien": null, "nguoi-xep": null };
-                                        
-                                        const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', draggedCardInfo.schId).select();
-                                        if (error) throw error;
-                                        if (!data || data.length === 0) throw new Error("Thẻ không tồn tại hoặc đã bị xóa trước đó!");
-                                        
-                                        window.showToast("Đã đưa thẻ về Hàng đợi!");
-                                        refreshGlobalData(true); 
-                                    } catch (err) { window.showToast("Lỗi: " + err.message, true); }
-                                }
+                            if (sch && sch.ngay && confirm("Gỡ thẻ này khỏi lịch và đưa về Hàng đợi?")) {
+                                try {
+                                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update({ "ngay": null, "gio-bat-dau": null, "gio-ket-thuc": null, "ma-phong-hoc": null, "ma-benh-vien": null, "nguoi-xep": null }).eq('id', draggedCardInfo.schId).select();
+                                    if (error) throw error;
+                                    if (!data || data.length === 0) throw new Error("Thẻ không tồn tại hoặc đã bị xóa trước đó!");
+                                    window.showToast("Đã đưa thẻ về Hàng đợi!"); refreshGlobalData(true); 
+                                } catch (err) { window.showToast("Lỗi: " + err.message, true); }
                             }
-                        } 
-                        else if (action === 'grid') {
-                            const dayIndex = this.dataset.dayindex;
-                            const targetSession = this.dataset.session;
-                            const defStart = this.dataset.defstart; 
-                            const defEnd = this.dataset.defend;
-                            
-                            const th = document.getElementById(`th-${dayIndex}`);
+                        } else if (action === 'grid') {
+                            const th = document.getElementById(`th-${this.dataset.dayindex}`);
                             if(!th || !th.dataset.fulldate) return;
-                            
                             const targetDate = th.dataset.fulldate;
                             const sch = allSchedulesData.find(s => String(s.id) === String(draggedCardInfo.schId));
-
                             if (sch && sch.ngay) {
-                                // LƯU NGẦM KHI DỜI LỊCH (SILENT UPDATE)
-                                updateScheduleTimeSilently(sch, targetDate, defStart, defEnd, targetSession);
+                                let gioBd = String(sch['gio-bat-dau']).substring(0,5), gioKt = String(sch['gio-ket-thuc']).substring(0,5);
+                                if (getSessionFromTime(gioBd) !== this.dataset.session) { gioBd = this.dataset.defstart; gioKt = this.dataset.defend; }
+                                try {
+                                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update({ "ngay": targetDate, "gio-bat-dau": gioBd + ":00", "gio-ket-thuc": gioKt + ":00", "nguoi-xep": currentUserId }).eq('id', sch.id).select();
+                                    if (error) throw error;
+                                    if (!data || data.length === 0) throw new Error("Không thể cập nhật! Dữ liệu có thể đã bị xóa.");
+                                    window.showToast("Đã dời lịch học!"); refreshGlobalData(true); 
+                                } catch (err) { window.showToast("Lỗi dời lịch: " + err.message, true); }
                             } else {
-                                // MỞ POPUP KHI KÉO TỪ HÀNG ĐỢI VÀO
-                                openModalForSchedule(draggedCardInfo.schId, targetDate, defStart, defEnd, true, sch);
+                                openModalForSchedule(draggedCardInfo.schId, targetDate, this.dataset.defstart, this.dataset.defend, true, sch);
                             }
                         }
                     });
                 });
             }
 
-            async function updateScheduleTimeSilently(sch, newDate, defStartStr, defEndStr, newSession) {
-                let gioBd = String(sch['gio-bat-dau']).substring(0,5);
-                let gioKt = String(sch['gio-ket-thuc']).substring(0,5);
-                
-                const currentSession = getSessionFromTime(gioBd);
-                
-                // Ép giờ mặc định nếu dời sang buổi khác
-                if (currentSession !== newSession) {
-                    gioBd = defStartStr;
-                    gioKt = defEndStr;
-                }
-
-                const payload = { 
-                    "ngay": newDate, 
-                    "gio-bat-dau": gioBd + ":00", 
-                    "gio-ket-thuc": gioKt + ":00",
-                    "nguoi-xep": currentUserId 
-                };
-
-                try {
-                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', sch.id).select();
-                    if (error) throw error;
-                    if (!data || data.length === 0) throw new Error("Không thể cập nhật! Dữ liệu có thể đã bị xóa.");
-                    
-                    window.showToast("Đã dời lịch học!");
-                    refreshGlobalData(true); 
-                } catch (err) { window.showToast("Lỗi dời lịch: " + err.message, true); }
-            }
-
             function setupDragEventsForCards() {
-                const cards = document.querySelectorAll('.class-card');
-                cards.forEach(card => {
-                    const newCard = card.cloneNode(true);
-                    card.parentNode.replaceChild(newCard, card);
-                    
+                document.querySelectorAll('.class-card').forEach(card => {
+                    const newCard = card.cloneNode(true); card.parentNode.replaceChild(newCard, card);
                     if (isAdmin) {
                         newCard.addEventListener('dragstart', function(e) {
                             draggedCardInfo = { elementId: this.id, schId: this.dataset.schid };
-                            setTimeout(() => this.classList.add('dragging'), 0);
-                            e.dataTransfer.effectAllowed = 'move';
+                            setTimeout(() => this.classList.add('dragging'), 0); e.dataTransfer.effectAllowed = 'move';
                         });
-
                         newCard.addEventListener('dragend', function() {
-                            this.classList.remove('dragging');
-                            document.querySelectorAll('.dropzone').forEach(dz => dz.classList.remove('dragover'));
+                            this.classList.remove('dragging'); document.querySelectorAll('.dropzone').forEach(dz => dz.classList.remove('dragover'));
                         });
                     }
-                    
                     const sch = allSchedulesData.find(s => String(s.id) === String(newCard.dataset.schid));
                     if (sch && sch.ngay) {
                         newCard.addEventListener('click', function(e) {
@@ -948,11 +670,7 @@
                             }
                             this.classList.toggle('compact');
                         });
-                    } else {
-                        if (!isAdmin) {
-                            newCard.style.cursor = 'default';
-                        }
-                    }
+                    } else if (!isAdmin) { newCard.style.cursor = 'default'; }
                 });
             }
 
@@ -961,33 +679,16 @@
             ================================================= */
             function openModalForSchedule(schId, suggestDate, suggestStartHour, suggestEndHour, isNewDrop = false, existingSchData = null) {
                 document.getElementById('schCardId').value = schId;
-
                 if (existingSchData && existingSchData.ngay && !isNewDrop) {
-                    schDate.value = existingSchData['ngay'];
-                    schStartTime.value = String(existingSchData['gio-bat-dau']).substring(0,5);
-                    schEndTime.value = String(existingSchData['gio-ket-thuc']).substring(0,5);
-                    if (existingSchData['ma-phong-hoc']) {
-                        schLocationType.value = 'phong';
-                        schLocationType.dispatchEvent(new Event('change'));
-                        schLocation.value = existingSchData['ma-phong-hoc'];
-                    } else {
-                        schLocationType.value = 'vien';
-                        schLocationType.dispatchEvent(new Event('change'));
-                        schLocation.value = existingSchData['ma-benh-vien'];
-                    }
+                    schDate.value = existingSchData['ngay']; schStartTime.value = String(existingSchData['gio-bat-dau']).substring(0,5); schEndTime.value = String(existingSchData['gio-ket-thuc']).substring(0,5);
+                    if (existingSchData['ma-phong-hoc']) { schLocationType.value = 'phong'; schLocationType.dispatchEvent(new Event('change')); schLocation.value = existingSchData['ma-phong-hoc']; } 
+                    else { schLocationType.value = 'vien'; schLocationType.dispatchEvent(new Event('change')); schLocation.value = existingSchData['ma-benh-vien']; }
                     btnRemoveFromGrid.style.display = 'block'; 
                 } else {
-                    schDate.value = suggestDate;
-                    schStartTime.value = suggestStartHour;
-                    schEndTime.value = suggestEndHour;
-                    
-                    schLocationType.value = 'phong';
-                    schLocationType.dispatchEvent(new Event('change'));
-                    schLocation.value = "";
-                    
+                    schDate.value = suggestDate; schStartTime.value = suggestStartHour; schEndTime.value = suggestEndHour;
+                    schLocationType.value = 'phong'; schLocationType.dispatchEvent(new Event('change')); schLocation.value = "";
                     btnRemoveFromGrid.style.display = 'none'; 
                 }
-
                 scheduleModal.classList.remove('hidden');
             }
 
@@ -996,70 +697,42 @@
 
             btnRemoveFromGrid.addEventListener('click', async () => {
                 if(!confirm("Đưa buổi học này về Hàng đợi?")) return;
-                
-                const schId = document.getElementById('schCardId').value;
-                const payload = { "ngay": null, "gio-bat-dau": null, "gio-ket-thuc": null, "ma-phong-hoc": null, "ma-benh-vien": null, "nguoi-xep": null };
-
                 try {
-                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', schId).select();
+                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update({ "ngay": null, "gio-bat-dau": null, "gio-ket-thuc": null, "ma-phong-hoc": null, "ma-benh-vien": null, "nguoi-xep": null }).eq('id', document.getElementById('schCardId').value).select();
                     if (error) throw error;
                     if (!data || data.length === 0) throw new Error("Lỗi: Không tìm thấy dữ liệu để gỡ.");
-                    
-                    window.showToast("Đã gỡ lịch!");
-                    scheduleModal.classList.add('hidden');
-                    refreshGlobalData(true); 
+                    window.showToast("Đã gỡ lịch!"); scheduleModal.classList.add('hidden'); refreshGlobalData(true); 
                 } catch(err) { window.showToast("Lỗi: " + err.message, true); }
             });
 
             scheduleForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                
                 const schId = document.getElementById('schCardId').value;
-                if (!schId) { window.showToast("Lỗi: Không tìm thấy ID thẻ thời khóa biểu!", true); return; }
-
-                const ngay = schDate.value;
-                const gioBd = schStartTime.value + ":00";
-                const gioKt = schEndTime.value + ":00";
-                const locType = schLocationType.value;
                 const locVal = schLocation.value;
-
                 if(!locVal) { window.showToast("Vui lòng chọn địa điểm!", true); return; }
-                if(gioBd >= gioKt) { window.showToast("Giờ kết thúc phải lớn hơn giờ bắt đầu!", true); return; }
+                if(schStartTime.value + ":00" >= schEndTime.value + ":00") { window.showToast("Giờ kết thúc phải lớn hơn giờ bắt đầu!", true); return; }
 
                 const payload = {
-                    "ngay": ngay,
-                    "gio-bat-dau": gioBd,
-                    "gio-ket-thuc": gioKt,
-                    "ma-phong-hoc": locType === 'phong' ? locVal : null,
-                    "ma-benh-vien": locType === 'vien' ? locVal : null,
-                    "nguoi-xep": currentUserId
+                    "ngay": schDate.value, "gio-bat-dau": schStartTime.value + ":00", "gio-ket-thuc": schEndTime.value + ":00",
+                    "ma-phong-hoc": schLocationType.value === 'phong' ? locVal : null, "ma-benh-vien": schLocationType.value === 'vien' ? locVal : null, "nguoi-xep": currentUserId
                 };
 
                 try {
                     const btn = document.getElementById('btnSaveSchedule');
-                    const origText = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cập nhật...';
-                    btn.disabled = true;
+                    const origText = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cập nhật...'; btn.disabled = true;
 
                     const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', schId).select();
                     if (error) throw error;
                     if (!data || data.length === 0) throw new Error("Cập nhật thất bại. Thẻ có thể đã bị xóa.");
                     
-                    window.showToast("Ghi nhận lịch thành công!");
-                    scheduleModal.classList.add('hidden');
-                    refreshGlobalData(true); 
-                    
+                    window.showToast("Ghi nhận lịch thành công!"); scheduleModal.classList.add('hidden'); refreshGlobalData(true); 
                     btn.innerHTML = origText; btn.disabled = false;
                 } catch(err) {
                     window.showToast("Lỗi lưu lịch: " + err.message, true);
-                    document.getElementById('btnSaveSchedule').innerHTML = '<i class="fas fa-save"></i> Ghi nhận';
-                    document.getElementById('btnSaveSchedule').disabled = false;
+                    document.getElementById('btnSaveSchedule').innerHTML = '<i class="fas fa-save"></i> Ghi nhận'; document.getElementById('btnSaveSchedule').disabled = false;
                 }
             });
 
-            /* =================================================
-               KHỞI ĐỘNG HỆ THỐNG
-            ================================================= */
             function startApp() {
                 let attempts = 0; const timer = setInterval(() => {
                     attempts++; if (window.supabaseClient) { clearInterval(timer); loadInitialData(); } else if (attempts >= 50) { clearInterval(timer); window.showToast("Không tải được Database.", true); }
