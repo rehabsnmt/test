@@ -242,8 +242,12 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             
-            // UID của người có quyền DUYỆT
-            const APPROVER_UID = "7347234a-0a43-45ea-ac0d-fa0d9d001ea4";
+                    // UID của những người có quyền DUYỆT
+            const APPROVER_UIDS = [
+                "7347234a-0a43-45ea-ac0d-fa0d9d001ea4", 
+                "296da1b4-8cac-41b6-a960-702b42f00265"
+            ];
+            
             let currentUserId = null;
 
             window.showToast = function (message, isError = false) {
