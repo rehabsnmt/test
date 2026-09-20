@@ -43,6 +43,8 @@
         .progress-bar { height: 100%; background-color: var(--primary); transition: width 0.3s ease; }
         .progress-bar.complete { background-color: #16a34a; } 
         .progress-bar.over { background-color: var(--accent); } 
+        
+        .progress-bar.taught { background-color: #38bdf8; } /* Thanh tiến độ đã giảng dạy */
 
         /* Danh sách GV & Nút Thao tác */
         .assignment-list-inline { list-style: none; padding: 0; margin: 0; font-size: 0.8rem; text-align: left; }
@@ -266,6 +268,8 @@
             let classesList = [], instructorsList = [], studentsList = [], groupsList = [];
             let currentSelectedClass = null, currentSelectedModule = null; 
             let currentCurriculumData = [], currentAssignmentsData = [], currentModuleSemesters = {}; 
+            let allSchedulesData = []; // Bảng Thời khóa biểu để đo Tiến độ hoàn thành
+            
             let editingAssignmentId = null;
             let isEditingOfficial = false;
 
@@ -328,7 +332,7 @@
             classSelect.addEventListener("change", () => { specSelect.value = ""; summaryCard.style.display = "none"; loadClassData(false); });
 
             /* =================================================
-               2. TẢI VÀ GỘP DỮ LIỆU TỪ CẢ 2 BẢNG (BUFFER)
+               2. TẢI VÀ GỘP DỮ LIỆU TỪ CẢ 3 BẢNG (KÈM TKB)
             ================================================= */
             async function loadClassData(isSilentReload = false) {
                 const maLop = classSelect.value;
@@ -358,6 +362,11 @@
                     // 2. Tải bảng Đệm/Đề xuất
                     const { data: dxData, error: dxError } = await supabase.from('de-xuat-phan-cong').select('*');
                     if (dxError) throw dxError;
+                    
+                    // 3. Tải bảng Thời khóa biểu (để đếm tiến độ thực tế đã dạy)
+                    const { data: tkbData, error: tkbError } = await supabase.from('thoi-khoa-bieu').select('*');
+                    if (tkbError) throw tkbError;
+                    allSchedulesData = tkbData || [];
 
                     currentAssignmentsData = [];
 
@@ -479,10 +488,21 @@
 
                     if (existingRecords && existingRecords.length > 0) {
                         const recordId = existingRecords[0].id;
-                        if (newHk) await supabase.from('lop-hoc-phan').update({ 'hoc-ky': parseInt(newHk) }).eq('id', recordId);
-                        else await supabase.from('lop-hoc-phan').delete().eq('id', recordId);
+                        if (newHk) {
+                            const { data, error } = await supabase.from('lop-hoc-phan').update({ 'hoc-ky': parseInt(newHk) }).eq('id', recordId).select();
+                            if (error) throw error;
+                            if (!data || data.length === 0) throw new Error("Không thể cập nhật trên hệ thống.");
+                        } else {
+                            const { data, error } = await supabase.from('lop-hoc-phan').delete().eq('id', recordId).select();
+                            if (error) throw error;
+                            if (!data || data.length === 0) throw new Error("Không thể xóa trên hệ thống.");
+                        }
                     } else {
-                        if (newHk) await supabase.from('lop-hoc-phan').insert([{ "ma-lop": maLop, "ma-hoc-phan": maHp, "hoc-ky": parseInt(newHk) }]);
+                        if (newHk) {
+                            const { data, error } = await supabase.from('lop-hoc-phan').insert([{ "ma-lop": maLop, "ma-hoc-phan": maHp, "hoc-ky": parseInt(newHk) }]).select();
+                            if (error) throw error;
+                            if (!data || data.length === 0) throw new Error("Không thể thêm trên hệ thống.");
+                        }
                     }
                     currentModuleSemesters[maHp] = newHk ? parseInt(newHk) : null;
                     window.showToast("Cập nhật học kỳ thành công!"); updateSummary();
@@ -490,8 +510,15 @@
             };
 
             /* =================================================
-               4. RENDER BẢNG
+               4. RENDER BẢNG VÀ TÍNH TOÁN TIẾN ĐỘ THỰC TẾ
             ================================================= */
+            function isPastSession(ngay, gioKt) {
+                if (!ngay || !gioKt) return false;
+                const sessionDate = new Date(`${ngay}T${gioKt}`);
+                const now = new Date();
+                return sessionDate <= now;
+            }
+
             function renderModulesTable() {
                 modulesTableBody.innerHTML = ""; const filterVal = specSelect.value;
                 const filteredMods = currentCurriculumData.filter(mod => {
@@ -522,6 +549,7 @@
                         const moduleAssignments = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === rawMaHp);
                         
                         let assignedLT = 0, assignedTH = 0, assignListHtml = `<span class="text-muted" style="font-style:italic;">Chưa có phân công</span>`;
+                        let taughtSessions = 0; // Biến đếm số buổi đã dạy
                         
                         if (moduleAssignments.length > 0) {
                             assignListHtml = `<ul class="assignment-list-inline">`;
@@ -534,6 +562,14 @@
                                 if (isOfficial) {
                                     assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0;
                                     assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0;
+                                    
+                                    // Đếm các buổi học đã dạy từ bảng Thời khóa biểu (dựa theo Bản chính thức)
+                                    const aSchedules = allSchedulesData.filter(s => String(s['id-phan-cong']) === String(a.id));
+                                    aSchedules.forEach(sch => {
+                                        if (isPastSession(sch['ngay'], sch['gio-ket-thuc'])) {
+                                            taughtSessions++;
+                                        }
+                                    });
                                 }
 
                                 const aLT = parseInt(a["so-buoi-ly-thuyet"]) || 0, aTH = parseInt(a["so-buoi-thuc-hanh"]) || 0;
@@ -565,7 +601,7 @@
                                     if (trangThai === "Chờ xóa") {
                                         actionButtons += `<button class="btn-action-assign approve-delete" onclick="approveAssignment('${assignId}')" title="Duyệt Xóa (Xóa khỏi Phân công)">Duyệt Xóa</button>`;
                                         actionButtons += `<button class="btn-action-assign undo" onclick="cancelDeleteProposal('${assignId}')" title="Hủy yêu cầu xóa"><i class="fas fa-undo"></i> Hủy</button>`;
-                                    } else { // Chờ duyệt
+                                    } else { 
                                         actionButtons += `<button class="btn-action-assign approve" onclick="approveAssignment('${assignId}')" title="Duyệt (Cập nhật sang bảng Chính thức)">Duyệt</button>`;
                                         actionButtons += `<button class="btn-action-assign edit" onclick="editAssignment('${assignId}', false)" title="Sửa lại Đề xuất này"><i class="fas fa-pen"></i></button>`;
                                         actionButtons += `<button class="btn-action-assign delete" onclick="deleteAssignment('${assignId}', false)" title="Xóa/Hủy đề xuất này"><i class="fas fa-times"></i></button>`;
@@ -595,6 +631,11 @@
                         let percent = 0; if (khTong > 0) percent = Math.round((assignedTong / khTong) * 100); else if (assignedTong > 0) percent = 100;
                         let pColor = percent === 100 ? "complete" : (percent > 100 ? "over" : "");
 
+                        // Tính phần trăm Giảng dạy thực tế
+                        let taughtPercent = 0;
+                        if (khTong > 0) taughtPercent = Math.round((taughtSessions / khTong) * 100);
+                        else if (taughtSessions > 0) taughtPercent = 100;
+
                         let btnAddState = "";
                         if (assignedLT >= khLT && assignedTH >= khTH && khTong > 0) {
                             btnAddState = `disabled style="background: var(--text-muted); cursor: not-allowed; padding: 5px; font-size: 0.8rem; width:100%; border:none; color:#fff;" title="Đã phân công đủ số buổi"`;
@@ -621,12 +662,22 @@
                         `;
 
                         const progressHtml = `
-                            <div style="font-size: 0.8rem; margin-bottom: 2px; text-align: left; line-height: 1.2;">
-                                <b>${assignedTong}/${khTong}</b> <span class="text-muted">(LT:${assignedLT}/${khLT} TH:${assignedTH}/${khTH})</span>
+                            <!-- Thanh Phân công -->
+                            <div style="font-size: 0.75rem; margin-bottom: 2px; text-align: left; line-height: 1.2;">
+                                <b>Phân công: ${assignedTong}/${khTong}</b> <span class="text-muted">(LT:${assignedLT}/${khLT} TH:${assignedTH}/${khTH})</span>
                             </div>
                             <div class="progress-wrapper">
                                 <div class="progress-container"><div class="progress-bar ${pColor}" style="width: ${Math.min(percent, 100)}%;"></div></div>
-                                <span style="font-size:0.75rem; font-weight:bold; color:var(--text-muted);">${percent}%</span>
+                                <span style="font-size:0.7rem; font-weight:bold; color:var(--text-muted);">${percent}%</span>
+                            </div>
+                            
+                            <!-- Thanh Giảng dạy thực tế -->
+                            <div style="font-size: 0.75rem; margin-top: 6px; margin-bottom: 2px; text-align: left; line-height: 1.2; color: #0369a1;">
+                                <b>Đã dạy: ${taughtSessions}/${khTong} buổi</b>
+                            </div>
+                            <div class="progress-wrapper">
+                                <div class="progress-container" style="height: 4px;"><div class="progress-bar taught" style="width: ${Math.min(taughtPercent, 100)}%;"></div></div>
+                                <span style="font-size:0.7rem; font-weight:bold; color:#0ea5e9;">${taughtPercent}%</span>
                             </div>
                         `;
 
@@ -636,7 +687,7 @@
                             <td class="text-center">${escapeHtml(mod["stt"] || "")}</td>
                             <td>${nameHtml}</td>
                             <td>${hkSelectHtml}</td>
-                            <td>${progressHtml}</td>
+                            <td style="padding: 0.5rem 0.8rem;">${progressHtml}</td>
                             <td style="vertical-align: top;">${assignListHtml}</td>
                             <td style="vertical-align: middle; text-align:center;">
                                 <button ${btnAddState}><i class="fas fa-plus"></i> Thêm</button>
@@ -732,7 +783,7 @@
                 try {
                     const { data, error } = await window.supabaseClient.from('de-xuat-phan-cong').update({ "trang-thai": "Đã duyệt" }).eq('id', assignId).select();
                     if (error) throw error;
-                    if (!data || data.length === 0) throw new Error("Không tìm thấy dữ liệu để hoàn tác trên hệ thống.");
+                    if (!data || data.length === 0) throw new Error("Không tìm thấy dữ liệu trên hệ thống để hoàn tác.");
                     
                     window.showToast("Đã hủy đề xuất xóa!");
                     reloadAndFocus(String(assignment["ma-hoc-phan"]).trim());
@@ -867,9 +918,29 @@
                 instructorSelect.value = ""; assignNote.value = "";
                 targetTypeSelect.value = "ca-lop"; targetTypeSelect.dispatchEvent(new Event('change'));
 
-                const officialAssigns = currentAssignmentsData.filter(a => a.isOfficial && String(a["ma-hoc-phan"]).trim() === maHp);
+                // CỘNG DỒN SỐ BUỔI CỦA BẢN CHÍNH THỨC + BẢN ĐỀ XUẤT CHỜ DUYỆT
+                const allAssignsForModule = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let assignedLT = 0, assignedTH = 0;
-                officialAssigns.forEach(a => { assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0; assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0; });
+                
+                // Set để tránh cộng trùng 1 ID (Trường hợp sửa đề xuất của bản chính thức)
+                const countedProposalIds = new Set();
+                
+                allAssignsForModule.forEach(a => {
+                    // Ưu tiên bản Đề xuất chờ duyệt trước
+                    if (!a.isOfficial && a.trangThaiDisplay !== "Chờ xóa") {
+                        assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0;
+                        assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0;
+                        countedProposalIds.add(String(a._proposalId));
+                    }
+                });
+                
+                allAssignsForModule.forEach(a => {
+                    // Cộng nốt các bản Chính thức mà không có đề xuất thay thế chờ duyệt
+                    if (a.isOfficial && !countedProposalIds.has(String(a._proposalId))) {
+                        assignedLT += parseInt(a["so-buoi-ly-thuyet"]) || 0;
+                        assignedTH += parseInt(a["so-buoi-thuc-hanh"]) || 0;
+                    }
+                });
                 
                 let remainLT = Math.max(0, khLT - assignedLT);
                 let remainTH = Math.max(0, khTH - assignedTH);
@@ -919,9 +990,25 @@
                     setTimeout(() => studentSelect.value = assignment["ma-hoc-vien"] || "", 50);
                 }
 
-                const otherAssigns = currentAssignmentsData.filter(a => a.isOfficial && String(a["ma-hoc-phan"]).trim() === maHp && String(a._proposalId) !== String(assignId));
+                // CỘNG DỒN NHƯNG LOẠI TRỪ BẢN ĐANG SỬA
+                const allAssignsForModule = currentAssignmentsData.filter(a => String(a["ma-hoc-phan"]).trim() === maHp);
                 let otherLT = 0, otherTH = 0;
-                otherAssigns.forEach(a => { otherLT += parseInt(a["so-buoi-ly-thuyet"]) || 0; otherTH += parseInt(a["so-buoi-thuc-hanh"]) || 0; });
+                const countedProposalIds = new Set();
+                
+                allAssignsForModule.forEach(a => {
+                    if (!a.isOfficial && a.trangThaiDisplay !== "Chờ xóa" && String(a._proposalId) !== String(assignId)) {
+                        otherLT += parseInt(a["so-buoi-ly-thuyet"]) || 0;
+                        otherTH += parseInt(a["so-buoi-thuc-hanh"]) || 0;
+                        countedProposalIds.add(String(a._proposalId));
+                    }
+                });
+                
+                allAssignsForModule.forEach(a => {
+                    if (a.isOfficial && !countedProposalIds.has(String(a._proposalId)) && String(a._proposalId) !== String(assignId)) {
+                        otherLT += parseInt(a["so-buoi-ly-thuyet"]) || 0;
+                        otherTH += parseInt(a["so-buoi-thuc-hanh"]) || 0;
+                    }
+                });
 
                 let remainLT = Math.max(0, currentSelectedModule.khLT - otherLT);
                 let remainTH = Math.max(0, currentSelectedModule.khTH - otherTH);
