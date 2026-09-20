@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Quản lý Thời khóa biểu - Bộ môn Phục hồi chức năng.">
-    <title>Xếp Thời khóa biểu - Bộ môn Phục hồi chức năng</title>
+    <title>Thời khóa biểu - Bộ môn Phục hồi chức năng</title>
     
     <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
     <link rel="stylesheet" href="css/style.css">
@@ -24,7 +24,7 @@
 
         /* CỘT TRÁI: HÀNG ĐỢI (POOL) */
         .pool-column { width: 320px; flex-shrink: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); transition: all 0.3s; }
-        .pool-column.hidden { display: none; }
+        .pool-column.hidden { display: none !important; }
         .pool-filters { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--border); display: flex; flex-direction: column; gap: 8px; }
         .pool-filters select { width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.8rem; }
         
@@ -50,13 +50,13 @@
         /* THẺ HỌC PHẦN - CĂN TRÁI VÀ ÉP XUỐNG DÒNG TOÀN BỘ */
         .class-card { 
             border: 1px solid var(--border); border-left-width: 5px; border-left-style: solid; 
-            border-radius: 6px; padding: 8px; cursor: grab; 
+            border-radius: 6px; padding: 8px; cursor: pointer; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; z-index: 10; 
             transition: all 0.2s; text-align: left;
             width: 100%; box-sizing: border-box; display: flex; flex-direction: column;
         }
         .class-card:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.15); transform: translateY(-1px); }
-        .class-card:active { cursor: grabbing; }
+        .class-card.draggable:active { cursor: grabbing; }
         .class-card.dragging { opacity: 0.5; }
 
         /* NHÓM NÚT CHỨC NĂNG (GÓC PHẢI) */
@@ -90,21 +90,42 @@
             margin-top: 5px; padding-top: 5px; border-top: 1px dashed rgba(0,0,0,0.1); font-weight: 600; color: #0f172a; font-size: 0.75rem; 
             white-space: normal !important; overflow-wrap: break-word; word-break: break-word; line-height: 1.4;
         }
+        .cc-time { display: block; margin-bottom: 2px; }
+        .cc-loc { display: block; }
 
         .cc-note { margin-top: 5px; padding-top: 5px; border-top: 1px dashed rgba(0,0,0,0.1); font-style: italic; color: #64748b; font-size: 0.7rem; white-space: normal !important; overflow-wrap: break-word; word-break: break-word; line-height: 1.3; }
 
-        /* CHẾ ĐỘ THU GỌN THẺ (COMPACT MODE) KHI CÓ NHIỀU THẺ TRONG 1 Ô */
+        /* TÍNH NĂNG HOVER TOOLTIP CHO KHO LỊCH (POOL) */
+        .card-tooltip {
+            display: none; width: 250px; background-color: #1e293b; color: #f8fafc; text-align: left;
+            border-radius: 6px; padding: 10px; position: absolute; z-index: 9999;
+            bottom: calc(100% + 5px); left: 50%; transform: translateX(-50%);
+            opacity: 0; transition: opacity 0.2s; font-size: 0.75rem; line-height: 1.4;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); pointer-events: none;
+        }
+        .card-tooltip::after {
+            content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px;
+            border-width: 5px; border-style: solid; border-color: #1e293b transparent transparent transparent;
+        }
+        .dropzone[data-action="pool"] .class-card:hover .card-tooltip { display: block; visibility: visible; opacity: 1; }
+        .class-card.dragging .card-tooltip { display: none !important; }
+
+        /* CHẾ ĐỘ THU GỌN THẺ (COMPACT MODE) - CHỈ HIỆN ĐỊA ĐIỂM */
         .class-card.compact {
             padding: 6px 8px; min-height: unset; cursor: pointer;
         }
         .class-card.compact .cc-title,
         .class-card.compact .cc-info,
         .class-card.compact .cc-note,
-        .class-card.compact .card-actions {
+        .class-card.compact .card-actions,
+        .class-card.compact .cc-time {
             display: none !important;
         }
         .class-card.compact .cc-time-loc {
-            margin-top: 0; padding-top: 0; border-top: none; color: #0f172a; font-weight: bold; padding-right: 15px;
+            margin-top: 0; padding-top: 0; border-top: none;
+        }
+        .class-card.compact .cc-loc {
+            color: #0f172a; font-weight: bold; padding-right: 15px;
         }
         .class-card.compact::after {
             content: '\f107'; /* fa-angle-down */
@@ -126,11 +147,11 @@
 
     <main style="opacity: 0; transition: opacity 0.3s ease;">
         <div class="section-title" style="margin-top: 0; margin-bottom: 1rem;">
-            <h1 style="font-size: 1.3rem;">Xếp Thời khóa biểu</h1>
+            <h1 style="font-size: 1.3rem;" id="pageTitle">Thời khóa biểu</h1>
         </div>
 
         <div class="container">
-            <div class="top-controls">
+            <div class="top-controls" id="topControlsSection">
                 <div class="form-group">
                     <label for="classSelect">1. Chọn Lớp học (Quản lý Kho thẻ đợi)</label>
                     <select id="classSelect"><option value="">-- Đang tải danh sách lớp --</option></select>
@@ -270,6 +291,11 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             
+            // QUYỀN TRUY CẬP CỦA TỔ TRƯỞNG / QUẢN LÝ
+            const ADMIN_UID = "7347234a-0a43-45ea-ac0d-fa0d9d001ea4";
+            let currentUserId = null;
+            let isAdmin = false;
+
             window.showToast = function (message, isError = false) {
                 const container = document.getElementById("toastContainer");
                 if (!container) return;
@@ -289,7 +315,6 @@
                 return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
             }
 
-            // Chuyển 13:30 -> 01:30 PM
             function formatAMPM(timeStr) {
                 if (!timeStr) return '';
                 let [h, m] = timeStr.split(':');
@@ -300,24 +325,17 @@
                 return String(h).padStart(2, '0') + ':' + m + ' ' + ampm;
             }
 
-            // --- BẢNG MÀU PHÂN BIỆT THEO LỚP ---
             const classPalette = [
-                { bg: '#eff6ff', border: '#3b82f6' }, // Xanh dương
-                { bg: '#f0fdf4', border: '#22c55e' }, // Xanh lá
-                { bg: '#fffbeb', border: '#f59e0b' }, // Vàng
-                { bg: '#fef2f2', border: '#ef4444' }, // Đỏ
-                { bg: '#faf5ff', border: '#a855f7' }, // Tím
-                { bg: '#fdf2f8', border: '#ec4899' }, // Hồng
-                { bg: '#ecfeff', border: '#06b6d4' }, // Cyan
-                { bg: '#fff7ed', border: '#f97316' }  // Cam
+                { bg: '#eff6ff', border: '#3b82f6' }, { bg: '#f0fdf4', border: '#22c55e' },
+                { bg: '#fffbeb', border: '#f59e0b' }, { bg: '#fef2f2', border: '#ef4444' },
+                { bg: '#faf5ff', border: '#a855f7' }, { bg: '#fdf2f8', border: '#ec4899' },
+                { bg: '#ecfeff', border: '#06b6d4' }, { bg: '#fff7ed', border: '#f97316' }
             ];
 
             function getColorForClass(maLop) {
                 if (!maLop) return classPalette[0];
                 let hash = 0;
-                for (let i = 0; i < maLop.length; i++) {
-                    hash = maLop.charCodeAt(i) + ((hash << 5) - hash);
-                }
+                for (let i = 0; i < maLop.length; i++) { hash = maLop.charCodeAt(i) + ((hash << 5) - hash); }
                 return classPalette[Math.abs(hash) % classPalette.length];
             }
 
@@ -334,6 +352,8 @@
             let draggedCardInfo = null;
 
             // --- DOM ELEMENTS ---
+            const pageTitle = document.getElementById("pageTitle");
+            const topControlsSection = document.getElementById("topControlsSection");
             const classSelect = document.getElementById("classSelect");
             const gridClassFilter = document.getElementById("gridClassFilter");
             const filterSemester = document.getElementById("filterSemester");
@@ -361,16 +381,16 @@
                1. KHỞI TẠO GRID THEO BUỔI & XỬ LÝ NGÀY TUẦN
             ================================================= */
             const sessionConfigs = [
-                { id: "Sáng", label: "Sáng<br><small>07:30 - 11:30</small>", defStart: "07:30", defEnd: "11:30" },
-                { id: "Chiều", label: "Chiều<br><small>13:30 - 17:30</small>", defStart: "13:30", defEnd: "17:30" },
-                { id: "Tối", label: "Tối<br><small>18:30 - 21:30</small>", defStart: "18:30", defEnd: "21:30" }
+                { id: "Sáng", label: "Sáng", defStart: "07:30", defEnd: "11:30" },
+                { id: "Chiều", label: "Chiều", defStart: "13:30", defEnd: "17:30" },
+                { id: "Tối", label: "Tối", defStart: "18:30", defEnd: "21:30" }
             ];
 
             function generateCalendarGrid() {
                 calendarGridBody.innerHTML = "";
                 sessionConfigs.forEach(session => {
                     const tr = document.createElement("tr");
-                    tr.innerHTML = `<td class="time-col" style="height: 160px;">${session.label}</td>`;
+                    tr.innerHTML = `<td class="time-col">${session.label}</td>`;
                     
                     const days = [1, 2, 3, 4, 5, 6, 0]; 
                     days.forEach(dayIndex => {
@@ -386,7 +406,7 @@
                     calendarGridBody.appendChild(tr);
                 });
                 
-                initDropzones();
+                if (isAdmin) initDropzones();
             }
 
             function getSessionFromTime(timeStr) {
@@ -443,11 +463,26 @@
             });
 
             /* =================================================
-               2. TẢI DỮ LIỆU CƠ BẢN TOÀN CỤC
+               2. TẢI DỮ LIỆU CƠ BẢN & PHÂN QUYỀN
             ================================================= */
             async function loadInitialData() {
                 try {
                     const supabase = window.supabaseClient;
+
+                    // Lấy User và Phân quyền UI
+                    const { data: authData } = await supabase.auth.getUser();
+                    if (authData && authData.user) { currentUserId = authData.user.id; }
+                    
+                    isAdmin = (currentUserId === ADMIN_UID);
+                    
+                    if (!isAdmin) {
+                        pageTitle.textContent = "Xem Thời khóa biểu";
+                        topControlsSection.style.display = "none";
+                        poolColumn.classList.add("hidden");
+                        btnTogglePool.style.display = "none";
+                    }
+
+                    // Tải dữ liệu từ DB
                     const [resClass, resInst, resRoom, resHosp] = await Promise.all([
                         supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh'),
                         supabase.from('giang-vien').select('ma-giang-vien, ho-ten'),
@@ -477,6 +512,8 @@
                         }
                     }
 
+                    generateCalendarGrid();
+                    updateWeekHeaders();
                     await refreshGlobalData();
 
                 } catch (error) { window.showToast("Lỗi khi kết nối CSDL.", true); }
@@ -505,7 +542,7 @@
                3. TẢI VÀ ĐỒNG BỘ TOÀN BỘ CSDL LỊCH HỌC
             ================================================= */
             async function refreshGlobalData(isSilent = false) {
-                if (!isSilent) unassignedPool.innerHTML = `<div style="text-align: center; margin-top: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang tải và đồng bộ...</div>`;
+                if (!isSilent) unassignedPool.innerHTML = `<div style="text-align: center; margin-top: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>`;
                 
                 try {
                     const supabase = window.supabaseClient;
@@ -517,7 +554,6 @@
                     ]);
 
                     let rawAssignments = resAssign.data || [];
-                    // Sắp xếp để Pool hiển thị gom nhóm
                     rawAssignments.sort((a, b) => {
                         if (a['ma-lop'] < b['ma-lop']) return -1;
                         if (a['ma-lop'] > b['ma-lop']) return 1;
@@ -532,12 +568,12 @@
                         masterSemesterMap[`${String(item['ma-lop']).trim()}_${String(item['ma-hoc-phan']).trim()}`] = item["hoc-ky"]; 
                     });
 
-                    // AUTO-SYNC
-                    await syncAllDatabaseSchedules();
-
-                    if (!isSilent) populateModuleFilter();
+                    if (isAdmin) {
+                        await syncAllDatabaseSchedules();
+                        if (!isSilent) populateModuleFilter();
+                    }
                     
-                    renderPool();
+                    if (isAdmin) renderPool();
                     renderGrid();
 
                 } catch (error) { window.showToast("Lỗi tải dữ liệu: " + error.message, true); }
@@ -581,6 +617,7 @@
                     allSchedulesData = newSchData || [];
                 }
 
+                // Tính Session Index
                 allAssignmentsData.forEach(a => {
                     ['LT', 'TH'].forEach(type => {
                         const schs = allSchedulesData.filter(s => String(s['id-phan-cong']) === String(a.id) && s['loai-buoi'] === type);
@@ -623,8 +660,9 @@
                 });
             }
 
-            // VẼ POOL (HÀNG ĐỢI CHO RIÊNG LỚP ĐƯỢC CHỌN)
             function renderPool() {
+                if (!isAdmin) return;
+
                 unassignedPool.innerHTML = "";
                 let poolCardCount = 0;
 
@@ -677,7 +715,6 @@
                 setupDragEventsForCards();
             }
 
-            // VẼ GRID (LỊCH HIỂN THỊ CHUNG HOẶC THEO LỚP BỘ LỌC)
             function renderGrid() {
                 clearGridContent();
                 const gridClass = gridClassFilter.value;
@@ -717,7 +754,6 @@
                     }
                 });
                 
-                // Thu gọn các thẻ nếu ô đó có nhiều hơn 1 thẻ
                 document.querySelectorAll('.grid-zone').forEach(zone => {
                     const cardsInZone = zone.querySelectorAll('.class-card');
                     if (cardsInZone.length > 1) {
@@ -729,11 +765,11 @@
             }
 
             function createCardHtml(cardId, schId, type, tenHp, tenLop, tenGv, targetText, ghiChu, schData = null, sessionIndex = 1, totalSessions = 1, maLop = null) {
-                // Xử lý màu sắc
                 const colorObj = getColorForClass(maLop);
                 const bgStyle = `background-color: ${colorObj.bg}; border-left-color: ${colorObj.border};`;
                 
                 const isOnGrid = schData && schData.ngay;
+                // Nếu thẻ đang nằm ở Pool thì hiện Ghi chú, nếu trên Lịch thì ẩn Ghi chú
                 const noteHtml = (ghiChu && !isOnGrid) ? `<div class="cc-note"><i class="fas fa-sticky-note" style="margin-right:4px;"></i>${ghiChu}</div>` : '';
                 
                 let timeLocHtml = "";
@@ -744,18 +780,33 @@
                     
                     timeLocHtml = `
                         <div class="cc-time-loc">
-                            <i class="far fa-clock"></i> <span>${formatAMPM(String(schData['gio-bat-dau']).substring(0,5))} - ${formatAMPM(String(schData['gio-ket-thuc']).substring(0,5))}</span><br>
-                            <i class="fas fa-map-marker-alt"></i> <span>${escapeHtml(locName)}</span>
+                            <div class="cc-time"><i class="far fa-clock"></i> <span>${formatAMPM(String(schData['gio-bat-dau']).substring(0,5))} - ${formatAMPM(String(schData['gio-ket-thuc']).substring(0,5))}</span></div>
+                            <div class="cc-loc"><i class="fas fa-map-marker-alt"></i> <span>${escapeHtml(locName)}</span></div>
                         </div>`;
                 }
 
-                const editBtnHtml = isOnGrid ? `<button class="btn-edit" title="Sửa Lịch"><i class="fas fa-pencil-alt"></i></button>` : '';
+                // Tooltip rà chuột ở Hàng đợi
+                const tooltipHtml = !isOnGrid ? `
+                    <div class="card-tooltip">
+                        <b style="color:#38bdf8; font-size:0.85rem;">${tenHp}</b><br>
+                        <div style="margin-top:4px;"><b>Lớp:</b> ${tenLop}</div>
+                        <div><b>ĐT:</b> ${targetText}</div>
+                        <div><b>GV:</b> ${tenGv}</div>
+                        <div style="margin-top:4px; color:#94a3b8;"><i>${ghiChu || 'Không có ghi chú'}</i></div>
+                    </div>
+                ` : '';
+
+                // Chỉ hiện bút sửa nếu đã phân quyền và thẻ nằm trên lịch
+                const editBtnHtml = (isOnGrid && isAdmin) ? `<button class="btn-edit" title="Chỉnh sửa Lịch"><i class="fas fa-pencil-alt"></i></button>` : '';
+                const draggableAttr = isAdmin ? 'draggable="true"' : '';
+                const dragClass = isAdmin ? 'draggable' : '';
 
                 return `
-                    <div class="class-card" draggable="true" id="${cardId}" data-schid="${schId}" style="${bgStyle}">
+                    <div class="class-card ${dragClass}" ${draggableAttr} id="${cardId}" data-schid="${schId}" style="${bgStyle}">
+                        ${tooltipHtml}
                         <div class="card-actions">
                             ${editBtnHtml}
-                            <div class="cc-type-badge">${type} ${sessionIndex}/${totalSessions}</div>
+                            <div class="cc-type-badge ${type === 'LT' ? 'type-lt' : 'type-th'}">${type} ${sessionIndex}/${totalSessions}</div>
                         </div>
                         <div class="cc-title" title="${tenHp}">${tenHp}</div>
                         <div class="cc-info"><i class="fas fa-users"></i> <span>${tenLop} | ĐT: ${targetText}</span></div>
@@ -819,10 +870,8 @@
                             const sch = allSchedulesData.find(s => String(s.id) === String(draggedCardInfo.schId));
 
                             if (sch && sch.ngay) {
-                                // LƯU NGẦM KHI DỜI LỊCH (SILENT UPDATE)
                                 updateScheduleTimeSilently(sch, targetDate, defStart, defEnd, targetSession);
                             } else {
-                                // MỞ POPUP KHI KÉO TỪ HÀNG ĐỢI VÀO
                                 openModalForSchedule(draggedCardInfo.schId, targetDate, defStart, defEnd, true, sch);
                             }
                         }
@@ -836,7 +885,6 @@
                 
                 const currentSession = getSessionFromTime(gioBd);
                 
-                // Ép giờ mặc định nếu dời sang buổi khác
                 if (currentSession !== newSession) {
                     gioBd = defStartStr;
                     gioKt = defEndStr;
@@ -862,32 +910,33 @@
                     const newCard = card.cloneNode(true);
                     card.parentNode.replaceChild(newCard, card);
                     
-                    newCard.addEventListener('dragstart', function(e) {
-                        draggedCardInfo = { elementId: this.id, schId: this.dataset.schid };
-                        setTimeout(() => this.classList.add('dragging'), 0);
-                        e.dataTransfer.effectAllowed = 'move';
-                    });
+                    if (isAdmin) {
+                        newCard.addEventListener('dragstart', function(e) {
+                            draggedCardInfo = { elementId: this.id, schId: this.dataset.schid };
+                            setTimeout(() => this.classList.add('dragging'), 0);
+                            e.dataTransfer.effectAllowed = 'move';
+                        });
 
-                    newCard.addEventListener('dragend', function() {
-                        this.classList.remove('dragging');
-                        document.querySelectorAll('.dropzone').forEach(dz => dz.classList.remove('dragover'));
-                    });
+                        newCard.addEventListener('dragend', function() {
+                            this.classList.remove('dragging');
+                            document.querySelectorAll('.dropzone').forEach(dz => dz.classList.remove('dragover'));
+                        });
+                    }
                     
                     const sch = allSchedulesData.find(s => String(s.id) === String(newCard.dataset.schid));
-                    if(sch && sch.ngay) {
-                        // Thẻ nằm trên Grid -> Click logic
+                    if (sch && sch.ngay) {
                         newCard.addEventListener('click', function(e) {
-                            if (e.target.closest('.btn-edit')) {
+                            if (isAdmin && e.target.closest('.btn-edit')) {
                                 e.stopPropagation();
                                 openModalForSchedule(this.dataset.schid, sch.ngay, String(sch['gio-bat-dau']).substring(0,5), String(sch['gio-ket-thuc']).substring(0,5), false, sch);
                                 return;
                             }
-                            // Click vùng khác -> Thu gọn / Xổ ra
                             this.classList.toggle('compact');
                         });
                     } else {
-                        // Thẻ nằm trong Pool
-                        newCard.style.cursor = 'grab'; 
+                        if (!isAdmin) {
+                            newCard.style.cursor = 'default';
+                        }
                     }
                 });
             }
@@ -993,9 +1042,6 @@
             /* =================================================
                KHỞI ĐỘNG HỆ THỐNG
             ================================================= */
-            generateCalendarGrid();
-            updateWeekHeaders();
-
             function startApp() {
                 let attempts = 0; const timer = setInterval(() => {
                     attempts++; if (window.supabaseClient) { clearInterval(timer); loadInitialData(); } else if (attempts >= 50) { clearInterval(timer); window.showToast("Không tải được Database.", true); }
