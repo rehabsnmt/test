@@ -367,6 +367,7 @@
 
             /* =================================================
                HÀM HỖ TRỢ: LẤY ID LỊCH ĐỒNG THỜI CỦA CÁC LỚP ANH EM
+               (Đã sửa lỗi để quét đúng phân công Nhóm/Cá nhân)
             ================================================= */
             function getRelatedScheduleIds(schId) {
                 let idsToUpdate = [schId]; // Chứa schId gốc
@@ -389,14 +390,47 @@
                 const siblingClasses = classesList.filter(c => c['ma-lop-goc'] === maLopGoc && c['ma-lop'] !== maLopCurrent);
                 
                 for (const sib of siblingClasses) {
-                    const sibAssign = allAssignmentsData.find(a => String(a['ma-lop']).trim() === String(sib['ma-lop']).trim() && String(a['ma-hoc-phan']).trim() === maHp);
+                    // Cần match tuyệt đối GV và thông tin Nhóm/Học viên để không bị nhầm lẫn
+                    const sibAssign = allAssignmentsData.find(a => 
+                        String(a['ma-lop']).trim() === String(sib['ma-lop']).trim() && 
+                        String(a['ma-hoc-phan']).trim() === maHp &&
+                        String(a['ma-giang-vien']).trim() === String(currentAssign['ma-giang-vien']).trim() &&
+                        String(a['doi-tuong'] || '') === String(currentAssign['doi-tuong'] || '') &&
+                        String(a['loai-nhom'] || '') === String(currentAssign['loai-nhom'] || '') &&
+                        String(a['ten-nhom'] || '') === String(currentAssign['ten-nhom'] || '') &&
+                        String(a['ma-hoc-vien'] || '') === String(currentAssign['ma-hoc-vien'] || '')
+                    );
+                    
                     if (sibAssign) {
-                        // Tìm thẻ lịch tương ứng (cùng loại LT/TH và cùng thứ tự tiết)
-                        const sibSch = allSchedulesData.find(s => 
-                            String(s['id-phan-cong']) === String(sibAssign.id) && 
-                            s['loai-buoi'] === currentSch['loai-buoi'] && 
-                            s._sessionIndex === currentSch._sessionIndex
-                        );
+                        let sibSch;
+                        // Nếu sửa một thẻ đã ở trên Khung lịch (có ngày giờ)
+                        if (currentSch.ngay) {
+                            sibSch = allSchedulesData.find(s => 
+                                String(s['id-phan-cong']) === String(sibAssign.id) && 
+                                s['loai-buoi'] === currentSch['loai-buoi'] && 
+                                s['ngay'] === currentSch['ngay'] &&
+                                s['gio-bat-dau'] === currentSch['gio-bat-dau']
+                            );
+                        } 
+                        // Nếu kéo một thẻ từ Hàng đợi ra
+                        else {
+                            sibSch = allSchedulesData.find(s => 
+                                String(s['id-phan-cong']) === String(sibAssign.id) && 
+                                s['loai-buoi'] === currentSch['loai-buoi'] && 
+                                !s['ngay'] &&
+                                s._sessionIndex === currentSch._sessionIndex
+                            );
+                        }
+                        
+                        // Dự phòng nếu trật khớp: Cố tìm bằng session index
+                        if (!sibSch) {
+                            sibSch = allSchedulesData.find(s => 
+                                String(s['id-phan-cong']) === String(sibAssign.id) && 
+                                s['loai-buoi'] === currentSch['loai-buoi'] && 
+                                s._sessionIndex === currentSch._sessionIndex
+                            );
+                        }
+
                         if (sibSch) {
                             idsToUpdate.push(sibSch.id);
                         }
@@ -438,8 +472,9 @@
             }
 
             function getSessionFromTime(timeStr) {
-                if (!timeStr) return null;
+                if (!timeStr || timeStr === "null") return null;
                 const hour = parseInt(timeStr.split(':')[0]);
+                if (isNaN(hour)) return null;
                 if (hour < 12) return "Sáng";
                 if (hour < 18) return "Chiều";
                 return "Tối";
@@ -817,7 +852,6 @@
                 
                 const isOnGrid = schData && schData.ngay;
                 
-                // Ghi chú chỉ hiển thị nếu đang ở Hàng đợi
                 const noteHtml = (ghiChu && !isOnGrid) ? `<div class="cc-note"><i class="fas fa-sticky-note" style="margin-right:4px;"></i>${ghiChu}</div>` : '';
                 
                 let timeLocHtml = "";
@@ -839,7 +873,6 @@
                         </div>`;
                 }
 
-                // Nút chỉnh sửa (chỉ tài khoản quản lý và thẻ đã xếp mới có)
                 const editBtnHtml = (isOnGrid && isAdmin) ? `<button class="btn-edit" title="Chỉnh sửa Lịch"><i class="fas fa-pencil-alt"></i></button>` : '';
                 const draggableAttr = isAdmin ? 'draggable="true"' : '';
                 const dragClass = isAdmin ? 'draggable' : '';
@@ -933,13 +966,14 @@
             }
 
             async function updateScheduleTimeSilently(sch, newDate, defStartStr, defEndStr, newSession) {
-                let gioBd = String(sch['gio-bat-dau']).substring(0,5);
-                let gioKt = String(sch['gio-ket-thuc']).substring(0,5);
+                // Bảo vệ parse chuỗi tránh lỗi chuỗi null
+                let gioBd = sch['gio-bat-dau'] ? String(sch['gio-bat-dau']).substring(0,5) : null;
+                let gioKt = sch['gio-ket-thuc'] ? String(sch['gio-ket-thuc']).substring(0,5) : null;
                 
-                const currentSession = getSessionFromTime(gioBd);
+                const currentSession = gioBd ? getSessionFromTime(gioBd) : null;
                 
-                // Ép giờ mặc định nếu dời sang buổi khác
-                if (currentSession !== newSession) {
+                // Ép giờ mặc định nếu dời sang buổi khác hoặc kéo từ Pool ra (chưa có giờ)
+                if (!currentSession || currentSession !== newSession) {
                     gioBd = defStartStr;
                     gioKt = defEndStr;
                 }
