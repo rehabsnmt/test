@@ -43,28 +43,26 @@
         .calendar-table th { background: var(--primary-light); color: var(--primary-hover); padding: 8px 4px; text-align: center; font-size: 0.85rem; }
         .calendar-table td.time-col { background: #f8fafc; font-weight: bold; text-align: center; vertical-align: middle; color: var(--text-muted); width: 70px; font-size: 0.85rem; padding: 10px 0; }
         
-        /* KHU VỰC THẢ (DÙNG FLEX ĐỂ XỬ LÝ CHIỀU CAO THẺ THÔNG MINH) */
+        /* KHU VỰC THẢ */
         .dropzone { min-height: 120px; height: 100%; padding: 6px; background: #fff; transition: background 0.2s ease; position: relative; display: flex; flex-direction: column; gap: 6px; }
         .dropzone.dragover { background: #f0fdf4 !important; box-shadow: inset 0 0 0 2px #22c55e; }
         
-        /* THẺ ĐANG MỞ RỘNG SẼ TỰ ĐỘNG CHIA ĐỀU ĐỂ BẰNG NHAU VÀ KÍN Ô LỊCH */
         .dropzone[data-action="grid"] .class-card:not(.compact) { flex: 1; }
 
-        /* THẺ HỌC PHẦN - CĂN TRÁI VÀ ÉP XUỐNG DÒNG TOÀN BỘ */
+        /* THẺ HỌC PHẦN */
         .class-card { 
             border: 1px solid var(--border); border-left-width: 5px; border-left-style: solid; 
             border-radius: 6px; padding: 8px; cursor: pointer; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; z-index: 10; 
             transition: all 0.2s; text-align: left;
             width: 100%; box-sizing: border-box; display: flex; flex-direction: column;
-            flex-shrink: 0;
-            overflow: hidden;
+            flex-shrink: 0; overflow: hidden;
         }
         .class-card:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.15); transform: translateY(-1px); }
         .class-card.draggable:active { cursor: grabbing; }
         .class-card.dragging { opacity: 0.5; }
 
-        /* NHÓM NÚT CHỨC NĂNG (GÓC PHẢI) */
+        /* NHÓM NÚT CHỨC NĂNG */
         .card-actions {
             position: absolute; top: 6px; right: 6px;
             display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
@@ -102,47 +100,27 @@
 
         .cc-note { margin-top: 5px; padding-top: 5px; border-top: 1px dashed rgba(0,0,0,0.1); font-style: italic; color: #64748b; font-size: 0.7rem; white-space: normal !important; overflow-wrap: break-word; word-break: break-word; line-height: 1.3; }
 
-        /* CHẾ ĐỘ THU GỌN THẺ (COMPACT MODE) - THU NHỎ TỐI ĐA */
+        /* CHẾ ĐỘ THU GỌN THẺ */
         .class-card.compact {
-            padding: 2px 4px; /* Thu lề cực nhỏ */
-            min-height: unset; 
-            cursor: pointer; 
-            flex: none !important; /* Không giãn */
-            border-left-width: 3px; /* Thu gọn viền trái */
-            margin-bottom: 2px; /* Gần nhau hơn */
+            padding: 2px 4px; min-height: unset; cursor: pointer; flex: none !important; 
+            border-left-width: 3px; margin-bottom: 2px; 
         }
         .class-card.compact .cc-title,
         .class-card.compact .cc-info,
         .class-card.compact .cc-note,
         .class-card.compact .card-actions,
         .class-card.compact .cc-time,
-        .class-card.compact .cc-scheduler {
-            display: none !important;
-        }
-        .class-card.compact .cc-time-loc {
-            margin-top: 0; padding-top: 0; border-top: none;
-        }
+        .class-card.compact .cc-scheduler { display: none !important; }
+        
+        .class-card.compact .cc-time-loc { margin-top: 0; padding-top: 0; border-top: none; }
         .class-card.compact .cc-loc {
-            color: #0f172a; 
-            font-weight: 600; 
-            padding-right: 12px; 
-            font-size: 0.65rem; /* Chữ nhỏ gọn */
-            white-space: nowrap; /* Ép không xuống dòng */
-            overflow: hidden; 
-            text-overflow: ellipsis; /* Dài quá tự thêm dấu ... */
-            display: block;
-            line-height: 1.3;
+            color: #0f172a; font-weight: 600; padding-right: 12px; font-size: 0.65rem; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; line-height: 1.3;
         }
-        .class-card.compact .cc-loc i {
-            margin-right: 2px;
-            font-size: 0.6rem;
-        }
-        .class-card.compact .cc-loc span {
-            display: inline;
-        }
+        .class-card.compact .cc-loc i { margin-right: 2px; font-size: 0.6rem; }
+        .class-card.compact .cc-loc span { display: inline; }
         .class-card.compact::after {
-            content: '\f107'; /* fa-angle-down */
-            font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            content: '\f107'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
             position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
             color: var(--text-muted); font-size: 0.7rem;
         }
@@ -191,7 +169,6 @@
                         <span>Hàng đợi chờ xếp</span>
                         <span class="badge" id="poolCount" style="background:var(--primary); color:#fff; padding: 2px 8px; border-radius: 10px;">0</span>
                     </div>
-                    <!-- Dropzone để gỡ lịch -->
                     <div id="unassignedPool" class="dropzone" data-action="pool">
                         <div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 2rem;" id="emptyPoolMsg">
                             Vui lòng chọn lớp học...
@@ -235,7 +212,7 @@
                             </tr>
                         </thead>
                         <tbody id="calendarGridBody">
-                            <!-- JS sẽ render 3 dòng: Sáng, Chiều, Tối -->
+                            <!-- JS sẽ render -->
                         </tbody>
                     </table>
                 </div>
@@ -247,7 +224,7 @@
     <div id="scheduleModal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 450px; text-align: left; padding: 1.5rem;">
             <button class="modal-close" id="btnCloseModal"><i class="fas fa-times"></i></button>
-            <h3 style="margin-bottom: 1rem; text-align: center; font-size: 1.2rem;">Cập nhật Lịch học</h3>
+            <h3 id="modalSchTitle" style="margin-bottom: 1rem; text-align: center; font-size: 1.2rem;">Cập nhật Lịch học</h3>
             
             <form id="scheduleForm">
                 <input type="hidden" id="schCardId">
@@ -389,6 +366,46 @@
             });
 
             /* =================================================
+               HÀM HỖ TRỢ: LẤY ID LỊCH ĐỒNG THỜI CỦA CÁC LỚP ANH EM
+            ================================================= */
+            function getRelatedScheduleIds(schId) {
+                let idsToUpdate = [schId]; // Chứa schId gốc
+                
+                const currentSch = allSchedulesData.find(s => String(s.id) === String(schId));
+                if (!currentSch) return idsToUpdate;
+
+                const currentAssign = allAssignmentsData.find(a => String(a.id) === String(currentSch['id-phan-cong']));
+                if (!currentAssign) return idsToUpdate;
+
+                const maLopCurrent = String(currentAssign['ma-lop']).trim();
+                const maHp = String(currentAssign['ma-hoc-phan']).trim();
+                
+                const classObj = classesList.find(c => String(c['ma-lop']).trim() === maLopCurrent);
+                if (!classObj || !classObj['ma-lop-goc']) return idsToUpdate;
+                
+                const maLopGoc = classObj['ma-lop-goc'];
+
+                // Dò tìm lớp anh em
+                const siblingClasses = classesList.filter(c => c['ma-lop-goc'] === maLopGoc && c['ma-lop'] !== maLopCurrent);
+                
+                for (const sib of siblingClasses) {
+                    const sibAssign = allAssignmentsData.find(a => String(a['ma-lop']).trim() === String(sib['ma-lop']).trim() && String(a['ma-hoc-phan']).trim() === maHp);
+                    if (sibAssign) {
+                        // Tìm thẻ lịch tương ứng (cùng loại LT/TH và cùng thứ tự tiết)
+                        const sibSch = allSchedulesData.find(s => 
+                            String(s['id-phan-cong']) === String(sibAssign.id) && 
+                            s['loai-buoi'] === currentSch['loai-buoi'] && 
+                            s._sessionIndex === currentSch._sessionIndex
+                        );
+                        if (sibSch) {
+                            idsToUpdate.push(sibSch.id);
+                        }
+                    }
+                }
+                return idsToUpdate;
+            }
+
+            /* =================================================
                1. KHỞI TẠO GRID THEO BUỔI & XỬ LÝ NGÀY TUẦN
             ================================================= */
             const sessionConfigs = [
@@ -484,7 +501,7 @@
                     if (authData && authData.user) { currentUserId = authData.user.id; }
 
                     const [resClass, resInst, resRoom, resHosp, resAcc] = await Promise.all([
-                        supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh'),
+                        supabase.from('lop-hoc').select('ma-lop, ten-lop, chuong-trinh, "ma-lop-goc"'),
                         supabase.from('giang-vien').select('ma-giang-vien, ho-ten'),
                         supabase.from('phong-hoc').select('ma-phong-hoc, ten-phong-hoc'),
                         supabase.from('benh-vien').select('ma-benh-vien, ten-benh-vien'),
@@ -871,15 +888,21 @@
                         if (action === 'pool') {
                             const sch = allSchedulesData.find(s => String(s.id) === String(draggedCardInfo.schId));
                             if (sch && sch.ngay) { 
-                                if (confirm("Gỡ thẻ này khỏi lịch và đưa về Hàng đợi?")) {
+                                const targetIds = getRelatedScheduleIds(sch.id);
+                                let extraText = targetIds.length > 1 ? ` (và ${targetIds.length - 1} lớp liên kết)` : '';
+                                
+                                if (confirm(`Đưa buổi học này${extraText} về Hàng đợi?`)) {
                                     try {
                                         const payload = { "ngay": null, "gio-bat-dau": null, "gio-ket-thuc": null, "ma-phong-hoc": null, "ma-benh-vien": null, "nguoi-xep": null };
                                         
-                                        const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', draggedCardInfo.schId).select();
+                                        const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).in('id', targetIds).select();
                                         if (error) throw error;
-                                        if (!data || data.length === 0) throw new Error("Thẻ không tồn tại hoặc đã bị xóa trước đó!");
                                         
-                                        window.showToast("Đã đưa thẻ về Hàng đợi!");
+                                        if (targetIds.length > 1) {
+                                            window.showToast(`Đã đưa thẻ về Hàng đợi (đồng bộ ${targetIds.length} lớp)!`);
+                                        } else {
+                                            window.showToast("Đã đưa thẻ về Hàng đợi!");
+                                        }
                                         refreshGlobalData(true); 
                                     } catch (err) { window.showToast("Lỗi: " + err.message, true); }
                                 }
@@ -898,7 +921,7 @@
                             const sch = allSchedulesData.find(s => String(s.id) === String(draggedCardInfo.schId));
 
                             if (sch && sch.ngay) {
-                                // LƯU NGẦM KHI DỜI LỊCH (SILENT UPDATE)
+                                // LƯU NGẦM KHI DỜI LỊCH CÙNG ĐỒNG BỘ CÁC LỚP KHÁC
                                 updateScheduleTimeSilently(sch, targetDate, defStart, defEnd, targetSession);
                             } else {
                                 // MỞ POPUP KHI KÉO TỪ HÀNG ĐỢI VÀO
@@ -921,6 +944,8 @@
                     gioKt = defEndStr;
                 }
 
+                const targetIds = getRelatedScheduleIds(sch.id);
+
                 const payload = { 
                     "ngay": newDate, 
                     "gio-bat-dau": gioBd + ":00", 
@@ -929,11 +954,14 @@
                 };
 
                 try {
-                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', sch.id).select();
+                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).in('id', targetIds).select();
                     if (error) throw error;
-                    if (!data || data.length === 0) throw new Error("Không thể cập nhật! Dữ liệu có thể đã bị xóa.");
                     
-                    window.showToast("Đã dời lịch học!");
+                    if (targetIds.length > 1) {
+                        window.showToast(`Đã dời lịch học (đồng bộ ${targetIds.length} lớp)!`);
+                    } else {
+                        window.showToast("Đã dời lịch học!");
+                    }
                     refreshGlobalData(true); 
                 } catch (err) { window.showToast("Lỗi dời lịch: " + err.message, true); }
             }
@@ -981,6 +1009,10 @@
             function openModalForSchedule(schId, suggestDate, suggestStartHour, suggestEndHour, isNewDrop = false, existingSchData = null) {
                 document.getElementById('schCardId').value = schId;
 
+                const targetIds = getRelatedScheduleIds(schId);
+                let extraText = targetIds.length > 1 ? ` (Đồng bộ ${targetIds.length} lớp liên kết)` : "";
+                document.getElementById('modalSchTitle').textContent = `Cập nhật Lịch học${extraText}`;
+
                 if (existingSchData && existingSchData.ngay && !isNewDrop) {
                     schDate.value = existingSchData['ngay'];
                     schStartTime.value = String(existingSchData['gio-bat-dau']).substring(0,5);
@@ -1014,17 +1046,23 @@
             document.getElementById('btnCancelModal').addEventListener('click', () => scheduleModal.classList.add('hidden'));
 
             btnRemoveFromGrid.addEventListener('click', async () => {
-                if(!confirm("Đưa buổi học này về Hàng đợi?")) return;
-                
                 const schId = document.getElementById('schCardId').value;
+                const targetIds = getRelatedScheduleIds(schId);
+                let extraText = targetIds.length > 1 ? ` (và ${targetIds.length - 1} lớp liên kết)` : '';
+                
+                if(!confirm(`Đưa buổi học này${extraText} về Hàng đợi?`)) return;
+                
                 const payload = { "ngay": null, "gio-bat-dau": null, "gio-ket-thuc": null, "ma-phong-hoc": null, "ma-benh-vien": null, "nguoi-xep": null };
 
                 try {
-                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', schId).select();
+                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).in('id', targetIds).select();
                     if (error) throw error;
-                    if (!data || data.length === 0) throw new Error("Lỗi: Không tìm thấy dữ liệu để gỡ.");
                     
-                    window.showToast("Đã gỡ lịch!");
+                    if (targetIds.length > 1) {
+                        window.showToast(`Đã gỡ lịch (đồng bộ ${targetIds.length} lớp)!`);
+                    } else {
+                        window.showToast("Đã gỡ lịch!");
+                    }
                     scheduleModal.classList.add('hidden');
                     refreshGlobalData(true); 
                 } catch(err) { window.showToast("Lỗi: " + err.message, true); }
@@ -1035,6 +1073,8 @@
                 
                 const schId = document.getElementById('schCardId').value;
                 if (!schId) { window.showToast("Lỗi: Không tìm thấy ID thẻ thời khóa biểu!", true); return; }
+
+                const targetIds = getRelatedScheduleIds(schId);
 
                 const ngay = schDate.value;
                 const gioBd = schStartTime.value + ":00";
@@ -1060,11 +1100,15 @@
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cập nhật...';
                     btn.disabled = true;
 
-                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).eq('id', schId).select();
+                    const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).in('id', targetIds).select();
                     if (error) throw error;
-                    if (!data || data.length === 0) throw new Error("Cập nhật thất bại. Thẻ có thể đã bị xóa.");
                     
-                    window.showToast("Ghi nhận lịch thành công!");
+                    if (targetIds.length > 1) {
+                        window.showToast(`Ghi nhận lịch thành công (đồng bộ ${targetIds.length} lớp)!`);
+                    } else {
+                        window.showToast("Ghi nhận lịch thành công!");
+                    }
+                    
                     scheduleModal.classList.add('hidden');
                     refreshGlobalData(true); 
                     
