@@ -146,6 +146,7 @@
             .week-controls button { padding: 5px 8px; font-size: 0.75rem; }
             
             .desktop-only { display: none !important; }
+            th.mobile-only, td.mobile-only { display: table-cell !important; }
             div.mobile-only { display: block !important; }
 
             /* Định hình lại Table để vừa màn hình dọc */
@@ -1022,6 +1023,7 @@
                                         
                                         const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).in('id', targetIds).select();
                                         if (error) throw error;
+                                        if (!data || data.length === 0) throw new Error("Lỗi thao tác");
                                         
                                         if (targetIds.length > 1) {
                                             window.showToast(`Đã đưa thẻ về Hàng đợi (đồng bộ ${targetIds.length} lớp)!`);
@@ -1082,6 +1084,7 @@
                 try {
                     const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).in('id', targetIds).select();
                     if (error) throw error;
+                    if (!data || data.length === 0) throw new Error("Lỗi thao tác");
                     
                     if (targetIds.length > 1) {
                         window.showToast(`Đã dời lịch học (đồng bộ ${targetIds.length} lớp)!`);
@@ -1229,6 +1232,7 @@
                 try {
                     const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).in('id', targetIds).select();
                     if (error) throw error;
+                    if (!data || data.length === 0) throw new Error("Lỗi thao tác");
                     
                     if (targetIds.length > 1) {
                         window.showToast(`Đã gỡ lịch (đồng bộ ${targetIds.length} lớp)!`);
@@ -1274,6 +1278,7 @@
 
                     const { data, error } = await window.supabaseClient.from('thoi-khoa-bieu').update(payload).in('id', targetIds).select();
                     if (error) throw error;
+                    if (!data || data.length === 0) throw new Error("Lỗi thao tác");
                     
                     if (targetIds.length > 1) {
                         window.showToast(`Ghi nhận lịch thành công (đồng bộ ${targetIds.length} lớp)!`);
