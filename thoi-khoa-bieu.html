@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="description" content="Quản lý Thời khóa biểu - Bộ môn Phục hồi chức năng.">
     <title>Thời khóa biểu - Bộ môn Phục hồi chức năng</title>
     
@@ -14,13 +14,13 @@
         /* =========================================
            ÉP BUỘC GIAO DIỆN FULL MÀN HÌNH VÀ BỐ CỤC
         ========================================= */
-        main { max-width: 100% !important; padding: 1rem 2% 2rem !important; }
-        .container { max-width: 100% !important; padding: 0 !important; }
+        main { max-width: 100% !important; padding: 1rem 2% 2rem !important; overflow-x: hidden; }
+        .container { max-width: 100% !important; padding: 0 !important; width: 100%; min-width: 0;}
         
         .top-controls { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1rem; flex-wrap: wrap; background: var(--surface); padding: 1rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
         .top-controls .form-group { margin-bottom: 0; flex: 1; min-width: 200px; }
 
-        .schedule-layout { display: flex; gap: 1.5rem; align-items: flex-start; transition: all 0.3s; }
+        .schedule-layout { display: flex; gap: 1.5rem; align-items: flex-start; transition: all 0.3s; width: 100%; }
 
         /* CỘT TRÁI: HÀNG ĐỢI (POOL) */
         .pool-column { width: 320px; flex-shrink: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); transition: all 0.3s; }
@@ -33,9 +33,9 @@
         #unassignedPool.dragover { border-color: var(--accent); background: #fee2e2; }
 
         /* CỘT PHẢI: KHUNG LỊCH (TIME GRID) */
-        .calendar-column { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; box-shadow: var(--shadow-sm); overflow-x: auto; transition: all 0.3s; }
+        .calendar-column { flex: 1; min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; box-shadow: var(--shadow-sm); transition: all 0.3s; }
         .week-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
-        .week-controls button { padding: 5px 12px; font-size: 0.85rem; }
+        .week-controls button { padding: 6px 12px; font-size: 0.85rem; font-weight: 600; }
         .week-controls input[type="date"], .week-controls select { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; }
         
         .calendar-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 900px; }
@@ -46,7 +46,6 @@
         /* KHU VỰC THẢ */
         .dropzone { min-height: 120px; height: 100%; padding: 6px; background: #fff; transition: background 0.2s ease; position: relative; display: flex; flex-direction: column; gap: 6px; }
         .dropzone.dragover { background: #f0fdf4 !important; box-shadow: inset 0 0 0 2px #22c55e; }
-        
         .dropzone[data-action="grid"] .class-card:not(.compact) { flex: 1; }
 
         /* THẺ HỌC PHẦN */
@@ -62,15 +61,15 @@
         .class-card.draggable:active { cursor: grabbing; }
         .class-card.dragging { opacity: 0.5; }
 
-        /* NHÓM NÚT CHỨC NĂNG */
+        /* NHÓM NÚT CHỨC NĂNG (NẰM NGANG NHAU) */
         .card-actions {
             position: absolute; top: 6px; right: 6px;
-            display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+            display: flex; flex-direction: row; align-items: center; gap: 6px;
             z-index: 20;
         }
 
         .btn-edit {
-            background: #e2e8f0; border: none; border-radius: 4px; width: 24px; height: 24px;
+            background: #e2e8f0; border: none; border-radius: 4px; width: 22px; height: 22px;
             display: flex; align-items: center; justify-content: center;
             color: #475569; font-size: 0.75rem; cursor: pointer; transition: 0.2s;
         }
@@ -82,7 +81,7 @@
         }
 
         .cc-title { 
-            font-weight: bold; color: var(--text-dark); margin-bottom: 6px; font-size: 0.8rem; line-height: 1.4; padding-right: 40px; 
+            font-weight: bold; color: var(--text-dark); margin-bottom: 6px; font-size: 0.8rem; line-height: 1.4; padding-right: 60px; 
             white-space: normal !important; overflow-wrap: break-word; word-break: break-word; text-align: left; 
         }
         .cc-info { display: flex; align-items: flex-start; margin-bottom: 3px; color: var(--text-muted); font-size: 0.75rem; text-align: left; }
@@ -128,6 +127,54 @@
         .modal-overlay { z-index: 9999; }
         .btn-danger { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
         .btn-danger:hover { background-color: #dc2626; }
+
+        .desktop-only { display: flex; }
+
+        /* =========================================
+           MOBILE VIEW TỐI ƯU (GOM GỌN MÀN HÌNH DỌC)
+        ========================================= */
+        @media (max-width: 768px) {
+            main { padding: 5px !important; }
+            .calendar-column { padding: 5px; border: none; box-shadow: none; border-radius: 0; overflow: hidden;}
+            .week-controls { gap: 5px; }
+            .week-controls button { padding: 5px 8px; font-size: 0.75rem; }
+            
+            .desktop-only { display: none !important; }
+
+            /* Định hình lại Table để vừa màn hình dọc */
+            .calendar-table { min-width: 100% !important; table-layout: fixed; }
+            .calendar-table th { font-size: 0.65rem; padding: 4px 1px; word-wrap: break-word; line-height: 1.1;}
+            .calendar-table th small { font-size: 0.55rem; display: block; margin-top: 2px;}
+            
+            /* Xoay chữ cột thời gian để tiết kiệm diện tích bề ngang */
+            .calendar-table td.time-col { 
+                width: 24px; font-size: 0.65rem; padding: 0; 
+                writing-mode: vertical-rl; transform: rotate(180deg); 
+                text-align: center; white-space: nowrap; line-height: 24px;
+            }
+            .calendar-table td { padding: 1px; }
+
+            .dropzone { min-height: 40px; padding: 2px; gap: 2px; border: none; }
+            
+            /* Ép thẻ thành những khối nhỏ xíu gọn gàng */
+            .class-card { 
+                padding: 1px; border-radius: 3px; border-width: 1px; border-left-width: 2px;
+                min-height: 24px; display: flex; align-items: center; justify-content: center;
+                margin: 0;
+            }
+            /* Ẩn mọi text chi tiết trên lưới Mobile */
+            .class-card .cc-title, .class-card .cc-info, .class-card .cc-time-loc, .class-card .cc-note, .class-card .btn-edit { display: none !important; }
+            
+            .class-card .card-actions { 
+                position: static; display: flex; width: 100%; height: 100%; 
+                align-items: center; justify-content: center; padding: 0; gap: 0;
+            }
+            .cc-type-badge { 
+                font-size: 0.55rem; padding: 1px 0; width: 100%; height: 100%; 
+                display: flex; align-items: center; justify-content: center; 
+                overflow: hidden; text-overflow: ellipsis; background: transparent;
+            }
+        }
     </style>
 </head>
 
@@ -179,19 +226,22 @@
                 <!-- CỘT PHẢI: KHUNG LỊCH (TIME GRID) -->
                 <div class="calendar-column">
                     <div class="week-controls">
-                        <button class="btn-primary" id="btnPrevWeek"><i class="fas fa-chevron-left"></i> Tuần trước</button>
+                        <!-- Nút Ẩn Kho đặt sang bên trái nút Tuần trước -->
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button id="btnTogglePool" class="btn-primary" style="background-color: var(--text-muted);"><i class="fas fa-columns"></i> Kho</button>
+                            <button class="btn-primary" id="btnPrevWeek"><i class="fas fa-chevron-left"></i> Tuần trước</button>
+                        </div>
                         
                         <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
-                            <button id="btnTogglePool" class="btn-primary" style="background-color: var(--text-muted);"><i class="fas fa-columns"></i> Ẩn/Hiện Kho</button>
-                            <div style="display: flex; align-items: center; gap: 5px;">
+                            <div style="display: flex; align-items: center; gap: 5px;" class="desktop-only">
                                 <label style="font-weight: bold; font-size: 0.85rem;">Lớp hiển thị:</label>
-                                <select id="gridClassFilter" style="max-width: 180px;">
-                                    <option value="">-- Tất cả các lớp --</option>
+                                <select id="gridClassFilter" style="max-width: 150px;">
+                                    <option value="">-- Tất cả --</option>
                                 </select>
                             </div>
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 <label style="font-weight: bold; font-size: 0.85rem;">Tuần:</label>
-                                <input type="date" id="weekSelector">
+                                <input type="date" id="weekSelector" style="width: 120px;">
                             </div>
                         </div>
 
@@ -201,13 +251,14 @@
                     <table class="calendar-table">
                         <thead>
                             <tr>
-                                <th style="width: 70px;">Buổi</th>
-                                <th id="th-1">Thứ 2<br><small>--</small></th>
-                                <th id="th-2">Thứ 3<br><small>--</small></th>
-                                <th id="th-3">Thứ 4<br><small>--</small></th>
-                                <th id="th-4">Thứ 5<br><small>--</small></th>
-                                <th id="th-5">Thứ 6<br><small>--</small></th>
-                                <th id="th-6">Thứ 7<br><small>--</small></th>
+                                <th style="width: 70px;" class="desktop-only">Buổi</th>
+                                <th style="width: 24px;" class="mobile-only"></th>
+                                <th id="th-1">T2<br><small>--</small></th>
+                                <th id="th-2">T3<br><small>--</small></th>
+                                <th id="th-3">T4<br><small>--</small></th>
+                                <th id="th-4">T5<br><small>--</small></th>
+                                <th id="th-5">T6<br><small>--</small></th>
+                                <th id="th-6">T7<br><small>--</small></th>
                                 <th id="th-0">CN<br><small>--</small></th>
                             </tr>
                         </thead>
@@ -220,7 +271,7 @@
         </div>
     </main>
 
-    <!-- MODAL XẾP LỊCH -->
+    <!-- MODAL XẾP LỊCH FORM GỐC -->
     <div id="scheduleModal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 450px; text-align: left; padding: 1.5rem;">
             <button class="modal-close" id="btnCloseModal"><i class="fas fa-times"></i></button>
@@ -248,13 +299,13 @@
                 <div class="form-group">
                     <label>Loại địa điểm <span class="text-danger">*</span></label>
                     <select id="schLocationType" required>
-                        <option value="phong">Phòng học (Trường)</option>
-                        <option value="vien">Bệnh viện / Lâm sàng</option>
+                        <option value="phong">Phòng học</option>
+                        <option value="vien">Bệnh viện</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Chọn Địa điểm <span class="text-danger">*</span></label>
+                    <label>Chọn địa điểm <span class="text-danger">*</span></label>
                     <select id="schLocation" required>
                         <option value="">-- Chọn --</option>
                     </select>
@@ -275,6 +326,16 @@
         </div>
     </div>
 
+    <!-- MODAL CHI TIẾT DÀNH RIÊNG CHO MOBILE (POPUP XEM THÔNG TIN LỊCH) -->
+    <div id="mobileCardDetailModal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 90vw; padding: 1.5rem; border-radius: 12px; text-align: left; position: relative;">
+            <button class="modal-close" id="btnCloseMobileCardModal" style="position: absolute; right: 15px; top: 15px;"><i class="fas fa-times"></i></button>
+            <h3 id="mcTitle" style="color: var(--text-dark); margin-bottom: 5px; font-size: 1.15rem; line-height: 1.4; padding-right: 30px;"></h3>
+            <div id="mcBadge" style="margin-bottom: 15px;"></div>
+            <div id="mcBody" style="font-size: 0.95rem; line-height: 1.6; color: var(--text-dark);"></div>
+        </div>
+    </div>
+
     <div id="footer-placeholder"></div>
     <script src="js/layout.js"></script>
 
@@ -283,6 +344,8 @@
             
             let currentUserId = null;
             let isAdmin = false;
+            let isHv = false;
+            let hvMaLopGoc = null;
 
             window.showToast = function (message, isError = false) {
                 const container = document.getElementById("toastContainer");
@@ -304,9 +367,10 @@
             }
 
             function formatAMPM(timeStr) {
-                if (!timeStr) return '';
+                if (!timeStr || timeStr === "null") return '';
                 let [h, m] = timeStr.split(':');
                 h = parseInt(h);
+                if(isNaN(h)) return '';
                 const ampm = h >= 12 ? 'PM' : 'AM';
                 h = h % 12;
                 h = h ? h : 12;
@@ -360,17 +424,23 @@
             const schDate = document.getElementById("schDate"), schStartTime = document.getElementById("schStartTime"), schEndTime = document.getElementById("schEndTime");
             const schLocationType = document.getElementById("schLocationType"), schLocation = document.getElementById("schLocation");
             const btnRemoveFromGrid = document.getElementById("btnRemoveFromGrid");
+            
+            const mobileCardDetailModal = document.getElementById("mobileCardDetailModal");
+            const btnCloseMobileCardModal = document.getElementById("btnCloseMobileCardModal");
 
             btnTogglePool.addEventListener("click", () => {
                 poolColumn.classList.toggle("hidden");
             });
 
+            btnCloseMobileCardModal.addEventListener('click', () => {
+                mobileCardDetailModal.classList.add('hidden');
+            });
+
             /* =================================================
                HÀM HỖ TRỢ: LẤY ID LỊCH ĐỒNG THỜI CỦA CÁC LỚP ANH EM
-               (Đã sửa lỗi để quét đúng phân công Nhóm/Cá nhân)
             ================================================= */
             function getRelatedScheduleIds(schId) {
-                let idsToUpdate = [schId]; // Chứa schId gốc
+                let idsToUpdate = [schId]; 
                 
                 const currentSch = allSchedulesData.find(s => String(s.id) === String(schId));
                 if (!currentSch) return idsToUpdate;
@@ -381,16 +451,16 @@
                 const maLopCurrent = String(currentAssign['ma-lop']).trim();
                 const maHp = String(currentAssign['ma-hoc-phan']).trim();
                 
-                const classObj = classesList.find(c => String(c['ma-lop']).trim() === maLopCurrent);
+                // Khôi phục bộ tìm kiếm class gốc toàn cục để tra cứu an toàn
+                const classObj = window._rawClassesData.find(c => String(c['ma-lop']).trim() === maLopCurrent);
                 if (!classObj || !classObj['ma-lop-goc']) return idsToUpdate;
                 
                 const maLopGoc = classObj['ma-lop-goc'];
 
                 // Dò tìm lớp anh em
-                const siblingClasses = classesList.filter(c => c['ma-lop-goc'] === maLopGoc && c['ma-lop'] !== maLopCurrent);
+                const siblingClasses = window._rawClassesData.filter(c => c['ma-lop-goc'] === maLopGoc && c['ma-lop'] !== maLopCurrent);
                 
                 for (const sib of siblingClasses) {
-                    // Cần match tuyệt đối GV và thông tin Nhóm/Học viên để không bị nhầm lẫn
                     const sibAssign = allAssignmentsData.find(a => 
                         String(a['ma-lop']).trim() === String(sib['ma-lop']).trim() && 
                         String(a['ma-hoc-phan']).trim() === maHp &&
@@ -403,7 +473,6 @@
                     
                     if (sibAssign) {
                         let sibSch;
-                        // Nếu sửa một thẻ đã ở trên Khung lịch (có ngày giờ)
                         if (currentSch.ngay) {
                             sibSch = allSchedulesData.find(s => 
                                 String(s['id-phan-cong']) === String(sibAssign.id) && 
@@ -411,9 +480,7 @@
                                 s['ngay'] === currentSch['ngay'] &&
                                 s['gio-bat-dau'] === currentSch['gio-bat-dau']
                             );
-                        } 
-                        // Nếu kéo một thẻ từ Hàng đợi ra
-                        else {
+                        } else {
                             sibSch = allSchedulesData.find(s => 
                                 String(s['id-phan-cong']) === String(sibAssign.id) && 
                                 s['loai-buoi'] === currentSch['loai-buoi'] && 
@@ -422,7 +489,6 @@
                             );
                         }
                         
-                        // Dự phòng nếu trật khớp: Cố tìm bằng session index
                         if (!sibSch) {
                             sibSch = allSchedulesData.find(s => 
                                 String(s['id-phan-cong']) === String(sibAssign.id) && 
@@ -498,7 +564,7 @@
                     
                     if (th) {
                         const dateStr = `${String(currentDay.getDate()).padStart(2, '0')}/${String(currentDay.getMonth()+1).padStart(2, '0')}`;
-                        const title = dayIndex === 0 ? "CN" : `Thứ ${dayIndex + 1}`;
+                        const title = dayIndex === 0 ? "CN" : `T${dayIndex + 1}`;
                         th.innerHTML = `${title}<br><small>${dateStr}</small>`;
                         th.dataset.fulldate = formatDateToInput(currentDay);
                     }
@@ -540,35 +606,58 @@
                         supabase.from('giang-vien').select('ma-giang-vien, ho-ten'),
                         supabase.from('phong-hoc').select('ma-phong-hoc, ten-phong-hoc'),
                         supabase.from('benh-vien').select('ma-benh-vien, ten-benh-vien'),
-                        supabase.from('tai-khoan-he-thong').select('id, ma-giang-vien, role')
+                        supabase.from('tai-khoan-he-thong').select('*') // Lấy toàn bộ để tra role & ma-lop
                     ]);
 
-                    classesList = resClass.data || [];
+                    let rawClasses = resClass.data || [];
+                    window._rawClassesData = rawClasses; // Giữ lại bản gốc để tham chiếu
+                    
                     instructorsList = resInst.data || [];
                     roomsList = resRoom.data || [];
                     hospitalsList = resHosp.data || [];
                     accountList = resAcc.data || [];
 
-                    // PHÂN QUYỀN TRỰC TIẾP QUA ROLE
+                    // XỬ LÝ PHÂN QUYỀN VÀ ROLE
                     isAdmin = false;
+                    isHv = false;
+                    hvMaLopGoc = null;
+
                     if (currentUserId) {
                         const myAcc = accountList.find(a => String(a.id) === String(currentUserId));
-                        if (myAcc && (myAcc.role === 'gv' || myAcc.role === 'superadmin')) {
-                            isAdmin = true;
+                        if (myAcc) {
+                            if (myAcc.role === 'gv' || myAcc.role === 'superadmin') {
+                                isAdmin = true;
+                            } else if (myAcc.role === 'hv') {
+                                isHv = true;
+                                const userMaLop = myAcc['ma-lop'];
+                                if (userMaLop) {
+                                    const cInfo = rawClasses.find(c => String(c['ma-lop']).trim() === String(userMaLop).trim());
+                                    if (cInfo) hvMaLopGoc = cInfo['ma-lop-goc'];
+                                }
+                            }
                         }
                     }
-                    
-                    if (!isAdmin) {
+
+                    // Tùy chỉnh danh sách lớp hiển thị
+                    if (isHv && hvMaLopGoc) {
+                        classesList = rawClasses.filter(c => c['ma-lop-goc'] === hvMaLopGoc);
+                        pageTitle.textContent = "Thời khóa biểu của tôi";
+                        topControlsSection.style.display = "none";
+                        poolColumn.classList.add("hidden");
+                        btnTogglePool.style.display = "none";
+                    } else if (!isAdmin) {
+                        classesList = rawClasses;
                         pageTitle.textContent = "Xem Thời khóa biểu";
                         topControlsSection.style.display = "none";
                         poolColumn.classList.add("hidden");
                         btnTogglePool.style.display = "none";
                     } else {
+                        classesList = rawClasses;
                         pageTitle.textContent = "Xếp Thời khóa biểu";
                     }
 
                     classSelect.innerHTML = `<option value="">-- Chọn Lớp học --</option>`;
-                    gridClassFilter.innerHTML = `<option value="">-- Tất cả các lớp --</option>`;
+                    gridClassFilter.innerHTML = `<option value="">-- Tất cả --</option>`;
                     classesList.forEach(cls => {
                         classSelect.appendChild(new Option(cls["ten-lop"], cls["ma-lop"]));
                         gridClassFilter.appendChild(new Option(cls["ten-lop"], cls["ma-lop"]));
@@ -640,7 +729,14 @@
                         if (a['ma-lop'] > b['ma-lop']) return 1;
                         return a.id - b.id;
                     });
-                    allAssignmentsData = rawAssignments;
+                    
+                    // Với HV, ta chỉ hiển thị dữ liệu lịch liên quan tới danh sách lớp của họ
+                    if (isHv && hvMaLopGoc) {
+                        const allowedClasses = classesList.map(c => c['ma-lop']);
+                        allAssignmentsData = rawAssignments.filter(a => allowedClasses.includes(a['ma-lop']));
+                    } else {
+                        allAssignmentsData = rawAssignments;
+                    }
                     
                     allSchedulesData = resSch.data || [];
                     
@@ -698,7 +794,6 @@
                     allSchedulesData = newSchData || [];
                 }
 
-                // Tính Session Index
                 allAssignmentsData.forEach(a => {
                     ['LT', 'TH'].forEach(type => {
                         const schs = allSchedulesData.filter(s => String(s['id-phan-cong']) === String(a.id) && s['loai-buoi'] === type);
@@ -835,7 +930,6 @@
                     }
                 });
                 
-                // Thu gọn các thẻ nếu ô đó có nhiều hơn 1 thẻ
                 document.querySelectorAll('.grid-zone').forEach(zone => {
                     const cardsInZone = zone.querySelectorAll('.class-card');
                     if (cardsInZone.length > 1) {
@@ -954,10 +1048,8 @@
                             const sch = allSchedulesData.find(s => String(s.id) === String(draggedCardInfo.schId));
 
                             if (sch && sch.ngay) {
-                                // LƯU NGẦM KHI DỜI LỊCH CÙNG ĐỒNG BỘ CÁC LỚP KHÁC
                                 updateScheduleTimeSilently(sch, targetDate, defStart, defEnd, targetSession);
                             } else {
-                                // MỞ POPUP KHI KÉO TỪ HÀNG ĐỢI VÀO
                                 openModalForSchedule(draggedCardInfo.schId, targetDate, defStart, defEnd, true, sch);
                             }
                         }
@@ -966,13 +1058,11 @@
             }
 
             async function updateScheduleTimeSilently(sch, newDate, defStartStr, defEndStr, newSession) {
-                // Bảo vệ parse chuỗi tránh lỗi chuỗi null
                 let gioBd = sch['gio-bat-dau'] ? String(sch['gio-bat-dau']).substring(0,5) : null;
                 let gioKt = sch['gio-ket-thuc'] ? String(sch['gio-ket-thuc']).substring(0,5) : null;
                 
                 const currentSession = gioBd ? getSessionFromTime(gioBd) : null;
                 
-                // Ép giờ mặc định nếu dời sang buổi khác hoặc kéo từ Pool ra (chưa có giờ)
                 if (!currentSession || currentSession !== newSession) {
                     gioBd = defStartStr;
                     gioKt = defEndStr;
@@ -1000,6 +1090,37 @@
                 } catch (err) { window.showToast("Lỗi dời lịch: " + err.message, true); }
             }
 
+            function showMobileCardDetail(schId) {
+                const sch = allSchedulesData.find(s => String(s.id) === String(schId));
+                if (!sch) return;
+                const a = allAssignmentsData.find(x => String(x.id) === String(sch['id-phan-cong']));
+                if (!a) return;
+
+                const tenHp = escapeHtml(getModuleName(a["ma-hoc-phan"]));
+                const tenLop = escapeHtml(getClassName(a["ma-lop"]));
+                const tenGv = escapeHtml(getInstructorName(a["ma-giang-vien"]));
+                let targetText = "Cả lớp";
+                if (a["doi-tuong"] === "nhom") targetText = `Nhóm ${escapeHtml(a["ten-nhom"])}`;
+                else if (a["doi-tuong"] === "ca-nhan") targetText = escapeHtml(a["ho-ten"]);
+                
+                const locType = sch['ma-phong-hoc'] ? 'phong' : 'vien';
+                const locId = sch['ma-phong-hoc'] || sch['ma-benh-vien'];
+                const locName = getLocName(locType, locId) || 'Chưa chọn địa điểm';
+
+                document.getElementById('mcTitle').innerHTML = tenHp;
+                document.getElementById('mcBadge').innerHTML = `<span class="cc-type-badge ${sch['loai-buoi'] === 'LT' ? 'type-lt' : 'type-th'}">${sch['loai-buoi']} ${sch._sessionIndex}/${sch._totalSessions}</span>`;
+                
+                document.getElementById('mcBody').innerHTML = `
+                    <div style="margin-bottom: 8px;"><i class="fas fa-users" style="color:var(--primary); width:20px;"></i> <b>Lớp:</b> ${tenLop} | ĐT: ${targetText}</div>
+                    <div style="margin-bottom: 8px;"><i class="fas fa-user-tie" style="color:var(--primary); width:20px;"></i> <b>GV:</b> ${tenGv}</div>
+                    ${sch.ngay ? `<div style="margin-bottom: 8px;"><i class="far fa-clock" style="color:var(--primary); width:20px;"></i> <b>Giờ:</b> ${formatAMPM(String(sch['gio-bat-dau']).substring(0,5))} -${formatAMPM(String(sch['gio-ket-thuc']).substring(0,5))}</div>` : ''}
+                    ${sch.ngay ? `<div style="margin-bottom: 8px;"><i class="fas fa-map-marker-alt" style="color:var(--primary); width:20px;"></i> <b>Địa điểm:</b> ${escapeHtml(locName)}</div>` : ''}
+                    ${a['ghi-chu'] ? `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-light); font-style: italic;"><i class="fas fa-sticky-note"></i> ${escapeHtml(a['ghi-chu'])}</div>` : ''}
+                `;
+
+                mobileCardDetailModal.classList.remove('hidden');
+            }
+
             function setupDragEventsForCards() {
                 const cards = document.querySelectorAll('.class-card');
                 cards.forEach(card => {
@@ -1020,8 +1141,13 @@
                     }
                     
                     const sch = allSchedulesData.find(s => String(s.id) === String(newCard.dataset.schid));
-                    if (sch && sch.ngay) {
+                    if (sch) {
                         newCard.addEventListener('click', function(e) {
+                            if (window.innerWidth <= 768) {
+                                showMobileCardDetail(this.dataset.schid);
+                                return;
+                            }
+
                             if (isAdmin && e.target.closest('.btn-edit')) {
                                 e.stopPropagation();
                                 openModalForSchedule(this.dataset.schid, sch.ngay, String(sch['gio-bat-dau']).substring(0,5), String(sch['gio-ket-thuc']).substring(0,5), false, sch);
@@ -1030,8 +1156,10 @@
                             this.classList.toggle('compact');
                         });
                     } else {
-                        if (!isAdmin) {
+                        if (!isAdmin && window.innerWidth > 768) {
                             newCard.style.cursor = 'default';
+                        } else if (window.innerWidth <= 768) {
+                            newCard.addEventListener('click', function(e) { showMobileCardDetail(this.dataset.schid); });
                         }
                     }
                 });
