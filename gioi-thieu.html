@@ -142,11 +142,28 @@
                 const card = document.createElement("article");
                 card.className = "faculty-card";
 
-                // Hình ảnh Avatar (Tự động tải từ Bucket, nếu lỗi sẽ thay bằng icon mặc định)
+                // Hình ảnh Avatar xử lý fallback luân phiên các URL
                 const avatar = document.createElement("div");
                 avatar.className = "faculty-avatar";
-                if (data.image) {
-                    avatar.innerHTML = `<img src="${escapeHtml(data.image)}" alt="Ảnh ${escapeHtml(data.name)}" loading="lazy" onerror="this.outerHTML='<i class=\\'fas fa-user\\'></i>'">`;
+                
+                if (data.tryUrls && data.tryUrls.length > 0) {
+                    const img = document.createElement("img");
+                    img.alt = `Ảnh ${escapeHtml(data.name)}`;
+                    img.loading = "lazy";
+                    
+                    let currentUrlIndex = 0;
+                    img.src = data.tryUrls[currentUrlIndex];
+                    
+                    // Cơ chế tự động dò tìm đuôi ảnh (.jpg -> .png -> .jpeg -> ...)
+                    img.onerror = function() {
+                        currentUrlIndex++;
+                        if (currentUrlIndex < data.tryUrls.length) {
+                            this.src = data.tryUrls[currentUrlIndex];
+                        } else {
+                            this.outerHTML = '<i class="fas fa-user"></i>'; // Hết url thử -> hiển thị icon mặc định
+                        }
+                    };
+                    avatar.appendChild(img);
                 } else {
                     avatar.innerHTML = `<i class="fas fa-user"></i>`;
                 }
@@ -215,10 +232,28 @@
 
                 if (error) throw error;
 
+                const storageApi = window.supabaseClient.storage.from('anh-ho-so');
+
                 facultyList = (data || []).map((lecturer) => {
-                    // Tự động tạo Public URL từ bucket 'anh-ho-so' bằng ma-giang-vien
-                    const maGv = lecturer["ma-giang-vien"];
-                    const { data: urlData } = window.supabaseClient.storage.from('anh-ho-so').getPublicUrl(maGv);
+                    const maGv = String(lecturer["ma-giang-vien"] || "").trim();
+                    const fileNameInDb = String(lecturer["anh"] || "").trim();
+                    
+                    let urlsToTry = [];
+                    
+                    // 1. Nếu Database có lưu sẵn tên file cụ thể (vd: "GV01.png")
+                    if (fileNameInDb) {
+                        urlsToTry.push(storageApi.getPublicUrl(fileNameInDb).data.publicUrl);
+                    }
+                    
+                    // 2. Tự động lấy các định dạng mở rộng phổ biến theo mã giảng viên
+                    if (maGv) {
+                        urlsToTry.push(storageApi.getPublicUrl(`${maGv}.jpg`).data.publicUrl);
+                        urlsToTry.push(storageApi.getPublicUrl(`${maGv}.png`).data.publicUrl);
+                        urlsToTry.push(storageApi.getPublicUrl(`${maGv}.jpeg`).data.publicUrl);
+                        urlsToTry.push(storageApi.getPublicUrl(`${maGv}.JPG`).data.publicUrl);
+                        urlsToTry.push(storageApi.getPublicUrl(`${maGv}.PNG`).data.publicUrl);
+                        urlsToTry.push(storageApi.getPublicUrl(`${maGv}`).data.publicUrl); // File không đuôi
+                    }
 
                     return {
                         uid: maGv,
@@ -227,8 +262,7 @@
                         position: lecturer["chuc-vu"] || "Giảng viên",
                         major: lecturer["chuyen-nganh"] || "Đang cập nhật",
                         email: lecturer["email"] || "",
-                        // Gán đường dẫn URL vừa lấy được
-                        image: urlData ? urlData.publicUrl : ""
+                        tryUrls: urlsToTry
                     };
                 });
 
