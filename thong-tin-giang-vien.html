@@ -78,24 +78,26 @@
         }
         .cv-avatar.editable:hover .cv-avatar-overlay { opacity: 1; }
 
-        .cv-degree { width: 100%; font-size: 0.95rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; word-break: break-word; }
+        .cv-degree { width: 100%; font-size: 0.85rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        .cv-name { width: 100%; font-size: 1.4rem; font-weight: 800; color: var(--text-dark); margin-bottom: 8px; word-break: break-word; line-height: 1.3; }
+        /* Chống nhảy dòng cho tên, cho tự động có dấu ... nếu quá dài */
+        .cv-name { width: 100%; font-size: 1.25rem; font-weight: 800; color: var(--text-dark); margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        .cv-position { font-size: 0.9rem; font-weight: 600; color: var(--text-body); margin-bottom: 15px; background: #f1f5f9; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); display: inline-block; }
+        .cv-position { font-size: 0.9rem; font-weight: 600; color: var(--text-body); margin-bottom: 15px; background: #f1f5f9; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); display: inline-block; white-space: nowrap; }
         .pos-head { color: #dc2626 !important; font-weight: 700 !important; background: #fee2e2 !important; border-color: #fca5a5 !important; }
         .pos-admin { color: #16a34a !important; font-weight: 700 !important; background: #dcfce7 !important; border-color: #86efac !important; }
 
-        .cv-major-container { margin-bottom: 15px; width: 100%; display: flex; justify-content: center; min-width: 0; }
+        .cv-major-container { margin-bottom: 15px; width: 100%; display: flex; justify-content: center; min-width: 0; overflow: hidden;}
         
-        .major-badge { padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; display: inline-block; text-align: center; word-break: break-word; line-height: 1.3; }
+        /* Chống nhảy dòng cho chuyên ngành */
+        .major-badge { padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 0.75rem; display: inline-block; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
         .badge-vltl { background-color: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
         .badge-hdtl { background-color: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
         .badge-nntl { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
         .badge-default { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
-        .cv-email { width: 100%; font-size: clamp(0.75rem, 3vw, 0.95rem); color: var(--text-body); word-break: break-word; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .cv-email { width: 100%; font-size: clamp(0.75rem, 3vw, 0.9rem); color: var(--text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
         /* =========================================================
            CỘT PHẢI - NỘI DUNG TABS
@@ -412,6 +414,31 @@
                     avatarDiv.innerHTML = `<i class="fas fa-user"></i>${overlayHtml}`;
                 }
 
+                // Tự động scale font size cho Tên và Chuyên ngành không bị rớt dòng
+                setTimeout(() => {
+                    const nameEl = document.getElementById('displayName');
+                    if (nameEl) {
+                        nameEl.style.fontSize = '';
+                        let currentSize = window.innerWidth <= 768 ? 1.15 : 1.25;
+                        nameEl.style.fontSize = currentSize + 'rem';
+                        while (nameEl.scrollWidth > nameEl.clientWidth && currentSize > 0.7) {
+                            currentSize -= 0.05;
+                            nameEl.style.fontSize = currentSize + 'rem';
+                        }
+                    }
+                    const majorContainer = document.getElementById('displayMajor');
+                    const badge = majorContainer.querySelector('.major-badge');
+                    if (badge) {
+                        badge.style.fontSize = '';
+                        let fontSize = 0.8;
+                        badge.style.fontSize = fontSize + 'rem';
+                        while (badge.scrollWidth > majorContainer.clientWidth && fontSize > 0.4) {
+                            fontSize -= 0.02;
+                            badge.style.fontSize = fontSize + 'rem';
+                        }
+                    }
+                }, 50);
+
                 // Làm sạch nội dung HTML
                 const cleanHTML = (html) => {
                     if (!html) return '';
@@ -530,7 +557,7 @@
             }
 
             // ==========================================
-            // UPLOAD ẢNH (Resize + Convert -> Bucket Supabase)
+            // UPLOAD ẢNH (Dùng code đúng yêu cầu của người dùng)
             // ==========================================
             window.triggerAvatarUpload = () => {
                 if (canEditAvatar) document.getElementById('uploadAvatar').click();
@@ -590,6 +617,7 @@
                             if (error) {
                                 console.error('Lỗi thay ảnh:', error);
                                 alert(error.message);
+                                showToast("Lỗi tải ảnh: " + error.message, "danger");
                                 e.target.value = '';
                                 return;
                             }
