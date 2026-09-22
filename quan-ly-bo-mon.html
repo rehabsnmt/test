@@ -27,29 +27,30 @@
         .page-title { margin: 0; font-size: 28px; font-weight: 700; }
         .page-subtitle { margin: 6px 0 0; color: var(--text-muted); font-size: 14px; }
 
+        /* Nút bấm Nền đặc (Solid Colors) */
         .btn-custom {
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            border: 1px solid var(--border); background: white; color: var(--text-dark);
-            border-radius: 8px; padding: 9px 14px; font-weight: 500; cursor: pointer;
-            font-size: 0.9rem; transition: 0.2s;
+            border: none; background: #e2e8f0; color: #334155;
+            border-radius: 8px; padding: 9px 14px; font-weight: 600; cursor: pointer;
+            font-size: 0.85rem; transition: 0.2s;
         }
-        .btn-custom:hover { background: var(--bg-page); }
+        .btn-custom:hover { background: #cbd5e1; }
 
-        .btn-custom-primary { border-color: var(--primary); background: var(--primary); color: white; }
-        .btn-custom-primary:hover { background: var(--primary-hover); color: white; }
+        .btn-custom-primary { background: var(--primary); color: white; }
+        .btn-custom-primary:hover { background: var(--primary-hover); }
 
-        .btn-custom-danger { color: var(--accent); border-color: transparent; }
-        .btn-custom-danger:hover { background: #fef2f2; }
+        .btn-custom-danger { background: #ef4444; color: white; }
+        .btn-custom-danger:hover { background: #dc2626; }
 
-        .btn-custom-success { color: #15803d; border-color: transparent; }
-        .btn-custom-success:hover { background: #f0fdf4; }
+        .btn-custom-success { background: #10b981; color: white; }
+        .btn-custom-success:hover { background: #059669; }
 
-        .btn-custom-warning { color: #d97706; border-color: transparent; }
-        .btn-custom-warning:hover { background: #fffbeb; }
+        .btn-custom-warning { background: #f59e0b; color: white; }
+        .btn-custom-warning:hover { background: #d97706; }
 
-        .btn-custom-small { padding: 6px 10px; font-size: 13px; }
+        .btn-custom-small { padding: 6px 12px; font-size: 0.8rem; }
 
-        /* DASHBOARD TƯƠNG TÁC THAY CHO BỘ LỌC */
+        /* Dashboard tương tác */
         .interactive-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .dashboard-card { 
             background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px; 
@@ -83,6 +84,8 @@
             font-size: 1.15rem; font-weight: 700; margin: 10px 0 15px 0; padding-bottom: 8px;
             display: flex; align-items: center; gap: 8px;
         }
+        .status-section-title.pending { color: #b45309; border-bottom: 2px solid #fef3c7; }
+        .status-section-title.approved { color: #15803d; border-bottom: 2px solid #dcfce7; margin-top: 30px; }
 
         .plan-list { display: grid; gap: 14px; }
         .plan-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px; transition: box-shadow .15s ease; }
@@ -112,11 +115,11 @@
         }
 
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
-        .badge-blue { background: var(--primary-light); color: var(--primary-hover); }
-        .badge-green { background: #dcfce7; color: #15803d; }
-        .badge-yellow { background: #fef3c7; color: #a16207; }
-        .badge-red { background: #fee2e2; color: #b91c1c; }
-        .badge-orange { background: #ffedd5; color: #c2410c; }
+        .badge-blue { background: var(--primary-light); color: var(--primary-hover); border: 1px solid #bae6fd;}
+        .badge-green { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;}
+        .badge-yellow { background: #fef3c7; color: #b45309; border: 1px solid #fde68a;}
+        .badge-red { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;}
+        .badge-orange { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa;}
 
         .custom-modal-backdrop {
             position: fixed; inset: 0; background: rgba(15, 23, 42, .6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
@@ -151,8 +154,18 @@
         .task-meta { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         .task-actions { display: flex; gap: 5px; flex-shrink: 0; flex-wrap: wrap;}
 
+        /* Staff Chip UI */
         .staff-list { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
-        .staff-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--text-dark); }
+        .staff-chip { 
+            display: inline-flex; align-items: center; gap: 6px; 
+            background: var(--bg-page); border: 1px solid var(--border); 
+            border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--text-dark); 
+        }
+        .staff-chip.has-evidence { background: #e0f2fe; border-color: #bae6fd; }
+        .staff-chip.is-completed { background: #dcfce7; border-color: #bbf7d0; }
+        .staff-status-text { font-size: 0.7rem; font-weight: bold; margin-left: 4px; }
+        .staff-status-text.evidence { color: var(--primary); }
+        .staff-status-text.completed { color: #15803d; }
 
         .empty { padding: 50px 20px; text-align: center; color: var(--text-muted); background: white; border: 1px dashed var(--border); border-radius: 12px; }
         .loading { padding: 30px; text-align: center; color: var(--text-muted); font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -229,7 +242,7 @@
                     </div>
                 </div>
                 <div class="dashboard-card" data-filter="dang-thuc-hien" onclick="setDashboardFilter('dang-thuc-hien')">
-                    <div class="db-icon text-primary"><i class="fas fa-play-circle"></i></div>
+                    <div class="db-icon text-primary"><i class="fas fa-spinner"></i></div>
                     <div class="db-info">
                         <div class="db-title">Đang làm</div>
                         <div class="db-value" id="count-active">0</div>
@@ -301,7 +314,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-custom" onclick="closeModal('plan-modal')">Hủy</button>
-                    <button type="submit" class="btn-custom btn-custom-primary"><i class="fas fa-save"></i> Lưu kế hoạch</button>
+                    <button type="submit" class="btn-custom btn-custom-primary"><i class="fas fa-save"></i> Lưu</button>
                 </div>
             </form>
         </div>
@@ -352,7 +365,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-custom" onclick="closeModal('task-modal')">Hủy</button>
-                    <button type="submit" class="btn-custom btn-custom-primary"><i class="fas fa-save"></i> Lưu công việc</button>
+                    <button type="submit" class="btn-custom btn-custom-primary"><i class="fas fa-save"></i> Lưu</button>
                 </div>
             </form>
         </div>
@@ -407,38 +420,6 @@
                 <button type="button" class="btn-custom" onclick="closeModal('staff-modal')">Đóng</button>
                 <button type="button" class="btn-custom btn-custom-primary" id="btnSaveStaff" onclick="saveStaffAssignment(event)"><i class="fas fa-save"></i> Lưu phân công</button>
             </div>
-        </div>
-    </div>
-
-    <!-- MODAL GỬI MINH CHỨNG -->
-    <div id="evidence-modal" class="custom-modal-backdrop">
-        <div class="custom-modal" style="max-width: 500px;">
-            <div class="modal-header">
-                <h2 class="modal-title">Gửi Minh chứng & Hoàn thành</h2>
-                <button class="modal-close" onclick="closeModal('evidence-modal')">×</button>
-            </div>
-            <form id="evidence-form" onsubmit="submitEvidence(event)">
-                <div class="modal-body">
-                    <input id="evidence-task-id" type="hidden">
-                    <div class="form-group">
-                        <label class="form-label">Tiêu đề minh chứng <span style="color:var(--accent)">*</span></label>
-                        <input id="evidence-title" class="custom-input" placeholder="Vd: Link tài liệu báo cáo" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Đường dẫn URL (Drive, Website...) <span style="color:var(--accent)">*</span></label>
-                        <input id="evidence-url" class="custom-input" type="url" placeholder="https://..." required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Mô tả thêm (Tùy chọn)</label>
-                        <textarea id="evidence-desc" class="custom-textarea" rows="3"></textarea>
-                    </div>
-                    <div class="error-msg" id="evidence-error" style="margin-top: 10px;"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-custom" onclick="closeModal('evidence-modal')">Hủy</button>
-                    <button type="submit" class="btn-custom btn-custom-primary"><i class="fas fa-paper-plane"></i> Gửi xác nhận</button>
-                </div>
-            </form>
         </div>
     </div>
 
@@ -518,7 +499,7 @@
                 setupEvents();
             } catch (error) {
                 showError(error.message);
-                document.getElementById('plan-list-container').innerHTML = `<div class="empty" style="color:var(--accent);">Bạn không có quyền truy cập hoặc lỗi kết nối.</div>`;
+                document.getElementById('plan-list-container').innerHTML = `<div class="empty text-danger">Bạn không có quyền truy cập hoặc lỗi kết nối.</div>`;
             }
         }
 
@@ -629,7 +610,7 @@
                 return;
             }
 
-            // Sắp xếp kế hoạch theo ngày kết thúc (tăng dần - gần nhất lên đầu)
+            // Ưu tiên hiện các kế hoạch gần hạn lên đầu
             filtered.sort((a, b) => {
                 if (!a["ngay-ket-thuc"]) return 1;
                 if (!b["ngay-ket-thuc"]) return -1;
@@ -661,6 +642,7 @@
         function renderPlanCard(plan) {
             const progress = Number(plan["tien-do"] || 0);
             const manager = findLecturer(plan["nguoi-phu-trach-ma-gv"]);
+            const creator = findLecturer(plan["created-by-ma-gv"]);
             const isPaused = plan["trang-thai"] === 'tam-dung';
             const warningBadge = getDeadlineWarning(plan["ngay-ket-thuc"], plan["trang-thai"]);
 
@@ -674,6 +656,7 @@
                             <div class="plan-meta">
                                 <span><i class="far fa-calendar-alt"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])} ${warningBadge}</span>
                                 <span><i class="fas fa-user-tie"></i> Phụ trách: ${escapeHtml(manager?.["ho-ten"] || "Chưa phân công")}</span>
+                                <span><i class="fas fa-user-edit"></i> Người tạo: ${escapeHtml(creator?.["ho-ten"] || "Hệ thống")}</span>
                                 ${statusBadge(plan["trang-thai"])}
                             </div>
                         </div>
@@ -732,18 +715,21 @@
             currentPlanId = planId;
             openModal("detail-modal");
             const container = document.getElementById("detail-content");
-            container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải danh sách công việc...</div>`;
+            container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>`;
 
             try {
                 const plan = plans.find(p => p.id === planId);
-                const { data: tasks, error } = await window.supabaseClient
-                    .from("cong-viec")
-                    .select("*")
-                    .eq("ke-hoach-id", planId);
+                
+                const [taskRes, evRes] = await Promise.all([
+                    window.supabaseClient.from("cong-viec").select("*").eq("ke-hoach-id", planId),
+                    window.supabaseClient.from("cong-viec-minh-chung").select("cong-viec-id, ma-giang-vien")
+                ]);
 
-                if (error) throw error;
+                if (taskRes.error) throw taskRes.error;
+                const tasks = taskRes.data || [];
+                const evidences = evRes.data || [];
 
-                const taskIds = (tasks || []).map(task => task.id);
+                const taskIds = tasks.map(task => task.id);
                 let assignments = [];
 
                 if (taskIds.length) {
@@ -762,13 +748,13 @@
                     return new Date(a["han-hoan-thanh"]) - new Date(b["han-hoan-thanh"]);
                 });
 
-                renderPlanDetail(plan, tasks || [], assignments);
+                renderPlanDetail(plan, tasks, assignments, evidences);
             } catch (error) {
                 container.innerHTML = `<div class="error-msg" style="display:block">${escapeHtml(error.message)}</div>`;
             }
         }
 
-        function renderPlanDetail(plan, tasks, assignments) {
+        function renderPlanDetail(plan, tasks, assignments, evidences) {
             const container = document.getElementById("detail-content");
             const canCreateTask = isAdmin();
             const warningBadge = getDeadlineWarning(plan["ngay-ket-thuc"], plan["trang-thai"]);
@@ -791,7 +777,7 @@
 
                 ${tasks.length ? `
                     <div class="task-list">
-                        ${tasks.map(task => renderTask(task, assignments)).join("")}
+                        ${tasks.map(task => renderTask(task, assignments, evidences)).join("")}
                     </div>
                 ` : `
                     <div class="empty">Kế hoạch này chưa có công việc chi tiết.</div>
@@ -799,20 +785,18 @@
             `;
         }
 
-        function renderTask(task, assignments) {
+        function renderTask(task, assignments, evidences) {
             const staff = assignments.filter(item => item["cong-viec-id"] === task.id);
-            const isAssignedToMe = staff.some(s => s["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
             const canEdit = canEditTask(task);
+            const creator = findLecturer(task["created-by-ma-gv"]);
+            const isPaused = task["trang-thai"] === 'tam-dung';
             const warningBadge = getDeadlineWarning(task["han-hoan-thanh"], task["trang-thai"]);
+
+            // Lọc minh chứng cho task này
+            const taskEvidences = evidences.filter(e => e['cong-viec-id'] === task.id);
 
             let processButtons = "";
             
-            if (task["trang-thai"] === "chua-thuc-hien" && isAssignedToMe) {
-                processButtons += `<button class="btn-custom btn-custom-small btn-custom-primary" onclick="updateTaskStatus('${task.id}', 'dang-thuc-hien')"><i class="fas fa-play"></i> Bắt đầu làm</button>`;
-            }
-            if (['chua-thuc-hien', 'dang-thuc-hien'].includes(task["trang-thai"]) && isAssignedToMe) {
-                processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openEvidenceModal('${task.id}')"><i class="fas fa-upload"></i> Gửi minh chứng</button>`;
-            }
             if (['cho-xac-nhan', 'hoan-thanh'].includes(task["trang-thai"])) {
                 processButtons += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
             }
@@ -830,6 +814,9 @@
                         <div class="task-actions">
                             ${canEdit ? `
                                 <button class="btn-custom btn-custom-small" onclick="editTask('${task.id}')" title="Sửa"><i class="fas fa-pen"></i></button>
+                                <button class="btn-custom btn-custom-small btn-custom-warning" onclick="togglePauseTask('${task.id}', '${task["trang-thai"]}')" title="${isPaused ? 'Tiếp tục' : 'Tạm dừng'}">
+                                    <i class="fas ${isPaused ? 'fa-play' : 'fa-pause'}"></i>
+                                </button>
                                 <button class="btn-custom btn-custom-small btn-custom-danger" onclick="deleteTask('${task.id}')" title="Xóa"><i class="fas fa-trash-alt"></i></button>
                             ` : ""}
                         </div>
@@ -841,10 +828,11 @@
                             <span class="status-badge badge-gray"><i class="far fa-clock"></i> Hạn: ${formatDate(task["han-hoan-thanh"])}</span>
                             ${warningBadge}
                         ` : ""}
+                        <span class="status-badge badge-gray"><i class="fas fa-user-edit"></i> Người tạo: ${escapeHtml(creator?.["ho-ten"] || "Hệ thống")}</span>
                     </div>
 
                     <div class="staff-list">
-                        ${staff.length ? staff.map(renderStaffChip).join("") : `<span class="status-badge badge-gray"><i class="fas fa-exclamation-circle"></i> Chưa phân công người làm</span>`}
+                        ${staff.length ? staff.map(s => renderStaffChip(s, task["trang-thai"], taskEvidences)).join("") : `<span class="status-badge badge-gray"><i class="fas fa-exclamation-circle"></i> Chưa phân công</span>`}
                     </div>
 
                     <div style="margin-top:12px; display: flex; gap: 7px; flex-wrap: wrap;">
@@ -859,13 +847,30 @@
             `;
         }
 
-        function renderStaffChip(item) {
+        function renderStaffChip(item, taskStatus, taskEvidences) {
             const gv = findLecturer(item["ma-giang-vien"]);
             const roleStr = item["vai-tro"] === "phu-trach" ? "Phụ trách" : "Phối hợp";
-            const iconStr = item["vai-tro"] === "phu-trach" ? '<i class="fas fa-user-tie" style="color:var(--primary);"></i>' : '<i class="fas fa-user"></i>';
+            const iconStr = item["vai-tro"] === "phu-trach" ? '<i class="fas fa-user-tie"></i>' : '<i class="fas fa-user"></i>';
+            
+            // Đánh dấu trạng thái gửi minh chứng
+            const hasEvidence = taskEvidences.some(e => e["ma-giang-vien"] === item["ma-giang-vien"]);
+            let statusHtml = "";
+            let bgClass = "";
+
+            if (hasEvidence) {
+                if (taskStatus === "hoan-thanh") {
+                    statusHtml = `<span class="staff-status-text completed"><i class="fas fa-check-circle"></i> Đã xong</span>`;
+                    bgClass = "is-completed";
+                } else {
+                    statusHtml = `<span class="staff-status-text evidence"><i class="fas fa-file-upload"></i> Đã gửi MC</span>`;
+                    bgClass = "has-evidence";
+                }
+            }
+
             return `
-                <span class="staff-chip">
+                <span class="staff-chip ${bgClass}">
                     ${iconStr} <span>${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])} <small class="text-muted">(${roleStr})</small></span>
+                    ${statusHtml}
                 </span>
             `;
         }
@@ -930,15 +935,36 @@
 
         async function togglePausePlan(planId, currentStatus) {
             const isPaused = currentStatus === 'tam-dung';
-            const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
+            
+            if (isPaused) {
+                if (!confirm("Bạn muốn tiếp tục kế hoạch này? Hệ thống sẽ tự động cập nhật lại trạng thái dựa trên tiến độ.")) return;
+                await syncPlanProgress(planId);
+            } else {
+                if (!confirm("Bạn muốn tạm dừng kế hoạch này? Toàn bộ tiến độ sẽ bị phong tỏa cho đến khi mở lại.")) return;
+                try {
+                    const { error } = await window.supabaseClient.from("ke-hoach").update({"trang-thai": "tam-dung"}).eq("id", planId);
+                    if (error) throw error;
+                    await loadPlans();
+                } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
+            }
+        }
+        
+        async function togglePauseTask(taskId, currentStatus) {
+            const isPaused = currentStatus === 'tam-dung';
+            if (!confirm(isPaused ? "Bạn muốn tiếp tục công việc này?" : "Bạn muốn tạm dừng công việc này?")) return;
+            
             try {
-                const { error } = await window.supabaseClient.from("ke-hoach").update({"trang-thai": newStatus}).eq("id", planId);
-                if (error) throw error;
-                await loadPlans();
-                
-                if (newStatus === 'dang-thuc-hien') {
-                    await syncPlanProgress(planId);
+                if (isPaused) {
+                    // Kiểm tra xem đã có minh chứng chưa để đẩy về cho-xac-nhan hay dang-thuc-hien
+                    const {data: evs} = await window.supabaseClient.from("cong-viec-minh-chung").select("id").eq("cong-viec-id", taskId);
+                    const newStatus = (evs && evs.length > 0) ? "cho-xac-nhan" : "dang-thuc-hien";
+                    const { error } = await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
+                    if (error) throw error;
+                } else {
+                    const { error } = await window.supabaseClient.from("cong-viec").update({"trang-thai": "tam-dung"}).eq("id", taskId);
+                    if (error) throw error;
                 }
+                await syncPlanProgress(currentPlanId);
             } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
         }
 
@@ -1017,6 +1043,7 @@
                 }
                 closeModal("task-modal");
                 await syncPlanProgress(planId);
+                showToast("Đã lưu công việc!");
             } catch (error) { showError(error.message); }
         });
 
@@ -1030,51 +1057,37 @@
         }
 
         /* =========================================================
-           CẬP NHẬT TRẠNG THÁI TASK VÀ MINH CHỨNG
+           DUYỆT
         ========================================================= */
-        async function updateTaskStatus(taskId, newStatus) {
+        async function approvePlan(planId) {
+            if (!isApprover()) return;
             try {
-                const { error } = await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
+                const { error } = await window.supabaseClient.from("ke-hoach").update({
+                    "trang-thai-duyet": "da-duyet",
+                    "duyet-boi-ma-gv": currentAccount["ma-giang-vien"],
+                    "duyet-luc": new Date().toISOString()
+                }).eq("id", planId);
                 if (error) throw error;
-                await syncPlanProgress(currentPlanId);
-            } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
+                await loadPlans();
+            } catch (error) { showError(error.message); }
         }
 
-        function openEvidenceModal(taskId) {
-            document.getElementById('evidence-form').reset();
-            document.getElementById('evidence-task-id').value = taskId;
-            document.getElementById('evidence-error').style.display = 'none';
-            openModal('evidence-modal');
-        }
-
-        async function submitEvidence(event) {
-            event.preventDefault();
-            const taskId = document.getElementById('evidence-task-id').value;
-            const title = document.getElementById('evidence-title').value.trim();
-            const url = document.getElementById('evidence-url').value.trim();
-            const desc = document.getElementById('evidence-desc').value.trim();
-
+        async function approveTaskCompletion(taskId) {
+            if (!isApprover()) return;
+            if (!confirm("Xác nhận công việc này đã HOÀN THÀNH? Hệ thống sẽ ghi nhận tiến độ.")) return;
             try {
-                const { error: evError } = await window.supabaseClient.from("cong-viec-minh-chung").insert({
-                    "cong-viec-id": taskId,
-                    "ma-giang-vien": currentAccount["ma-giang-vien"],
-                    "tieu-de": title,
-                    "mo-ta": desc || null,
-                    "url": url
-                });
-                if (evError) throw evError;
-
-                const { error: tsError } = await window.supabaseClient.from("cong-viec").update({"trang-thai": "cho-xac-nhan"}).eq("id", taskId);
-                if (tsError) throw tsError;
-
-                closeModal('evidence-modal');
+                const { error } = await window.supabaseClient.from("cong-viec").update({
+                    "trang-thai": "hoan-thanh"
+                }).eq("id", taskId);
+                if (error) throw error;
+                
                 await syncPlanProgress(currentPlanId);
-            } catch (error) {
-                document.getElementById('evidence-error').textContent = error.message;
-                document.getElementById('evidence-error').style.display = 'block';
-            }
+            } catch (error) { showError(error.message); }
         }
 
+        /* =========================================================
+           MINH CHỨNG & XEM LẠI
+        ========================================================= */
         async function viewEvidence(taskId) {
             openModal("view-evidence-modal");
             const container = document.getElementById("evidence-list-content");
@@ -1099,9 +1112,9 @@
                     return `
                         <div class="evidence-item">
                             <a href="${escapeHtml(item.url)}" target="_blank"><i class="fas fa-external-link-alt"></i> ${escapeHtml(item["tieu-de"])}</a>
-                            ${item["mo-ta"] ? `<div style="font-size:0.85rem; margin-top:5px;">${escapeHtml(item["mo-ta"])}</div>` : ''}
+                            ${item["mo-ta"] ? `<div style="font-size:0.85rem; margin-top:5px; color:var(--text-dark);">${escapeHtml(item["mo-ta"])}</div>` : ''}
                             <div class="evidence-meta">
-                                Gửi bởi: ${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])} lúc ${new Date(item["created-at"]).toLocaleString("vi-VN")}
+                                Gửi bởi: <b>${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])}</b> lúc ${new Date(item["created-at"]).toLocaleString("vi-VN")}
                             </div>
                         </div>
                     `;
@@ -1109,19 +1122,6 @@
             } catch (error) {
                 container.innerHTML = `<div class="error-msg" style="display:block">${escapeHtml(error.message)}</div>`;
             }
-        }
-
-        async function approveTaskCompletion(taskId) {
-            if (!isApprover()) return;
-            if (!confirm("Bạn xác nhận công việc này đã hoàn thành?")) return;
-            try {
-                const { error } = await window.supabaseClient.from("cong-viec").update({
-                    "trang-thai": "hoan-thanh"
-                }).eq("id", taskId);
-                if (error) throw error;
-                
-                await syncPlanProgress(currentPlanId);
-            } catch (error) { showError(error.message); }
         }
 
         /* =========================================================
@@ -1150,6 +1150,7 @@
                     }
                 }
 
+                // Nếu đang tạm dừng thì giữ nguyên trạng thái tạm dừng, chỉ update %
                 if (plan["trang-thai"] === "tam-dung") {
                     autoStatus = "tam-dung";
                 }
@@ -1218,7 +1219,7 @@
             currentTempStaff.forEach((item, index) => {
                 const gv = findLecturer(item["ma-giang-vien"]);
                 const roleStr = item["vai-tro"] === "phu-trach" ? "Phụ trách" : "Phối hợp";
-                const iconStr = item["vai-tro"] === "phu-trach" ? '<i class="fas fa-user-tie" style="color:var(--primary);"></i>' : '<i class="fas fa-user"></i>';
+                const iconStr = item["vai-tro"] === "phu-trach" ? '<i class="fas fa-user-tie"></i>' : '<i class="fas fa-user"></i>';
 
                 list.innerHTML += `
                     <div class="temp-staff-item">
@@ -1304,22 +1305,6 @@
         }
 
         /* =========================================================
-           APPROVAL (DUYỆT KẾ HOẠCH BỞI HEAD)
-        ========================================================= */
-        async function approvePlan(planId) {
-            if (!isApprover()) return;
-            try {
-                const { error } = await window.supabaseClient.from("ke-hoach").update({
-                    "trang-thai-duyet": "da-duyet",
-                    "duyet-boi-ma-gv": currentAccount["ma-giang-vien"],
-                    "duyet-luc": new Date().toISOString()
-                }).eq("id", planId);
-                if (error) throw error;
-                await loadPlans();
-            } catch (error) { showError(error.message); }
-        }
-
-        /* =========================================================
            SỰ KIỆN FILTER & MODAL
         ========================================================= */
         function setupEvents() {
@@ -1335,6 +1320,39 @@
 
         function openModal(id) { document.getElementById(id).classList.add("show"); }
         function closeModal(id) { document.getElementById(id).classList.remove("show"); }
+
+        /* =========================================================
+           HÀM TOAST THÔNG BÁO TỪ LAYOUT.JS
+        ========================================================= */
+        function showToast(message, isError = false) {
+            const container = document.getElementById("toastContainer") || document.body;
+            const toast = document.createElement("div");
+            toast.style.position = "fixed";
+            toast.style.top = "80px";
+            toast.style.right = "20px";
+            toast.style.zIndex = "9999";
+            toast.style.background = "white";
+            toast.style.borderLeft = isError ? "4px solid var(--accent)" : "4px solid #16a34a";
+            toast.style.padding = "15px 20px";
+            toast.style.borderRadius = "8px";
+            toast.style.boxShadow = "var(--shadow-hover)";
+            toast.style.display = "flex";
+            toast.style.alignItems = "center";
+            toast.style.gap = "10px";
+            toast.style.fontWeight = "600";
+            toast.style.color = "var(--text-dark)";
+            toast.style.transition = "0.3s";
+            toast.style.transform = "translateX(120%)";
+            
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}" style="color:${isError ? 'var(--accent)' : '#16a34a'}"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.style.transform = "translateX(0)");
+            setTimeout(() => { 
+                toast.style.transform = "translateX(120%)"; 
+                setTimeout(() => toast.remove(), 300); 
+            }, 3000);
+        }
 
         /* =========================================================
            HÀM RENDER BADGES FORMAT VÀ HIỂN THỊ
@@ -1360,7 +1378,7 @@
         function statusBadge(status) {
             const map = {
                 "chua-bat-dau": ["Chưa bắt đầu", "gray", "fa-circle"],
-                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
+                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-spinner"],
                 "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
                 "tam-dung": ["Tạm dừng", "yellow", "fa-pause-circle"]
             };
@@ -1371,7 +1389,7 @@
         function taskStatusBadge(status) {
             const map = {
                 "chua-thuc-hien": ["Chưa thực hiện", "gray", "fa-circle"],
-                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
+                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-spinner"],
                 "cho-xac-nhan": ["Chờ xác nhận", "orange", "fa-clock"],
                 "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"]
             };
