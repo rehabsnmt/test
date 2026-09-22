@@ -93,7 +93,7 @@
         if (!placeholder) return;
         placeholder.innerHTML = `
             <footer>
-                <p>© ${new Date().getFullYear()} Bộ môn Phục hồi chức năng - Đại học Y Dược Thành phố Hồ Chí Minh</p>
+                <p>© ${new Date().getFullYear()} Bộ môn Phục hồi chức năng. Mọi quyền được bảo lưu.</p>
             </footer>
         `;
     }
@@ -148,13 +148,17 @@
     }
 
     async function getProfile(userId) {
+        // ĐÃ CHUYỂN TỪ 'profiles' SANG 'tai-khoan-he-thong'
         const { data, error } = await supabaseClient
-            .from("profiles")
-            .select("id, full_name, email, role, status")
+            .from("tai-khoan-he-thong")
+            .select("*")
             .eq("id", userId)
             .maybeSingle();
 
-        if (error) return null;
+        if (error) {
+            console.error("Lỗi lấy thông tin hệ thống:", error);
+            return null;
+        }
         return data;
     }
 
@@ -171,8 +175,18 @@
             return;
         }
 
-        // Khi ĐÃ đăng nhập
-        const displayName = profile?.full_name || user.email || "Tài khoản";
+        // Khi ĐÃ đăng nhập (Tìm cột ho-ten hoặc email tương ứng)
+        let displayName = user.email || "Tài khoản";
+        
+        // Nếu trong bảng tai-khoan-he-thong có cột họ tên thì dùng nó
+        if (profile) {
+            if (profile['ho-ten']) {
+                displayName = profile['ho-ten'];
+            } else if (profile['email']) {
+                displayName = profile['email'];
+            }
+        }
+
         btnAuth.href = "./dashboard.html";
         btnAuth.innerHTML = `<i class="fas fa-user-circle" style="margin-right: 5px;"></i> ${displayName}`;
         
