@@ -27,6 +27,7 @@
         .page-title { margin: 0; font-size: 28px; font-weight: 700; }
         .page-subtitle { margin: 6px 0 0; color: var(--text-muted); font-size: 14px; }
 
+        /* Nút bấm Nền đặc (Solid Colors) */
         .btn-custom {
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
             border: none; background: #e2e8f0; color: #334155;
@@ -49,6 +50,7 @@
 
         .btn-custom-small { padding: 6px 12px; font-size: 0.8rem; }
 
+        /* Dashboard tương tác */
         .interactive-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .dashboard-card { 
             background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px; 
@@ -140,7 +142,7 @@
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group.full { grid-column: 1 / -1; }
         .form-label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
-
+        
         .task-list { display: grid; gap: 10px; }
         .task-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: left; }
         .task-top { display: flex; justify-content: space-between; gap: 12px; }
@@ -165,6 +167,7 @@
         .loading { padding: 30px; text-align: center; color: var(--text-muted); font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .error-msg { padding: 12px 14px; margin-bottom: 15px; background: #fee2e2; color: #991b1b; border-radius: 8px; display: none; font-size: 0.9rem; }
 
+        /* CHECKBOX LIST ĐA CHỌN GIẢNG VIÊN */
         .custom-multi-select { border: 1px solid var(--border); border-radius: 8px; max-height: 180px; overflow-y: auto; padding: 10px; background: white; }
         .checkbox-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .checkbox-item input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);}
@@ -217,6 +220,7 @@
 
             <div id="error-box" class="error-msg"></div>
 
+            <!-- DASHBOARD TRỰC QUAN -->
             <div class="interactive-dashboard">
                 <div class="dashboard-card active" data-filter="all" onclick="setDashboardFilter('all')">
                     <div class="db-icon"><i class="fas fa-layer-group"></i></div>
@@ -248,6 +252,7 @@
                 </div>
             </div>
 
+            <!-- THANH TÌM KIẾM VÀ LỌC TÊN -->
             <div class="search-bar-container">
                 <div class="search-bar-wrapper">
                     <i class="fas fa-search"></i>
@@ -447,12 +452,13 @@
         let lecturers = [];
         let expandedPlans = new Set(); 
 
+        let currentPlanId = null;
         let currentManageTaskId = null;
         let currentTempStaff = [];
         let planToDeleteId = null;
         let deleteRandomCode = "";
 
-        let activeFilter = 'all';
+        let activeFilter = 'all'; 
 
         document.addEventListener("DOMContentLoaded", () => {
             let attempts = 0;
@@ -525,9 +531,7 @@
         }
 
         async function loadPlans() {
-            const { data, error } = await window.supabaseClient
-                .from("tien-do-ke-hoach")
-                .select("*");
+            const { data, error } = await window.supabaseClient.from("tien-do-ke-hoach").select("*");
             if (error) throw error;
             plans = data || [];
             updateDashboardCounts();
@@ -615,7 +619,6 @@
 
             container.innerHTML = htmlStr;
 
-            // Khôi phục trạng thái mở rộng của các kế hoạch
             expandedPlans.forEach(id => {
                 togglePlanTasks(id, true);
             });
@@ -705,7 +708,6 @@
 
             const isVisible = container.style.display !== "none";
 
-            // Nếu đang mở và không phải do reload ngầm thì tắt đi
             if (isVisible && !isSilentReload) {
                 container.style.display = "none";
                 btn.innerHTML = `<i class="fas fa-chevron-down"></i> Xem công việc`;
@@ -877,7 +879,7 @@
         }
 
         /* =========================================================
-           CREATE/EDIT/SAVE PLAN
+           CREATE/EDIT/SAVE PLAN (SILENT RELOAD)
         ========================================================= */
         document.getElementById("btn-create-plan").addEventListener("click", () => {
             document.getElementById("plan-form").reset();
@@ -914,6 +916,8 @@
                 const btn = document.getElementById("btnSavePlan");
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
                 btn.disabled = true;
+                
+                closeModal("plan-modal");
 
                 if (id) {
                     if (currentAccount.role === "admin") payload["trang-thai-duyet"] = "cho-duyet";
@@ -927,8 +931,7 @@
                     if (error) throw error;
                 }
                 
-                closeModal("plan-modal");
-                await loadPlans(); // Đã bao gồm render lại danh sách, giữ nguyên trạng thái mở của thẻ nếu đang mở
+                await loadPlans();
 
                 btn.innerHTML = '<i class="fas fa-save"></i> Lưu kế hoạch';
                 btn.disabled = false;
@@ -939,12 +942,16 @@
             const isPaused = currentStatus === 'tam-dung';
             if (!confirm(isPaused ? "Bạn muốn tiếp tục kế hoạch này?" : "Bạn muốn tạm dừng kế hoạch này?")) return;
             
-            // Tiếp tục đưa thẳng về dang-thuc-hien thay vì check tiến độ phức tạp
             const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
             try {
                 const { error } = await window.supabaseClient.from("ke-hoach").update({"trang-thai": newStatus}).eq("id", planId);
                 if (error) throw error;
-                await loadPlans();
+                
+                if (isPaused) {
+                    await syncPlanProgress(planId);
+                } else {
+                    await loadPlans();
+                }
             } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
         }
 
@@ -970,11 +977,12 @@
                 const btn = document.getElementById("btnConfirmDeletePlan");
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Xóa...';
                 btn.disabled = true;
+                
+                closeModal("delete-plan-modal");
 
                 const { error } = await window.supabaseClient.from("ke-hoach").delete().eq("id", planToDeleteId);
                 if (error) throw error;
                 
-                closeModal("delete-plan-modal");
                 expandedPlans.delete(planToDeleteId);
                 await loadPlans();
 
@@ -987,6 +995,7 @@
            CREATE/EDIT/SAVE/DELETE TASK (SILENT RELOAD TRONG ACCORDION)
         ========================================================= */
         function openCreateTask(planId) {
+            currentPlanId = planId; 
             document.getElementById("task-form").reset();
             document.getElementById("task-id").value = "";
             document.getElementById("task-plan-id").value = planId;
@@ -998,6 +1007,7 @@
             const { data: task, error } = await window.supabaseClient.from("cong-viec").select("*").eq("id", taskId).single();
             if (error) { showError(error.message); return; }
 
+            currentPlanId = planId;
             document.getElementById("task-id").value = task.id;
             document.getElementById("task-plan-id").value = planId || "";
             document.getElementById("task-title").value = task["tieu-de"] || "";
@@ -1024,6 +1034,8 @@
                 const btn = document.getElementById("btnSaveTask");
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
                 btn.disabled = true;
+                
+                closeModal("task-modal");
 
                 if (id) {
                     const { error } = await window.supabaseClient.from("cong-viec").update(payload).eq("id", id);
@@ -1035,7 +1047,6 @@
                     if (error) throw error;
                 }
                 
-                closeModal("task-modal");
                 await syncPlanProgress(planId); 
 
                 btn.innerHTML = '<i class="fas fa-save"></i> Lưu công việc';
@@ -1057,7 +1068,6 @@
             if (!confirm(isPaused ? "Bạn muốn tiếp tục công việc này?" : "Bạn muốn tạm dừng công việc này?")) return;
             
             try {
-                // Tiếp tục đưa thẳng về dang-thuc-hien
                 const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
                 const { error } = await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
                 if (error) throw error;
@@ -1153,7 +1163,6 @@
                     if (completed === total) {
                         autoStatus = "hoan-thanh";
                     } else {
-                        // Nếu có ít nhất 1 task đang làm, chờ xác nhận, hoặc hoàn thành thì kế hoạch chuyển sang Đang thực hiện
                         const hasStarted = tasks.some(t => ["dang-thuc-hien", "cho-xac-nhan", "hoan-thanh"].includes(t["trang-thai"]));
                         if (hasStarted) autoStatus = "dang-thuc-hien";
                     }
@@ -1169,19 +1178,19 @@
                 }).eq("id", planId);
                 if (pErr) throw pErr;
 
-                await loadPlans(); // Đã chứa logic khôi phục accordion expanded
+                await loadPlans();
                 
             } catch (err) {
                 console.error("Lỗi đồng bộ tiến độ: ", err);
             }
         }
 
-
         /* =========================================================
            PHÂN CÔNG NHÂN SỰ VÀO CÔNG VIỆC (HỖ TRỢ CHỌN NHIỀU CHECKBOX)
         ========================================================= */
         async function manageStaff(taskId, planId) {
             currentManageTaskId = taskId;
+            currentPlanId = planId;
             
             const { data: existing, error } = await window.supabaseClient.from("nhan-su-cong-viec").select("*").eq("cong-viec-id", taskId);
             if (error) { showError(error.message); return; }
@@ -1195,9 +1204,6 @@
             renderStaffCheckboxes();
             renderTempStaff();
             openModal("staff-modal");
-            
-            // Gán event listener đặc biệt để biết cần reload Plan nào
-            document.getElementById("btnSaveStaff").onclick = (e) => saveStaffAssignment(e, planId);
         }
 
         function renderStaffCheckboxes() {
@@ -1288,7 +1294,7 @@
             renderTempStaff();
         }
 
-        async function saveStaffAssignment(event, planId) {
+        async function saveStaffAssignment(event) {
             event.preventDefault();
             const btn = document.getElementById("btnSaveStaff");
             const oldText = btn.innerHTML;
@@ -1296,6 +1302,8 @@
             try {
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
                 btn.disabled = true;
+
+                closeModal("staff-modal");
 
                 const { error: deleteError } = await window.supabaseClient.from("nhan-su-cong-viec").delete().eq("cong-viec-id", currentManageTaskId);
                 if (deleteError) throw deleteError;
@@ -1305,8 +1313,7 @@
                     if (insertError) throw insertError;
                 }
                 
-                closeModal("staff-modal");
-                await syncPlanProgress(planId);
+                await syncPlanProgress(currentPlanId);
             } catch (err) {
                 showError("Cập nhật nhân sự thất bại: " + err.message);
             } finally {
