@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="description" content="Quản lý Đề xuất Phân công - Bộ môn Phục hồi chức năng.">
 
+    <!-- Content Security Policy: Đã cấp quyền tải Font chữ từ Google -->
     <meta http-equiv="Content-Security-Policy" content="
             default-src 'self';
             connect-src 'self' https://*.supabase.co;
             img-src 'self' data: https://*.supabase.co;
-            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com;
             script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-            font-src 'self' https://cdnjs.cloudflare.com;
+            font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
         ">
 
     <title>Đề xuất Phân công - Bộ môn Phục hồi chức năng</title>
@@ -1446,10 +1447,6 @@
                 practiceSessions.max = remainTH; practiceSessions.value = assignment["so-buoi-thuc-hanh"];
                 hintLT.textContent = `Tối đa: ${remainLT}`; hintTH.textContent = `Tối đa: ${remainTH}`;
 
-                // Nếu là đang sửa bản chính thức (isOfficialParam = true), ta chủ động chuyển nó thành đề xuất chờ duyệt mới.
-                // Thực tế trong Supabase, khi Update trạng thái của row bên de-xuat-phan-cong về "Chờ duyệt",
-                // UI sẽ hiển thị lại nó thành màu vàng chờ duyệt.
-                
                 assignModal.style.zIndex = "10001";
                 assignModal.classList.remove("hidden");
             };
