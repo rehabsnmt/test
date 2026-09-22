@@ -49,25 +49,40 @@
 
         .btn-custom-small { padding: 6px 10px; font-size: 13px; }
 
-        .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        .search-box { flex: 1; min-width: 200px; }
+        /* DASHBOARD TƯƠNG TÁC THAY CHO BỘ LỌC */
+        .interactive-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .dashboard-card { 
+            background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px; 
+            display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; user-select: none;
+        }
+        .dashboard-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--primary-light); }
+        .dashboard-card.active { border: 2px solid var(--primary); background: var(--primary-light); }
+        .db-icon { font-size: 2.2rem; color: var(--text-muted); }
+        .db-icon.text-warning { color: #d97706; }
+        .db-icon.text-primary { color: var(--primary); }
+        .db-icon.text-success { color: #15803d; }
+        .db-info { display: flex; flex-direction: column; }
+        .db-title { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+        .db-value { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
+        
+        .search-bar-container { position: relative; margin-bottom: 20px; display: flex; gap: 10px;}
+        .search-bar-wrapper { position: relative; flex: 1;}
+        .search-bar-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .search-bar-wrapper input { padding-left: 42px; }
 
         .custom-input, .custom-select, .custom-textarea {
             width: 100%; border: 1px solid var(--border); border-radius: 8px;
             background: white; padding: 10px 12px; outline: none; font-family: inherit;
-            font-size: 0.9rem; color: var(--text-dark);
+            font-size: 0.95rem; color: var(--text-dark);
         }
         .custom-input:focus, .custom-select:focus, .custom-textarea:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.1);
+            border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
         }
-        .custom-select { min-width: 160px; }
 
         .status-section-title {
             font-size: 1.15rem; font-weight: 700; margin: 10px 0 15px 0; padding-bottom: 8px;
             display: flex; align-items: center; gap: 8px;
         }
-        .status-section-title.pending { color: #b45309; border-bottom: 2px solid #fef3c7; }
-        .status-section-title.approved { color: #15803d; border-bottom: 2px solid #dcfce7; margin-top: 30px; }
 
         .plan-list { display: grid; gap: 14px; }
         .plan-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px; transition: box-shadow .15s ease; }
@@ -95,10 +110,13 @@
             display: inline-flex; align-items: center; justify-content: center; gap: 5px;
             border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 600; white-space: nowrap;
         }
+
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
         .badge-blue { background: var(--primary-light); color: var(--primary-hover); }
         .badge-green { background: #dcfce7; color: #15803d; }
         .badge-yellow { background: #fef3c7; color: #a16207; }
+        .badge-red { background: #fee2e2; color: #b91c1c; }
+        .badge-orange { background: #ffedd5; color: #c2410c; }
 
         .custom-modal-backdrop {
             position: fixed; inset: 0; background: rgba(15, 23, 42, .6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
@@ -140,6 +158,12 @@
         .loading { padding: 30px; text-align: center; color: var(--text-muted); font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .error-msg { padding: 12px 14px; margin-bottom: 15px; background: #fee2e2; color: #991b1b; border-radius: 8px; display: none; font-size: 0.9rem; }
 
+        /* CHECKBOX LIST ĐA CHỌN GIẢNG VIÊN */
+        .custom-multi-select { border: 1px solid var(--border); border-radius: 8px; max-height: 180px; overflow-y: auto; padding: 10px; background: white; }
+        .checkbox-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .checkbox-item input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);}
+        .checkbox-item label { font-size: 0.95rem; cursor: pointer; flex: 1; color: var(--text-dark); user-select: none;}
+
         .temp-staff-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px dashed var(--border); font-size: 0.9rem; }
         .temp-staff-item:last-child { border-bottom: none; }
         
@@ -161,9 +185,11 @@
             .form-group.full { grid-column: auto; }
             .task-top { flex-direction: column; }
             .task-actions { justify-content: flex-start; margin-top: 10px;}
-            .toolbar { flex-direction: column; }
-            .search-box, .custom-select { width: 100%; min-width: 0; }
+            .search-bar-container { flex-direction: column; }
             .detail-header { flex-direction: column; align-items: flex-start; }
+            .interactive-dashboard { grid-template-columns: 1fr 1fr; }
+            .db-icon { font-size: 1.8rem; }
+            .db-value { font-size: 1.4rem; }
         }
     </style>
 </head>
@@ -186,24 +212,46 @@
 
             <div id="error-box" class="error-msg"></div>
 
-            <div class="toolbar">
-                <div class="search-box">
-                    <input id="search-input" class="custom-input" type="search" placeholder="Tìm kiếm kế hoạch...">
+            <!-- DASHBOARD TRỰC QUAN -->
+            <div class="interactive-dashboard">
+                <div class="dashboard-card active" data-filter="all" onclick="setDashboardFilter('all')">
+                    <div class="db-icon"><i class="fas fa-layer-group"></i></div>
+                    <div class="db-info">
+                        <div class="db-title">Tất cả</div>
+                        <div class="db-value" id="count-all">0</div>
+                    </div>
                 </div>
-                <select id="manager-filter" class="custom-select">
-                    <option value="">Tất cả người phụ trách</option>
-                </select>
-                <select id="status-filter" class="custom-select">
-                    <option value="">Tất cả trạng thái tiến độ</option>
-                    <option value="chua-bat-dau">Chưa bắt đầu</option>
-                    <option value="dang-thuc-hien">Đang thực hiện</option>
-                    <option value="hoan-thanh">Hoàn thành</option>
-                    <option value="tam-dung">Tạm dừng</option>
-                </select>
-                <select id="approval-filter" class="custom-select">
-                    <option value="">Tất cả phê duyệt</option>
-                    <option value="cho-duyet">Chờ duyệt</option>
-                    <option value="da-duyet">Đã duyệt</option>
+                <div class="dashboard-card" data-filter="cho-duyet" onclick="setDashboardFilter('cho-duyet')">
+                    <div class="db-icon text-warning"><i class="fas fa-hourglass-half"></i></div>
+                    <div class="db-info">
+                        <div class="db-title">Chờ duyệt</div>
+                        <div class="db-value" id="count-pending">0</div>
+                    </div>
+                </div>
+                <div class="dashboard-card" data-filter="dang-thuc-hien" onclick="setDashboardFilter('dang-thuc-hien')">
+                    <div class="db-icon text-primary"><i class="fas fa-play-circle"></i></div>
+                    <div class="db-info">
+                        <div class="db-title">Đang làm</div>
+                        <div class="db-value" id="count-active">0</div>
+                    </div>
+                </div>
+                <div class="dashboard-card" data-filter="hoan-thanh" onclick="setDashboardFilter('hoan-thanh')">
+                    <div class="db-icon text-success"><i class="fas fa-check-circle"></i></div>
+                    <div class="db-info">
+                        <div class="db-title">Hoàn thành</div>
+                        <div class="db-value" id="count-completed">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THANH TÌM KIẾM VÀ LỌC TÊN -->
+            <div class="search-bar-container">
+                <div class="search-bar-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input id="search-input" class="custom-input" type="search" placeholder="Tìm kiếm tên kế hoạch, mô tả...">
+                </div>
+                <select id="manager-filter" class="custom-select" style="max-width: 250px;">
+                    <option value="">Lọc theo người phụ trách</option>
                 </select>
             </div>
 
@@ -236,16 +284,16 @@
                             <textarea id="plan-description" class="custom-textarea" rows="4"></textarea>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Ngày bắt đầu</label>
-                            <input id="plan-start" class="custom-input" type="date">
+                            <label class="form-label">Ngày bắt đầu <span style="color:var(--accent)">*</span></label>
+                            <input id="plan-start" class="custom-input" type="date" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Ngày kết thúc</label>
-                            <input id="plan-end" class="custom-input" type="date">
+                            <label class="form-label">Ngày kết thúc <span style="color:var(--accent)">*</span></label>
+                            <input id="plan-end" class="custom-input" type="date" required>
                         </div>
                         <div class="form-group full">
-                            <label class="form-label">Người phụ trách</label>
-                            <select id="plan-manager" class="custom-select">
+                            <label class="form-label">Người phụ trách <span style="color:var(--accent)">*</span></label>
+                            <select id="plan-manager" class="custom-select" required>
                                 <option value="">-- Chọn người phụ trách --</option>
                             </select>
                         </div>
@@ -293,12 +341,12 @@
                             <textarea id="task-description" class="custom-textarea" rows="4"></textarea>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Ngày bắt đầu</label>
-                            <input id="task-start" class="custom-input" type="date">
+                            <label class="form-label">Ngày bắt đầu <span style="color:var(--accent)">*</span></label>
+                            <input id="task-start" class="custom-input" type="date" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Hạn hoàn thành</label>
-                            <input id="task-deadline" class="custom-input" type="date">
+                            <label class="form-label">Hạn hoàn thành <span style="color:var(--accent)">*</span></label>
+                            <input id="task-deadline" class="custom-input" type="date" required>
                         </div>
                     </div>
                 </div>
@@ -317,41 +365,48 @@
                 <h2 class="modal-title">Phân công Nhân sự</h2>
                 <button class="modal-close" onclick="closeModal('staff-modal')">×</button>
             </div>
-            <form id="staff-form" onsubmit="saveStaffAssignment(event)">
-                <div class="modal-body">
-                    <div style="display: flex; gap: 10px; align-items: flex-end; margin-bottom: 1rem; flex-wrap: wrap;">
-                        <div class="form-group" style="flex: 2; min-width: 200px;">
-                            <label class="form-label">Giảng viên</label>
-                            <select id="staff-gv-select" class="custom-select">
-                                <option value="">-- Chọn Giảng viên --</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="flex: 1; min-width: 120px;">
-                            <label class="form-label">Vai trò</label>
-                            <select id="staff-role-select" class="custom-select">
-                                <option value="phu-trach">Phụ trách</option>
-                                <option value="phoi-hop" selected>Phối hợp</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="flex: 0 0 auto;">
-                            <button type="button" class="btn-custom btn-custom-success" style="height: 40px;" onclick="addTempStaff()">
-                                <i class="fas fa-plus"></i> Thêm
-                            </button>
-                        </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 1rem; flex-direction: column;">
+                    
+                    <div class="form-group" style="width: 100%;">
+                        <label class="form-label">Vai trò phân công</label>
+                        <select id="staff-role-select" class="custom-select">
+                            <option value="phu-trach">Phụ trách (Chỉ 1 người)</option>
+                            <option value="phoi-hop" selected>Phối hợp (Nhiều người)</option>
+                        </select>
                     </div>
 
-                    <div style="background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
-                        <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; color: var(--text-dark);">Danh sách nhân sự thực hiện:</div>
-                        <div id="temp-staff-list">
-                            <!-- JS tự render danh sách tạm -->
+                    <div class="form-group" style="width: 100%;">
+                        <label class="form-label">Chọn Giảng viên</label>
+                        <div class="custom-multi-select" id="staff-multi-select">
+                            <div class="checkbox-item" style="border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px; font-weight: bold;">
+                                <input type="checkbox" id="selectAllStaff" onclick="toggleSelectAllStaff(this)">
+                                <label for="selectAllStaff">Chọn tất cả</label>
+                            </div>
+                            <div id="staff-checkbox-list">
+                                <!-- JS tự render checkbox -->
+                            </div>
                         </div>
                     </div>
+                    
+                    <div style="width: 100%; text-align: right; margin-bottom: 10px;">
+                        <button type="button" class="btn-custom btn-custom-success" onclick="addTempStaff()">
+                            <i class="fas fa-plus"></i> Đưa vào danh sách
+                        </button>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-custom" onclick="closeModal('staff-modal')">Đóng</button>
-                    <button type="submit" class="btn-custom btn-custom-primary" id="btnSaveStaff"><i class="fas fa-save"></i> Lưu phân công</button>
+
+                <div style="background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
+                    <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; color: var(--text-dark);">Danh sách nhân sự sẽ thực hiện:</div>
+                    <div id="temp-staff-list">
+                        <!-- JS tự render danh sách tạm -->
+                    </div>
                 </div>
-            </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-custom" onclick="closeModal('staff-modal')">Đóng</button>
+                <button type="button" class="btn-custom btn-custom-primary" id="btnSaveStaff" onclick="saveStaffAssignment(event)"><i class="fas fa-save"></i> Lưu phân công</button>
+            </div>
         </div>
     </div>
 
@@ -381,7 +436,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-custom" onclick="closeModal('evidence-modal')">Hủy</button>
-                    <button type="submit" class="btn-custom btn-custom-primary"><i class="fas fa-paper-plane"></i> Gửi duyệt</button>
+                    <button type="submit" class="btn-custom btn-custom-primary"><i class="fas fa-paper-plane"></i> Gửi xác nhận</button>
                 </div>
             </form>
         </div>
@@ -439,6 +494,8 @@
         let planToDeleteId = null;
         let deleteRandomCode = "";
 
+        let activeFilter = 'all'; // all | cho-duyet | dang-thuc-hien | hoan-thanh
+
         document.addEventListener("DOMContentLoaded", () => {
             let attempts = 0;
             const timer = setInterval(() => {
@@ -461,7 +518,7 @@
                 setupEvents();
             } catch (error) {
                 showError(error.message);
-                document.getElementById('plan-list-container').innerHTML = `<div class="empty text-danger">Bạn không có quyền truy cập hoặc lỗi kết nối.</div>`;
+                document.getElementById('plan-list-container').innerHTML = `<div class="empty" style="color:var(--accent);">Bạn không có quyền truy cập hoặc lỗi kết nối.</div>`;
             }
         }
 
@@ -498,17 +555,14 @@
 
             const select = document.getElementById("plan-manager");
             const filterSelect = document.getElementById("manager-filter");
-            const staffSelect = document.getElementById("staff-gv-select");
             
             select.innerHTML = `<option value="">-- Chọn người phụ trách --</option>`;
-            filterSelect.innerHTML = `<option value="">Tất cả người phụ trách</option>`;
-            staffSelect.innerHTML = `<option value="">-- Chọn Giảng viên --</option>`;
+            filterSelect.innerHTML = `<option value="">Lọc theo người phụ trách</option>`;
             
             lecturers.forEach(gv => {
                 const name = gv["ho-ten"] ? gv["ho-ten"] : gv["ma-giang-vien"];
                 select.appendChild(new Option(name, gv["ma-giang-vien"]));
                 filterSelect.appendChild(new Option(name, gv["ma-giang-vien"]));
-                staffSelect.appendChild(new Option(name, gv["ma-giang-vien"]));
             });
         }
 
@@ -518,7 +572,22 @@
                 .select("*");
             if (error) throw error;
             plans = data || [];
+            updateDashboardCounts();
             renderPlans();
+        }
+
+        function setDashboardFilter(type) {
+            activeFilter = type;
+            document.querySelectorAll('.dashboard-card').forEach(c => c.classList.remove('active'));
+            document.querySelector(`.dashboard-card[data-filter="${type}"]`).classList.add('active');
+            renderPlans();
+        }
+
+        function updateDashboardCounts() {
+            document.getElementById('count-all').textContent = plans.length;
+            document.getElementById('count-pending').textContent = plans.filter(p => p["trang-thai-duyet"] === "cho-duyet").length;
+            document.getElementById('count-active').textContent = plans.filter(p => p["trang-thai"] === "dang-thuc-hien").length;
+            document.getElementById('count-completed').textContent = plans.filter(p => p["trang-thai"] === "hoan-thanh").length;
         }
 
         function getDeadlineWarning(dateStr, status) {
@@ -533,33 +602,34 @@
             if (diffDays < 0) return `<span class="status-badge badge-red"><i class="fas fa-exclamation-triangle"></i> Quá hạn ${Math.abs(diffDays)} ngày</span>`;
             if (diffDays <= 1) return `<span class="status-badge badge-red"><i class="fas fa-exclamation-circle"></i> Còn 1 ngày</span>`;
             if (diffDays <= 3) return `<span class="status-badge badge-orange"><i class="fas fa-exclamation-circle"></i> Còn ${diffDays} ngày</span>`;
-            if (diffDays <= 7) return `<span class="status-badge badge-yellow"><i class="fas fa-clock"></i> Còn ${diffDays} ngày</span>`;
-            if (diffDays <= 10) return `<span class="status-badge badge-blue"><i class="fas fa-clock"></i> Còn ${diffDays} ngày</span>`;
+            if (diffDays <= 7) return `<span class="status-badge badge-yellow"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
+            if (diffDays <= 10) return `<span class="status-badge badge-blue"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
             return "";
         }
 
         function renderPlans() {
             const container = document.getElementById("plan-list-container");
             const keyword = document.getElementById("search-input").value.trim().toLowerCase();
-            const status = document.getElementById("status-filter").value;
-            const approval = document.getElementById("approval-filter").value;
             const managerFilter = document.getElementById("manager-filter").value;
 
             let filtered = plans.filter(plan => {
-                const matchKeyword = !keyword || 
-                    String(plan.ten || "").toLowerCase().includes(keyword) || 
-                    String(plan["mo-ta"] || "").toLowerCase().includes(keyword);
-                const matchStatus = !status || plan["trang-thai"] === status;
-                const matchApproval = !approval || plan["trang-thai-duyet"] === approval;
+                const matchKeyword = !keyword || String(plan.ten || "").toLowerCase().includes(keyword) || String(plan["mo-ta"] || "").toLowerCase().includes(keyword);
                 const matchManager = !managerFilter || plan["nguoi-phu-trach-ma-gv"] === managerFilter;
-                return matchKeyword && matchStatus && matchApproval && matchManager;
+                
+                let matchType = true;
+                if (activeFilter === 'cho-duyet') matchType = plan["trang-thai-duyet"] === "cho-duyet";
+                if (activeFilter === 'dang-thuc-hien') matchType = plan["trang-thai"] === "dang-thuc-hien";
+                if (activeFilter === 'hoan-thanh') matchType = plan["trang-thai"] === "hoan-thanh";
+                
+                return matchKeyword && matchManager && matchType;
             });
 
             if (!filtered.length) {
-                container.innerHTML = `<div class="empty">Không có kế hoạch phù hợp.</div>`;
+                container.innerHTML = `<div class="empty">Không có kế hoạch phù hợp với bộ lọc.</div>`;
                 return;
             }
 
+            // Sắp xếp kế hoạch theo ngày kết thúc (tăng dần - gần nhất lên đầu)
             filtered.sort((a, b) => {
                 if (!a["ngay-ket-thuc"]) return 1;
                 if (!b["ngay-ket-thuc"]) return -1;
@@ -591,7 +661,6 @@
         function renderPlanCard(plan) {
             const progress = Number(plan["tien-do"] || 0);
             const manager = findLecturer(plan["nguoi-phu-trach-ma-gv"]);
-            const creator = findLecturer(plan["created-by-ma-gv"]);
             const isPaused = plan["trang-thai"] === 'tam-dung';
             const warningBadge = getDeadlineWarning(plan["ngay-ket-thuc"], plan["trang-thai"]);
 
@@ -605,7 +674,6 @@
                             <div class="plan-meta">
                                 <span><i class="far fa-calendar-alt"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])} ${warningBadge}</span>
                                 <span><i class="fas fa-user-tie"></i> Phụ trách: ${escapeHtml(manager?.["ho-ten"] || "Chưa phân công")}</span>
-                                <span><i class="fas fa-user-edit"></i> Người tạo: ${escapeHtml(creator?.["ho-ten"] || "Hệ thống")}</span>
                                 ${statusBadge(plan["trang-thai"])}
                             </div>
                         </div>
@@ -687,6 +755,7 @@
                     assignments = data || [];
                 }
 
+                // Sắp xếp Tasks theo Hạn hoàn thành
                 tasks.sort((a, b) => {
                     if (!a["han-hoan-thanh"]) return 1;
                     if (!b["han-hoan-thanh"]) return -1;
@@ -734,46 +803,21 @@
             const staff = assignments.filter(item => item["cong-viec-id"] === task.id);
             const isAssignedToMe = staff.some(s => s["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
             const canEdit = canEditTask(task);
-            const creator = findLecturer(task["created-by-ma-gv"]);
             const warningBadge = getDeadlineWarning(task["han-hoan-thanh"], task["trang-thai"]);
 
-            // Các nút liên quan đến tiến trình (GV và Head)
             let processButtons = "";
             
-            // 1. GV: Nút "Bắt đầu làm"
             if (task["trang-thai"] === "chua-thuc-hien" && isAssignedToMe) {
-                processButtons += `
-                    <button class="btn-custom btn-custom-small btn-custom-primary" onclick="updateTaskStatus('${task.id}', 'dang-thuc-hien')">
-                        <i class="fas fa-play"></i> Bắt đầu làm
-                    </button>
-                `;
+                processButtons += `<button class="btn-custom btn-custom-small btn-custom-primary" onclick="updateTaskStatus('${task.id}', 'dang-thuc-hien')"><i class="fas fa-play"></i> Bắt đầu làm</button>`;
             }
-            
-            // 2. GV: Nút "Gửi minh chứng"
             if (['chua-thuc-hien', 'dang-thuc-hien'].includes(task["trang-thai"]) && isAssignedToMe) {
-                processButtons += `
-                    <button class="btn-custom btn-custom-small btn-custom-success" onclick="openEvidenceModal('${task.id}')">
-                        <i class="fas fa-upload"></i> Gửi minh chứng
-                    </button>
-                `;
+                processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openEvidenceModal('${task.id}')"><i class="fas fa-upload"></i> Gửi minh chứng</button>`;
             }
-
-            // 3. Xem minh chứng (Ai cũng xem được nếu có trạng thái từ chờ xác nhận trở đi)
             if (['cho-xac-nhan', 'hoan-thanh'].includes(task["trang-thai"])) {
-                processButtons += `
-                    <button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')">
-                        <i class="fas fa-link"></i> Xem minh chứng
-                    </button>
-                `;
+                processButtons += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
             }
-
-            // 4. Duyệt hoàn thành (Head/Superadmin)
             if (task["trang-thai"] === "cho-xac-nhan" && isApprover()) {
-                processButtons += `
-                    <button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTaskCompletion('${task.id}')">
-                        <i class="fas fa-check-double"></i> Xác nhận hoàn thành
-                    </button>
-                `;
+                processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTaskCompletion('${task.id}')"><i class="fas fa-check-double"></i> Duyệt hoàn thành</button>`;
             }
 
             return `
@@ -797,7 +841,6 @@
                             <span class="status-badge badge-gray"><i class="far fa-clock"></i> Hạn: ${formatDate(task["han-hoan-thanh"])}</span>
                             ${warningBadge}
                         ` : ""}
-                        <span class="status-badge badge-gray"><i class="fas fa-user-edit"></i> Người tạo: ${escapeHtml(creator?.["ho-ten"] || "Hệ thống")}</span>
                     </div>
 
                     <div class="staff-list">
@@ -807,7 +850,7 @@
                     <div style="margin-top:12px; display: flex; gap: 7px; flex-wrap: wrap;">
                         ${isAdmin() ? `
                             <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}')">
-                                <i class="fas fa-user-plus"></i> Gán Nhân sự
+                                <i class="fas fa-user-plus"></i> Phân công Nhân sự
                             </button>
                         ` : ""}
                         ${processButtons}
@@ -893,7 +936,6 @@
                 if (error) throw error;
                 await loadPlans();
                 
-                // Đồng bộ lại status dựa trên tasks nếu nhấn 'Tiếp tục'
                 if (newStatus === 'dang-thuc-hien') {
                     await syncPlanProgress(planId);
                 }
@@ -1013,7 +1055,6 @@
             const desc = document.getElementById('evidence-desc').value.trim();
 
             try {
-                // 1. Thêm vào bảng minh chứng
                 const { error: evError } = await window.supabaseClient.from("cong-viec-minh-chung").insert({
                     "cong-viec-id": taskId,
                     "ma-giang-vien": currentAccount["ma-giang-vien"],
@@ -1023,7 +1064,6 @@
                 });
                 if (evError) throw evError;
 
-                // 2. Chuyển task sang Chờ xác nhận
                 const { error: tsError } = await window.supabaseClient.from("cong-viec").update({"trang-thai": "cho-xac-nhan"}).eq("id", taskId);
                 if (tsError) throw tsError;
 
@@ -1085,11 +1125,10 @@
         }
 
         /* =========================================================
-           TÍNH TOÁN VÀ ĐỒNG BỘ TIẾN ĐỘ KẾ HOẠCH (POLYFILL CHO BACKEND)
+           TÍNH TOÁN VÀ ĐỒNG BỘ TIẾN ĐỘ KẾ HOẠCH
         ========================================================= */
         async function syncPlanProgress(planId) {
             try {
-                // 1. Lấy tất cả task của plan
                 const { data: tasks, error: tErr } = await window.supabaseClient.from("cong-viec").select("trang-thai").eq("ke-hoach-id", planId);
                 if (tErr) throw tErr;
 
@@ -1111,12 +1150,10 @@
                     }
                 }
 
-                // Nếu đang tạm dừng thì giữ nguyên trạng thái tạm dừng, chỉ update %
                 if (plan["trang-thai"] === "tam-dung") {
                     autoStatus = "tam-dung";
                 }
 
-                // Cập nhật Database
                 const { error: pErr } = await window.supabaseClient.from("ke-hoach").update({
                     "tien-do": progress,
                     "trang-thai": autoStatus
@@ -1133,7 +1170,7 @@
 
 
         /* =========================================================
-           GÁN NHÂN SỰ VÀO CÔNG VIỆC
+           GÁN NHÂN SỰ VÀO CÔNG VIỆC (HỖ TRỢ CHỌN NHIỀU CHECKBOX)
         ========================================================= */
         async function manageStaff(taskId) {
             currentManageTaskId = taskId;
@@ -1142,11 +1179,33 @@
             if (error) { showError(error.message); return; }
 
             currentTempStaff = existing || [];
-            document.getElementById("staff-gv-select").value = "";
+            
             document.getElementById("staff-role-select").value = "phoi-hop";
+            const selectAllBtn = document.getElementById("selectAllStaff");
+            if(selectAllBtn) selectAllBtn.checked = false;
 
+            renderStaffCheckboxes();
             renderTempStaff();
             openModal("staff-modal");
+        }
+
+        function renderStaffCheckboxes() {
+            const list = document.getElementById("staff-checkbox-list");
+            list.innerHTML = "";
+            lecturers.forEach(gv => {
+                const name = gv["ho-ten"] ? gv["ho-ten"] : gv["ma-giang-vien"];
+                list.innerHTML += `
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chk-${gv["ma-giang-vien"]}" value="${gv["ma-giang-vien"]}" class="staff-chk">
+                        <label for="chk-${gv["ma-giang-vien"]}">${name}</label>
+                    </div>
+                `;
+            });
+        }
+
+        function toggleSelectAllStaff(source) {
+            const checkboxes = document.querySelectorAll(".staff-chk");
+            checkboxes.forEach(chk => chk.checked = source.checked);
         }
 
         function renderTempStaff() {
@@ -1173,29 +1232,44 @@
         }
 
         function addTempStaff() {
-            const gv = document.getElementById("staff-gv-select").value;
+            const checkboxes = document.querySelectorAll(".staff-chk:checked");
             const role = document.getElementById("staff-role-select").value;
-            if (!gv) { alert("Vui lòng chọn Giảng viên!"); return; }
-            if (currentTempStaff.some(s => s["ma-giang-vien"] === gv)) {
-                alert("Giảng viên này đã có trong danh sách phân công.");
+            
+            if (checkboxes.length === 0) {
+                alert("Vui lòng tích chọn ít nhất một Giảng viên!");
                 return;
             }
-            
-            // Validate: Tối đa 1 người phụ trách
+
             if (role === "phu-trach") {
-                if (currentTempStaff.some(s => s["vai-tro"] === "phu-trach")) {
-                    alert("Công việc này đã có người Phụ trách. Mỗi công việc chỉ được phép có 1 người phụ trách chính.");
+                const currentPhuTrachCount = currentTempStaff.filter(s => s["vai-tro"] === "phu-trach").length;
+                if (currentPhuTrachCount > 0 || checkboxes.length > 1) {
+                    alert("Mỗi công việc chỉ được phép có 1 người phụ trách chính. Vui lòng chỉ chọn 1 người hoặc đổi vai trò thành Phối hợp.");
                     return;
                 }
             }
 
-            currentTempStaff.push({
-                "cong-viec-id": currentManageTaskId,
-                "ma-giang-vien": gv,
-                "vai-tro": role
+            let addedCount = 0;
+            checkboxes.forEach(chk => {
+                const gv = chk.value;
+                if (!currentTempStaff.some(s => s["ma-giang-vien"] === gv)) {
+                    currentTempStaff.push({
+                        "cong-viec-id": currentManageTaskId,
+                        "ma-giang-vien": gv,
+                        "vai-tro": role
+                    });
+                    addedCount++;
+                }
             });
+
+            if (addedCount === 0) {
+                alert("Các giảng viên được chọn đã có trong danh sách phân công.");
+                return;
+            }
+
             renderTempStaff();
-            document.getElementById("staff-gv-select").value = "";
+            document.querySelectorAll(".staff-chk").forEach(c => c.checked = false);
+            const selectAll = document.getElementById("selectAllStaff");
+            if(selectAll) selectAll.checked = false;
         }
 
         function removeTempStaff(index) {
@@ -1250,8 +1324,6 @@
         ========================================================= */
         function setupEvents() {
             document.getElementById("search-input").addEventListener("input", renderPlans);
-            document.getElementById("status-filter").addEventListener("change", renderPlans);
-            document.getElementById("approval-filter").addEventListener("change", renderPlans);
             document.getElementById("manager-filter").addEventListener("change", renderPlans);
 
             document.querySelectorAll(".custom-modal-backdrop").forEach(modal => {
