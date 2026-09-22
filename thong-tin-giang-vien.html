@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Thông tự chi tiết Giảng viên - Bộ môn Phục hồi chức năng.">
+    <meta name="description" content="Thông tin chi tiết Giảng viên - Bộ môn Phục hồi chức năng.">
     
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
@@ -464,13 +464,21 @@
                         const storageApi = window.supabaseClient.storage.from('anh-ho-so');
                         let urlsToTry = [];
                         
-                        if (gvData['anh']) urlsToTry.push(gvData['anh']); // Nếu DB có link ảnh cụ thể thì thử trước
-                        urlsToTry.push(storageApi.getPublicUrl(`${targetMaGv}.jpg`).data.publicUrl);
-                        urlsToTry.push(storageApi.getPublicUrl(`${targetMaGv}.png`).data.publicUrl);
-                        urlsToTry.push(storageApi.getPublicUrl(`${targetMaGv}.jpeg`).data.publicUrl);
-                        urlsToTry.push(storageApi.getPublicUrl(`${targetMaGv}.JPG`).data.publicUrl);
-                        urlsToTry.push(storageApi.getPublicUrl(`${targetMaGv}.PNG`).data.publicUrl);
-                        urlsToTry.push(storageApi.getPublicUrl(`${targetMaGv}`).data.publicUrl);
+                        // Đính kèm biến Cache Buster để bắt trình duyệt tải ảnh mới nhất từ database nếu có
+                        const cacheBuster = "?t=" + Date.now();
+                        
+                        if (gvData['anh']) {
+                            let anhUrl = gvData['anh'];
+                            if (!anhUrl.includes('?')) anhUrl += cacheBuster;
+                            urlsToTry.push(anhUrl);
+                        }
+                        
+                        // Thử các đuôi ảnh cơ bản nếu DB chưa có
+                        urlsToTry.push(storageApi.getPublicUrl(`${targetMaGv}.jpg`).data.publicUrl + cacheBuster);
+                        urlsToTry.push(storageApi.getPublicUrl(`${targetMaGv}.png`).data.publicUrl + cacheBuster);
+                        urlsToTry.push(storageApi.getPublicUrl(`${targetMaGv}.jpeg`).data.publicUrl + cacheBuster);
+                        urlsToTry.push(storageApi.getPublicUrl(`${targetMaGv}.JPG`).data.publicUrl + cacheBuster);
+                        urlsToTry.push(storageApi.getPublicUrl(`${targetMaGv}.PNG`).data.publicUrl + cacheBuster);
 
                         currentProfileData = {
                             ...gvData,
@@ -522,7 +530,7 @@
             }
 
             // ==========================================
-            // UPLOAD ẢNH (Dùng code đúng yêu cầu của người dùng)
+            // UPLOAD ẢNH (Resize + Convert -> Bucket Supabase)
             // ==========================================
             window.triggerAvatarUpload = () => {
                 if (canEditAvatar) document.getElementById('uploadAvatar').click();
@@ -570,6 +578,7 @@
                             const maGiangVien = targetMaGv;
                             const filePath = `${maGiangVien}.jpg`;
 
+                            // TẢI ẢNH LÊN BUCKET SUPABASE THEO YÊU CẦU CỦA USER
                             const { data, error } = await window.supabaseClient.storage
                                 .from('anh-ho-so')
                                 .upload(filePath, jpgFile, {
@@ -581,7 +590,6 @@
                             if (error) {
                                 console.error('Lỗi thay ảnh:', error);
                                 alert(error.message);
-                                showToast("Lỗi tải ảnh: " + error.message, "danger");
                                 e.target.value = '';
                                 return;
                             }
@@ -591,16 +599,17 @@
                                     .from('anh-ho-so')
                                     .getPublicUrl(filePath);
 
-                                const publicUrl = urlData.publicUrl;
+                                // Thêm tham số phá cache để trình duyệt không load ảnh cũ
+                                const publicUrl = urlData.publicUrl + "?t=" + Date.now();
 
-                                // Cập nhật URL ảnh vào bảng giang-vien (để đồng bộ)
+                                // Cập nhật URL ảnh vào bảng giang-vien (để đồng bộ toàn web)
                                 await window.supabaseClient
                                     .from('giang-vien')
                                     .update({ 'anh': publicUrl })
                                     .eq('ma-giang-vien', targetMaGv);
 
-                                // Dùng timestamp để trình duyệt không load ảnh cũ từ cache
-                                currentProfileData.tryUrls = [publicUrl + "?t=" + Date.now()]; 
+                                // Dùng mảng url mới để hiển thị ngay lập tức
+                                currentProfileData.tryUrls = [publicUrl]; 
                                 renderProfileCV(currentProfileData);
                                 showToast("Cập nhật ảnh đại diện thành công!");
 
@@ -651,7 +660,7 @@
                 };
 
                 try {
-                    // Dùng logic kiểm tra tồn tại rồi insert/update để phòng hờ DB không set Primary Key đúng
+                    // Dùng logic kiểm tra tồn tại rồi insert/update
                     const { data: exist } = await window.supabaseClient.from('thong-tin-giang-vien').select('id').eq('ma-giang-vien', targetMaGv);
                     
                     if (exist && exist.length > 0) {
