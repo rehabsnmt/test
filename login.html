@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Đăng nhập hệ thống Bộ môn Phục hồi chức năng.">
 
-    <!-- Content Security Policy: Cho phép kết nối Supabase và chạy Script -->
+    <!-- Content Security Policy: Đã cấp quyền tải Font chữ từ Google -->
     <meta http-equiv="Content-Security-Policy" content="
             default-src 'self';
             connect-src 'self' https://*.supabase.co;
             img-src 'self' data: https://*.supabase.co;
-            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com;
             script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-            font-src 'self' https://cdnjs.cloudflare.com;
+            font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
         ">
 
     <title>Đăng nhập - Bộ môn Phục hồi chức năng</title>
@@ -113,8 +113,7 @@
             ================================= -->
             <div id="loginView">
                 <div class="section-title" style="margin-bottom: 1.5rem;">
-                    <h2 style="font-size: 1.4rem;">Đăng nhập</h2>
-                    <p style="margin-top: 0.5rem; font-size: 0.85rem;">Hệ thống nội bộ Bộ môn PHCN</p>
+                    <h2 style="font-size: 1.4rem; margin-bottom: 0;">Đăng nhập</h2>
                 </div>
 
                 <div id="loginAlert" class="alert alert-error"></div>
