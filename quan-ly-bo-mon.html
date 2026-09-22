@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="description" content="Quản lý công việc Bộ môn Phục hồi chức năng.">
 
-    <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
             default-src 'self';
             connect-src 'self' https://*.supabase.co;
@@ -63,7 +62,6 @@
         }
         .custom-select { min-width: 160px; }
 
-        /* Phân nhóm Trạng thái Duyệt */
         .status-section-title {
             font-size: 1.15rem; font-weight: 700; margin: 10px 0 15px 0; padding-bottom: 8px;
             display: flex; align-items: center; gap: 8px;
@@ -97,13 +95,10 @@
             display: inline-flex; align-items: center; justify-content: center; gap: 5px;
             border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 600; white-space: nowrap;
         }
-
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
         .badge-blue { background: var(--primary-light); color: var(--primary-hover); }
         .badge-green { background: #dcfce7; color: #15803d; }
         .badge-yellow { background: #fef3c7; color: #a16207; }
-        .badge-red { background: #fee2e2; color: #b91c1c; }
-        .badge-orange { background: #ffedd5; color: #c2410c; }
 
         .custom-modal-backdrop {
             position: fixed; inset: 0; background: rgba(15, 23, 42, .6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
@@ -134,7 +129,7 @@
         .task-card { border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: left; }
         .task-top { display: flex; justify-content: space-between; gap: 12px; }
         .task-title { font-weight: 650; margin-bottom: 7px; color: var(--text-dark); font-size: 1rem; }
-        .task-description { color: var(--text-muted); font-size: 13px; white-space: pre-line; }
+        .task-description { color: var(--text-muted); font-size: 13px; white-space: pre-line; margin-bottom: 10px;}
         .task-meta { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         .task-actions { display: flex; gap: 5px; flex-shrink: 0; flex-wrap: wrap;}
 
@@ -147,6 +142,11 @@
 
         .temp-staff-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px dashed var(--border); font-size: 0.9rem; }
         .temp-staff-item:last-child { border-bottom: none; }
+        
+        .evidence-item { background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin-bottom: 8px; }
+        .evidence-item a { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.95rem;}
+        .evidence-item a:hover { text-decoration: underline; }
+        .evidence-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
 
         @media (max-width: 768px) {
             .app-container { padding: 10px; }
@@ -355,6 +355,56 @@
         </div>
     </div>
 
+    <!-- MODAL GỬI MINH CHỨNG -->
+    <div id="evidence-modal" class="custom-modal-backdrop">
+        <div class="custom-modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Gửi Minh chứng & Hoàn thành</h2>
+                <button class="modal-close" onclick="closeModal('evidence-modal')">×</button>
+            </div>
+            <form id="evidence-form" onsubmit="submitEvidence(event)">
+                <div class="modal-body">
+                    <input id="evidence-task-id" type="hidden">
+                    <div class="form-group">
+                        <label class="form-label">Tiêu đề minh chứng <span style="color:var(--accent)">*</span></label>
+                        <input id="evidence-title" class="custom-input" placeholder="Vd: Link tài liệu báo cáo" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Đường dẫn URL (Drive, Website...) <span style="color:var(--accent)">*</span></label>
+                        <input id="evidence-url" class="custom-input" type="url" placeholder="https://..." required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mô tả thêm (Tùy chọn)</label>
+                        <textarea id="evidence-desc" class="custom-textarea" rows="3"></textarea>
+                    </div>
+                    <div class="error-msg" id="evidence-error" style="margin-top: 10px;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-custom" onclick="closeModal('evidence-modal')">Hủy</button>
+                    <button type="submit" class="btn-custom btn-custom-primary"><i class="fas fa-paper-plane"></i> Gửi duyệt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL XEM MINH CHỨNG -->
+    <div id="view-evidence-modal" class="custom-modal-backdrop">
+        <div class="custom-modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Danh sách Minh chứng</h2>
+                <button class="modal-close" onclick="closeModal('view-evidence-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="evidence-list-content">
+                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-custom" onclick="closeModal('view-evidence-modal')">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL XÓA KẾ HOẠCH BẰNG MÃ XÁC NHẬN -->
     <div id="delete-plan-modal" class="custom-modal-backdrop">
         <div class="custom-modal" style="max-width: 450px;">
@@ -472,7 +522,7 @@
         }
 
         function getDeadlineWarning(dateStr, status) {
-            if (!dateStr || status === 'hoan-thanh' || status === 'dong') return "";
+            if (!dateStr || status === 'hoan-thanh') return "";
             const today = new Date();
             today.setHours(0,0,0,0);
             const target = new Date(dateStr);
@@ -510,14 +560,12 @@
                 return;
             }
 
-            // Sắp xếp kế hoạch theo ngày kết thúc (tăng dần - gần nhất lên đầu)
             filtered.sort((a, b) => {
                 if (!a["ngay-ket-thuc"]) return 1;
                 if (!b["ngay-ket-thuc"]) return -1;
                 return new Date(a["ngay-ket-thuc"]) - new Date(b["ngay-ket-thuc"]);
             });
 
-            // Tách list
             const pendingPlans = filtered.filter(p => p["trang-thai-duyet"] === "cho-duyet");
             const approvedPlans = filtered.filter(p => p["trang-thai-duyet"] === "da-duyet");
 
@@ -575,8 +623,8 @@
 
                     <div class="plan-bottom">
                         <div class="plan-stats">
-                            <i class="fas fa-tasks"></i> ${plan["tong-cong-viec"] || 0} công việc · 
-                            <i class="fas fa-check-circle" style="color:#16a34a;"></i> ${plan["so-cong-viec-hoan-thanh"] || 0} hoàn thành
+                            <span><i class="fas fa-tasks"></i> ${plan["tong-cong-viec"] || 0} công việc</span>
+                            <span><i class="fas fa-check-circle" style="color:#16a34a;"></i> ${plan["so-cong-viec-hoan-thanh"] || 0} hoàn thành</span>
                         </div>
 
                         <div class="plan-actions">
@@ -639,7 +687,6 @@
                     assignments = data || [];
                 }
 
-                // Sắp xếp Tasks theo Hạn hoàn thành
                 tasks.sort((a, b) => {
                     if (!a["han-hoan-thanh"]) return 1;
                     if (!b["han-hoan-thanh"]) return -1;
@@ -685,10 +732,49 @@
 
         function renderTask(task, assignments) {
             const staff = assignments.filter(item => item["cong-viec-id"] === task.id);
+            const isAssignedToMe = staff.some(s => s["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
             const canEdit = canEditTask(task);
             const creator = findLecturer(task["created-by-ma-gv"]);
-            const isPaused = task["trang-thai"] === 'tam-dung';
             const warningBadge = getDeadlineWarning(task["han-hoan-thanh"], task["trang-thai"]);
+
+            // Các nút liên quan đến tiến trình (GV và Head)
+            let processButtons = "";
+            
+            // 1. GV: Nút "Bắt đầu làm"
+            if (task["trang-thai"] === "chua-thuc-hien" && isAssignedToMe) {
+                processButtons += `
+                    <button class="btn-custom btn-custom-small btn-custom-primary" onclick="updateTaskStatus('${task.id}', 'dang-thuc-hien')">
+                        <i class="fas fa-play"></i> Bắt đầu làm
+                    </button>
+                `;
+            }
+            
+            // 2. GV: Nút "Gửi minh chứng"
+            if (['chua-thuc-hien', 'dang-thuc-hien'].includes(task["trang-thai"]) && isAssignedToMe) {
+                processButtons += `
+                    <button class="btn-custom btn-custom-small btn-custom-success" onclick="openEvidenceModal('${task.id}')">
+                        <i class="fas fa-upload"></i> Gửi minh chứng
+                    </button>
+                `;
+            }
+
+            // 3. Xem minh chứng (Ai cũng xem được nếu có trạng thái từ chờ xác nhận trở đi)
+            if (['cho-xac-nhan', 'hoan-thanh'].includes(task["trang-thai"])) {
+                processButtons += `
+                    <button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')">
+                        <i class="fas fa-link"></i> Xem minh chứng
+                    </button>
+                `;
+            }
+
+            // 4. Duyệt hoàn thành (Head/Superadmin)
+            if (task["trang-thai"] === "cho-xac-nhan" && isApprover()) {
+                processButtons += `
+                    <button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTaskCompletion('${task.id}')">
+                        <i class="fas fa-check-double"></i> Xác nhận hoàn thành
+                    </button>
+                `;
+            }
 
             return `
                 <div class="task-card">
@@ -699,21 +785,14 @@
                         </div>
                         <div class="task-actions">
                             ${canEdit ? `
-                                <button class="btn-custom btn-custom-small" onclick="editTask('${task.id}')" title="Chỉnh sửa"><i class="fas fa-pen"></i> Sửa</button>
-                                <button class="btn-custom btn-custom-small btn-custom-danger" onclick="deleteTask('${task.id}')" title="Xóa"><i class="fas fa-trash-alt"></i> Xóa</button>
-                            ` : ""}
-                            
-                            ${isApprover() && task["trang-thai-duyet"] === "cho-duyet" ? `
-                                <button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTask('${task.id}')">
-                                    <i class="fas fa-check"></i> Duyệt
-                                </button>
+                                <button class="btn-custom btn-custom-small" onclick="editTask('${task.id}')" title="Sửa"><i class="fas fa-pen"></i></button>
+                                <button class="btn-custom btn-custom-small btn-custom-danger" onclick="deleteTask('${task.id}')" title="Xóa"><i class="fas fa-trash-alt"></i></button>
                             ` : ""}
                         </div>
                     </div>
 
                     <div class="task-meta">
                         ${taskStatusBadge(task["trang-thai"])}
-                        ${approvalBadge(task["trang-thai-duyet"])}
                         ${task["han-hoan-thanh"] ? `
                             <span class="status-badge badge-gray"><i class="far fa-clock"></i> Hạn: ${formatDate(task["han-hoan-thanh"])}</span>
                             ${warningBadge}
@@ -725,16 +804,14 @@
                         ${staff.length ? staff.map(renderStaffChip).join("") : `<span class="status-badge badge-gray"><i class="fas fa-exclamation-circle"></i> Chưa phân công người làm</span>`}
                     </div>
 
-                    ${isAdmin() ? `
-                        <div style="margin-top:12px; display: flex; gap: 7px; flex-wrap: wrap;">
+                    <div style="margin-top:12px; display: flex; gap: 7px; flex-wrap: wrap;">
+                        ${isAdmin() ? `
                             <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}')">
                                 <i class="fas fa-user-plus"></i> Gán Nhân sự
                             </button>
-                            <button class="btn-custom btn-custom-small btn-custom-warning" onclick="togglePauseTask('${task.id}', '${task["trang-thai"]}')">
-                                <i class="fas ${isPaused ? 'fa-play' : 'fa-pause'}"></i> ${isPaused ? 'Tiếp tục' : 'Tạm dừng'}
-                            </button>
-                        </div>
-                    ` : ""}
+                        ` : ""}
+                        ${processButtons}
+                    </div>
                 </div>
             `;
         }
@@ -763,7 +840,7 @@
         document.getElementById("btn-create-plan").addEventListener("click", () => {
             document.getElementById("plan-form").reset();
             document.getElementById("plan-id").value = "";
-            document.getElementById("plan-modal-title").innerHTML = '<i class="fas fa-calendar-plus"></i> Tạo kế hoạch';
+            document.getElementById("plan-modal-title").innerHTML = 'Tạo kế hoạch';
             openModal("plan-modal");
         });
 
@@ -776,7 +853,7 @@
             document.getElementById("plan-start").value = plan["ngay-bat-dau"] || "";
             document.getElementById("plan-end").value = plan["ngay-ket-thuc"] || "";
             document.getElementById("plan-manager").value = plan["nguoi-phu-trach-ma-gv"] || "";
-            document.getElementById("plan-modal-title").innerHTML = '<i class="fas fa-edit"></i> Sửa kế hoạch';
+            document.getElementById("plan-modal-title").innerHTML = 'Sửa kế hoạch';
             openModal("plan-modal");
         }
 
@@ -815,17 +892,11 @@
                 const { error } = await window.supabaseClient.from("ke-hoach").update({"trang-thai": newStatus}).eq("id", planId);
                 if (error) throw error;
                 await loadPlans();
-            } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
-        }
-        
-        async function togglePauseTask(taskId, currentStatus) {
-            const isPaused = currentStatus === 'tam-dung';
-            const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
-            try {
-                const { error } = await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
-                if (error) throw error;
-                await loadPlans();
-                if (currentPlanId) await openPlanDetail(currentPlanId);
+                
+                // Đồng bộ lại status dựa trên tasks nếu nhấn 'Tiếp tục'
+                if (newStatus === 'dang-thuc-hien') {
+                    await syncPlanProgress(planId);
+                }
             } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
         }
 
@@ -862,7 +933,7 @@
             document.getElementById("task-form").reset();
             document.getElementById("task-id").value = "";
             document.getElementById("task-plan-id").value = planId;
-            document.getElementById("task-modal-title").innerHTML = '<i class="fas fa-tasks"></i> Tạo công việc';
+            document.getElementById("task-modal-title").innerHTML = 'Tạo công việc';
             openModal("task-modal");
         }
 
@@ -876,15 +947,16 @@
             document.getElementById("task-description").value = task["mo-ta"] || "";
             document.getElementById("task-start").value = task["ngay-bat-dau"] || "";
             document.getElementById("task-deadline").value = task["han-hoan-thanh"] || "";
-            document.getElementById("task-modal-title").innerHTML = '<i class="fas fa-edit"></i> Sửa công việc';
+            document.getElementById("task-modal-title").innerHTML = 'Sửa công việc';
             openModal("task-modal");
         }
 
         document.getElementById("task-form").addEventListener("submit", async (event) => {
             event.preventDefault();
             const id = document.getElementById("task-id").value;
+            const planId = document.getElementById("task-plan-id").value;
             const payload = {
-                "ke-hoach-id": document.getElementById("task-plan-id").value || null,
+                "ke-hoach-id": planId || null,
                 "tieu-de": document.getElementById("task-title").value.trim(),
                 "mo-ta": document.getElementById("task-description").value.trim() || null,
                 "ngay-bat-dau": document.getElementById("task-start").value || null,
@@ -893,19 +965,16 @@
 
             try {
                 if (id) {
-                    if (currentAccount.role === "admin") payload["trang-thai-duyet"] = "cho-duyet";
                     const { error } = await window.supabaseClient.from("cong-viec").update(payload).eq("id", id);
                     if (error) throw error;
                 } else {
                     payload["created-by-ma-gv"] = currentAccount["ma-giang-vien"];
                     payload["trang-thai"] = "chua-thuc-hien";
-                    payload["trang-thai-duyet"] = currentAccount.role === "admin" ? "cho-duyet" : "da-duyet";
                     const { error } = await window.supabaseClient.from("cong-viec").insert(payload);
                     if (error) throw error;
                 }
                 closeModal("task-modal");
-                await loadPlans();
-                if (currentPlanId) await openPlanDetail(currentPlanId);
+                await syncPlanProgress(planId);
             } catch (error) { showError(error.message); }
         });
 
@@ -914,40 +983,154 @@
             try {
                 const { error } = await window.supabaseClient.from("cong-viec").delete().eq("id", taskId);
                 if (error) throw error;
-                await loadPlans();
-                if (currentPlanId) await openPlanDetail(currentPlanId);
+                await syncPlanProgress(currentPlanId);
             } catch (error) { showError(error.message); }
         }
 
         /* =========================================================
-           APPROVAL (DUYỆT KẾ HOẠCH & CÔNG VIỆC)
+           CẬP NHẬT TRẠNG THÁI TASK VÀ MINH CHỨNG
         ========================================================= */
-        async function approvePlan(planId) {
-            if (!isApprover()) return;
+        async function updateTaskStatus(taskId, newStatus) {
             try {
-                const { error } = await window.supabaseClient.from("ke-hoach").update({
-                    "trang-thai-duyet": "da-duyet",
-                    "duyet-boi-ma-gv": currentAccount["ma-giang-vien"],
-                    "duyet-luc": new Date().toISOString()
-                }).eq("id", planId);
+                const { error } = await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
                 if (error) throw error;
-                await loadPlans();
+                await syncPlanProgress(currentPlanId);
+            } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
+        }
+
+        function openEvidenceModal(taskId) {
+            document.getElementById('evidence-form').reset();
+            document.getElementById('evidence-task-id').value = taskId;
+            document.getElementById('evidence-error').style.display = 'none';
+            openModal('evidence-modal');
+        }
+
+        async function submitEvidence(event) {
+            event.preventDefault();
+            const taskId = document.getElementById('evidence-task-id').value;
+            const title = document.getElementById('evidence-title').value.trim();
+            const url = document.getElementById('evidence-url').value.trim();
+            const desc = document.getElementById('evidence-desc').value.trim();
+
+            try {
+                // 1. Thêm vào bảng minh chứng
+                const { error: evError } = await window.supabaseClient.from("cong-viec-minh-chung").insert({
+                    "cong-viec-id": taskId,
+                    "ma-giang-vien": currentAccount["ma-giang-vien"],
+                    "tieu-de": title,
+                    "mo-ta": desc || null,
+                    "url": url
+                });
+                if (evError) throw evError;
+
+                // 2. Chuyển task sang Chờ xác nhận
+                const { error: tsError } = await window.supabaseClient.from("cong-viec").update({"trang-thai": "cho-xac-nhan"}).eq("id", taskId);
+                if (tsError) throw tsError;
+
+                closeModal('evidence-modal');
+                await syncPlanProgress(currentPlanId);
+            } catch (error) {
+                document.getElementById('evidence-error').textContent = error.message;
+                document.getElementById('evidence-error').style.display = 'block';
+            }
+        }
+
+        async function viewEvidence(taskId) {
+            openModal("view-evidence-modal");
+            const container = document.getElementById("evidence-list-content");
+            container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải minh chứng...</div>`;
+
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from("cong-viec-minh-chung")
+                    .select("*")
+                    .eq("cong-viec-id", taskId)
+                    .order("created-at", { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = `<div class="empty">Chưa có minh chứng nào được gửi.</div>`;
+                    return;
+                }
+
+                container.innerHTML = data.map(item => {
+                    const gv = findLecturer(item["ma-giang-vien"]);
+                    return `
+                        <div class="evidence-item">
+                            <a href="${escapeHtml(item.url)}" target="_blank"><i class="fas fa-external-link-alt"></i> ${escapeHtml(item["tieu-de"])}</a>
+                            ${item["mo-ta"] ? `<div style="font-size:0.85rem; margin-top:5px;">${escapeHtml(item["mo-ta"])}</div>` : ''}
+                            <div class="evidence-meta">
+                                Gửi bởi: ${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])} lúc ${new Date(item["created-at"]).toLocaleString("vi-VN")}
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+            } catch (error) {
+                container.innerHTML = `<div class="error-msg" style="display:block">${escapeHtml(error.message)}</div>`;
+            }
+        }
+
+        async function approveTaskCompletion(taskId) {
+            if (!isApprover()) return;
+            if (!confirm("Bạn xác nhận công việc này đã hoàn thành?")) return;
+            try {
+                const { error } = await window.supabaseClient.from("cong-viec").update({
+                    "trang-thai": "hoan-thanh"
+                }).eq("id", taskId);
+                if (error) throw error;
+                
+                await syncPlanProgress(currentPlanId);
             } catch (error) { showError(error.message); }
         }
 
-        async function approveTask(taskId) {
-            if (!isApprover()) return;
+        /* =========================================================
+           TÍNH TOÁN VÀ ĐỒNG BỘ TIẾN ĐỘ KẾ HOẠCH (POLYFILL CHO BACKEND)
+        ========================================================= */
+        async function syncPlanProgress(planId) {
             try {
-                const { error } = await window.supabaseClient.from("cong-viec").update({
-                    "trang-thai-duyet": "da-duyet",
-                    "duyet-boi-ma-gv": currentAccount["ma-giang-vien"],
-                    "duyet-luc": new Date().toISOString()
-                }).eq("id", taskId);
-                if (error) throw error;
+                // 1. Lấy tất cả task của plan
+                const { data: tasks, error: tErr } = await window.supabaseClient.from("cong-viec").select("trang-thai").eq("ke-hoach-id", planId);
+                if (tErr) throw tErr;
+
+                const plan = plans.find(p => p.id === planId);
+                if (!plan) return;
+
+                const total = tasks.length;
+                const completed = tasks.filter(t => t["trang-thai"] === "hoan-thanh").length;
+                
+                let progress = 0;
+                let autoStatus = "chua-bat-dau";
+
+                if (total > 0) {
+                    progress = (completed / total) * 100;
+                    if (completed === total) {
+                        autoStatus = "hoan-thanh";
+                    } else {
+                        autoStatus = "dang-thuc-hien";
+                    }
+                }
+
+                // Nếu đang tạm dừng thì giữ nguyên trạng thái tạm dừng, chỉ update %
+                if (plan["trang-thai"] === "tam-dung") {
+                    autoStatus = "tam-dung";
+                }
+
+                // Cập nhật Database
+                const { error: pErr } = await window.supabaseClient.from("ke-hoach").update({
+                    "tien-do": progress,
+                    "trang-thai": autoStatus
+                }).eq("id", planId);
+                if (pErr) throw pErr;
+
                 await loadPlans();
-                if (currentPlanId) await openPlanDetail(currentPlanId);
-            } catch (error) { showError(error.message); }
+                if (currentPlanId === planId) await openPlanDetail(planId);
+                
+            } catch (err) {
+                console.error("Lỗi đồng bộ tiến độ: ", err);
+            }
         }
+
 
         /* =========================================================
            GÁN NHÂN SỰ VÀO CÔNG VIỆC
@@ -997,6 +1180,15 @@
                 alert("Giảng viên này đã có trong danh sách phân công.");
                 return;
             }
+            
+            // Validate: Tối đa 1 người phụ trách
+            if (role === "phu-trach") {
+                if (currentTempStaff.some(s => s["vai-tro"] === "phu-trach")) {
+                    alert("Công việc này đã có người Phụ trách. Mỗi công việc chỉ được phép có 1 người phụ trách chính.");
+                    return;
+                }
+            }
+
             currentTempStaff.push({
                 "cong-viec-id": currentManageTaskId,
                 "ma-giang-vien": gv,
@@ -1035,6 +1227,22 @@
                 btn.innerHTML = oldText;
                 btn.disabled = false;
             }
+        }
+
+        /* =========================================================
+           APPROVAL (DUYỆT KẾ HOẠCH BỞI HEAD)
+        ========================================================= */
+        async function approvePlan(planId) {
+            if (!isApprover()) return;
+            try {
+                const { error } = await window.supabaseClient.from("ke-hoach").update({
+                    "trang-thai-duyet": "da-duyet",
+                    "duyet-boi-ma-gv": currentAccount["ma-giang-vien"],
+                    "duyet-luc": new Date().toISOString()
+                }).eq("id", planId);
+                if (error) throw error;
+                await loadPlans();
+            } catch (error) { showError(error.message); }
         }
 
         /* =========================================================
@@ -1079,10 +1287,10 @@
 
         function statusBadge(status) {
             const map = {
-                "chua-bat-dau": ["Chưa bắt đầu", "gray", "fa-clock"],
+                "chua-bat-dau": ["Chưa bắt đầu", "gray", "fa-circle"],
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "hoan-thanh": ["Hoàn thành", "green", "fa-check"],
-                "tam-dung": ["Tạm dừng", "yellow", "fa-pause"]
+                "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
+                "tam-dung": ["Tạm dừng", "yellow", "fa-pause-circle"]
             };
             const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
             return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
@@ -1090,12 +1298,10 @@
 
         function taskStatusBadge(status) {
             const map = {
-                "chua-thuc-hien": ["Chưa thực hiện", "gray", "fa-clock"],
+                "chua-thuc-hien": ["Chưa thực hiện", "gray", "fa-circle"],
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "cho-kiem-tra": ["Chờ kiểm tra", "orange", "fa-search"],
-                "hoan-thanh": ["Hoàn thành", "green", "fa-check"],
-                "dong": ["Đóng", "gray", "fa-lock"],
-                "tam-dung": ["Tạm dừng", "yellow", "fa-pause"]
+                "cho-xac-nhan": ["Chờ xác nhận", "orange", "fa-clock"],
+                "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"]
             };
             const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
             return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
