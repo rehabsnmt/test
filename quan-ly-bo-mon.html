@@ -217,7 +217,6 @@
 
             <div id="error-box" class="error-msg"></div>
 
-            <!-- DASHBOARD TRỰC QUAN -->
             <div class="interactive-dashboard">
                 <div class="dashboard-card active" data-filter="all" onclick="setDashboardFilter('all')">
                     <div class="db-icon"><i class="fas fa-layer-group"></i></div>
@@ -249,7 +248,6 @@
                 </div>
             </div>
 
-            <!-- THANH TÌM KIẾM VÀ LỌC TÊN -->
             <div class="search-bar-container">
                 <div class="search-bar-wrapper">
                     <i class="fas fa-search"></i>
@@ -449,13 +447,12 @@
         let lecturers = [];
         let expandedPlans = new Set(); 
 
-        let currentPlanId = null;
         let currentManageTaskId = null;
         let currentTempStaff = [];
         let planToDeleteId = null;
         let deleteRandomCode = "";
 
-        let activeFilter = 'all'; 
+        let activeFilter = 'all';
 
         document.addEventListener("DOMContentLoaded", () => {
             let attempts = 0;
@@ -686,7 +683,6 @@
                         </div>
                     </div>
                     
-                    <!-- Vùng chứa danh sách task hiển thị sổ xuống -->
                     <div class="plan-tasks-container" id="tasks-${plan.id}" style="display: none;"></div>
                 </div>
             `;
@@ -702,14 +698,15 @@
         /* =========================================================
            CƠ CHẾ ACCORDION (XEM CÔNG VIỆC SỔ XUỐNG)
         ========================================================= */
-        async function togglePlanTasks(planId, forceReload = false) {
+        async function togglePlanTasks(planId, isSilentReload = false) {
             const container = document.getElementById(`tasks-${planId}`);
             const btn = document.getElementById(`btn-toggle-${planId}`);
             if (!container || !btn) return;
 
             const isVisible = container.style.display !== "none";
 
-            if (isVisible && !forceReload) {
+            // Nếu đang mở và không phải do reload ngầm thì tắt đi
+            if (isVisible && !isSilentReload) {
                 container.style.display = "none";
                 btn.innerHTML = `<i class="fas fa-chevron-down"></i> Xem công việc`;
                 expandedPlans.delete(planId);
@@ -720,7 +717,7 @@
             container.style.display = "block";
             btn.innerHTML = `<i class="fas fa-chevron-up"></i> Thu gọn`;
             
-            if (!forceReload) {
+            if (!isSilentReload) {
                 container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>`;
             }
 
@@ -763,7 +760,6 @@
             const container = document.getElementById(`tasks-${planId}`);
             if (!container) return;
 
-            const plan = plans.find(p => p.id === planId);
             const canCreateTask = isAdmin();
 
             let html = `
@@ -802,7 +798,7 @@
                 processButtons += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
             }
             if (task["trang-thai"] === "cho-xac-nhan" && isApprover()) {
-                processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTaskCompletion('${task.id}')"><i class="fas fa-check-double"></i> Duyệt hoàn thành</button>`;
+                processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTaskCompletion('${task.id}', '${task["ke-hoach-id"]}')"><i class="fas fa-check-double"></i> Duyệt hoàn thành</button>`;
             }
 
             return `
@@ -814,11 +810,11 @@
                         </div>
                         <div class="task-actions">
                             ${canEdit ? `
-                                <button class="btn-custom btn-custom-small" onclick="editTask('${task.id}')" title="Sửa"><i class="fas fa-pen"></i></button>
-                                <button class="btn-custom btn-custom-small btn-custom-warning" onclick="togglePauseTask('${task.id}', '${task["trang-thai"]}')" title="${isPaused ? 'Tiếp tục' : 'Tạm dừng'}">
+                                <button class="btn-custom btn-custom-small" onclick="editTask('${task.id}', '${task["ke-hoach-id"]}')" title="Sửa"><i class="fas fa-pen"></i></button>
+                                <button class="btn-custom btn-custom-small btn-custom-warning" onclick="togglePauseTask('${task.id}', '${task["trang-thai"]}', '${task["ke-hoach-id"]}')" title="${isPaused ? 'Tiếp tục' : 'Tạm dừng'}">
                                     <i class="fas ${isPaused ? 'fa-play' : 'fa-pause'}"></i>
                                 </button>
-                                <button class="btn-custom btn-custom-small btn-custom-danger" onclick="deleteTask('${task.id}')" title="Xóa"><i class="fas fa-trash-alt"></i></button>
+                                <button class="btn-custom btn-custom-small btn-custom-danger" onclick="deleteTask('${task.id}', '${task["ke-hoach-id"]}')" title="Xóa"><i class="fas fa-trash-alt"></i></button>
                             ` : ""}
                         </div>
                     </div>
@@ -838,7 +834,7 @@
 
                     <div style="margin-top:12px; display: flex; gap: 7px; flex-wrap: wrap;">
                         ${isAdmin() ? `
-                            <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}')">
+                            <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}', '${task["ke-hoach-id"]}')">
                                 <i class="fas fa-user-plus"></i> Phân công Nhân sự
                             </button>
                         ` : ""}
@@ -881,7 +877,7 @@
         }
 
         /* =========================================================
-           CREATE/EDIT/SAVE PLAN (SILENT RELOAD)
+           CREATE/EDIT/SAVE PLAN
         ========================================================= */
         document.getElementById("btn-create-plan").addEventListener("click", () => {
             document.getElementById("plan-form").reset();
@@ -932,7 +928,7 @@
                 }
                 
                 closeModal("plan-modal");
-                await loadPlans(); // Đã bao gồm load ngầm render lại mọi thứ
+                await loadPlans(); // Đã bao gồm render lại danh sách, giữ nguyên trạng thái mở của thẻ nếu đang mở
 
                 btn.innerHTML = '<i class="fas fa-save"></i> Lưu kế hoạch';
                 btn.disabled = false;
@@ -943,18 +939,12 @@
             const isPaused = currentStatus === 'tam-dung';
             if (!confirm(isPaused ? "Bạn muốn tiếp tục kế hoạch này?" : "Bạn muốn tạm dừng kế hoạch này?")) return;
             
-            // Ép trả về 'dang-thuc-hien' khi nhấn Tiếp tục
+            // Tiếp tục đưa thẳng về dang-thuc-hien thay vì check tiến độ phức tạp
             const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
             try {
                 const { error } = await window.supabaseClient.from("ke-hoach").update({"trang-thai": newStatus}).eq("id", planId);
                 if (error) throw error;
-                
-                if (isPaused) {
-                    // Chạy thuật toán quét lại % tiến độ để gán lại trạng thái gốc thật sự (chưa bắt đầu/đang làm/hoàn thành)
-                    await syncPlanProgress(planId);
-                } else {
-                    await loadPlans();
-                }
+                await loadPlans();
             } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
         }
 
@@ -985,6 +975,7 @@
                 if (error) throw error;
                 
                 closeModal("delete-plan-modal");
+                expandedPlans.delete(planToDeleteId);
                 await loadPlans();
 
                 btn.innerHTML = '<i class="fas fa-trash-alt"></i> Xóa Vĩnh Viễn';
@@ -993,10 +984,9 @@
         }
 
         /* =========================================================
-           CREATE/EDIT/SAVE/DELETE TASK (SILENT RELOAD)
+           CREATE/EDIT/SAVE/DELETE TASK (SILENT RELOAD TRONG ACCORDION)
         ========================================================= */
         function openCreateTask(planId) {
-            currentPlanId = planId; // Set currentPlanId explicitly so syncPlanProgress works
             document.getElementById("task-form").reset();
             document.getElementById("task-id").value = "";
             document.getElementById("task-plan-id").value = planId;
@@ -1004,13 +994,12 @@
             openModal("task-modal");
         }
 
-        async function editTask(taskId) {
+        async function editTask(taskId, planId) {
             const { data: task, error } = await window.supabaseClient.from("cong-viec").select("*").eq("id", taskId).single();
             if (error) { showError(error.message); return; }
 
-            currentPlanId = task["ke-hoach-id"];
             document.getElementById("task-id").value = task.id;
-            document.getElementById("task-plan-id").value = task["ke-hoach-id"] || "";
+            document.getElementById("task-plan-id").value = planId || "";
             document.getElementById("task-title").value = task["tieu-de"] || "";
             document.getElementById("task-description").value = task["mo-ta"] || "";
             document.getElementById("task-start").value = task["ngay-bat-dau"] || "";
@@ -1047,38 +1036,33 @@
                 }
                 
                 closeModal("task-modal");
-                await syncPlanProgress(planId); // Load ngầm và update lại khung task
+                await syncPlanProgress(planId); 
 
                 btn.innerHTML = '<i class="fas fa-save"></i> Lưu công việc';
                 btn.disabled = false;
             } catch (error) { showError(error.message); }
         });
 
-        async function deleteTask(taskId) {
+        async function deleteTask(taskId, planId) {
             if (!confirm("Bạn có chắc muốn xóa vĩnh viễn công việc này?")) return;
             try {
                 const { error } = await window.supabaseClient.from("cong-viec").delete().eq("id", taskId);
                 if (error) throw error;
-                await syncPlanProgress(currentPlanId);
+                await syncPlanProgress(planId);
             } catch (error) { showError(error.message); }
         }
 
-        async function togglePauseTask(taskId, currentStatus) {
+        async function togglePauseTask(taskId, currentStatus, planId) {
             const isPaused = currentStatus === 'tam-dung';
             if (!confirm(isPaused ? "Bạn muốn tiếp tục công việc này?" : "Bạn muốn tạm dừng công việc này?")) return;
             
             try {
-                if (isPaused) {
-                    // Khi tiếp tục, quét xem đã có minh chứng chưa. Chưa thì về đang-thuc-hien, có thì cho-xac-nhan
-                    const {data: evs} = await window.supabaseClient.from("cong-viec-minh-chung").select("id").eq("cong-viec-id", taskId);
-                    const newStatus = (evs && evs.length > 0) ? "cho-xac-nhan" : "dang-thuc-hien";
-                    const { error } = await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
-                    if (error) throw error;
-                } else {
-                    const { error } = await window.supabaseClient.from("cong-viec").update({"trang-thai": "tam-dung"}).eq("id", taskId);
-                    if (error) throw error;
-                }
-                await syncPlanProgress(currentPlanId);
+                // Tiếp tục đưa thẳng về dang-thuc-hien
+                const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
+                const { error } = await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
+                if (error) throw error;
+                
+                await syncPlanProgress(planId);
             } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
         }
 
@@ -1098,7 +1082,7 @@
             } catch (error) { showError(error.message); }
         }
 
-        async function approveTaskCompletion(taskId) {
+        async function approveTaskCompletion(taskId, planId) {
             if (!isApprover()) return;
             if (!confirm("Xác nhận công việc này đã HOÀN THÀNH? Hệ thống sẽ tự động cập nhật tiến độ tổng.")) return;
             try {
@@ -1107,7 +1091,7 @@
                 }).eq("id", taskId);
                 if (error) throw error;
                 
-                await syncPlanProgress(currentPlanId);
+                await syncPlanProgress(planId);
             } catch (error) { showError(error.message); }
         }
 
@@ -1148,7 +1132,7 @@
         }
 
         /* =========================================================
-           TÍNH TOÁN VÀ ĐỒNG BỘ TIẾN ĐỘ KẾ HOẠCH (SILENT RELOAD)
+           TÍNH TOÁN VÀ ĐỒNG BỘ TIẾN ĐỘ KẾ HOẠCH (SILENT RELOAD ACCORDION)
         ========================================================= */
         async function syncPlanProgress(planId) {
             try {
@@ -1175,7 +1159,6 @@
                     }
                 }
 
-                // Nếu kế hoạch đang tạm dừng thì bỏ qua việc cập nhật AutoStatus, giữ nguyên tạm dừng, chỉ update %
                 if (plan["trang-thai"] === "tam-dung") {
                     autoStatus = "tam-dung";
                 }
@@ -1197,9 +1180,8 @@
         /* =========================================================
            PHÂN CÔNG NHÂN SỰ VÀO CÔNG VIỆC (HỖ TRỢ CHỌN NHIỀU CHECKBOX)
         ========================================================= */
-        async function manageStaff(taskId) {
+        async function manageStaff(taskId, planId) {
             currentManageTaskId = taskId;
-            currentPlanId = plans.find(p => p.id === document.getElementById(`tasks-${p.id}`)?.closest('.plan-card')?.querySelector('.btn-custom').getAttribute('onclick')?.match(/'([^']+)'/)?.[1] || currentPlanId)?.id || currentPlanId;
             
             const { data: existing, error } = await window.supabaseClient.from("nhan-su-cong-viec").select("*").eq("cong-viec-id", taskId);
             if (error) { showError(error.message); return; }
@@ -1213,6 +1195,9 @@
             renderStaffCheckboxes();
             renderTempStaff();
             openModal("staff-modal");
+            
+            // Gán event listener đặc biệt để biết cần reload Plan nào
+            document.getElementById("btnSaveStaff").onclick = (e) => saveStaffAssignment(e, planId);
         }
 
         function renderStaffCheckboxes() {
@@ -1303,7 +1288,7 @@
             renderTempStaff();
         }
 
-        async function saveStaffAssignment(event) {
+        async function saveStaffAssignment(event, planId) {
             event.preventDefault();
             const btn = document.getElementById("btnSaveStaff");
             const oldText = btn.innerHTML;
@@ -1321,7 +1306,7 @@
                 }
                 
                 closeModal("staff-modal");
-                await syncPlanProgress(currentPlanId);
+                await syncPlanProgress(planId);
             } catch (err) {
                 showError("Cập nhật nhân sự thất bại: " + err.message);
             } finally {
