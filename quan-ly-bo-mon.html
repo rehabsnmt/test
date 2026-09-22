@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="description" content="Quản lý công việc Bộ môn Phục hồi chức năng.">
 
-    <!-- Content Security Policy: Đã cấp quyền tải Font chữ từ Google -->
+    <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
             default-src 'self';
             connect-src 'self' https://*.supabase.co;
@@ -27,9 +27,7 @@
     <style>
         /* =========================================================
            STYLE CHUYÊN BIỆT CHO TRANG QUẢN LÝ CÔNG VIỆC
-           (Kế thừa từ mẫu và tinh chỉnh để không đụng độ style.css chung)
         ========================================================= */
-
         .app-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -53,15 +51,19 @@
 
         .page-subtitle {
             margin: 6px 0 0;
-            color: #6b7280;
+            color: var(--text-muted);
             font-size: 14px;
         }
 
-        /* Override nút chung để hợp form */
+        /* Nút tùy chỉnh đồng bộ màu hệ thống */
         .btn-custom {
-            border: 1px solid #d1d5db;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: 1px solid var(--border);
             background: white;
-            color: #374151;
+            color: var(--text-dark);
             border-radius: 8px;
             padding: 9px 14px;
             font-weight: 500;
@@ -69,12 +71,12 @@
             font-size: 0.9rem;
             transition: 0.2s;
         }
-        .btn-custom:hover { background: #f9fafb; }
+        .btn-custom:hover { background: var(--bg-page); }
 
-        .btn-custom-primary { border-color: #2563eb; background: #2563eb; color: white; }
-        .btn-custom-primary:hover { background: #1d4ed8; color: white; }
+        .btn-custom-primary { border-color: var(--primary); background: var(--primary); color: white; }
+        .btn-custom-primary:hover { background: var(--primary-hover); color: white; }
 
-        .btn-custom-danger { color: #dc2626; border-color: transparent; }
+        .btn-custom-danger { color: var(--accent); border-color: transparent; }
         .btn-custom-danger:hover { background: #fef2f2; }
 
         .btn-custom-success { color: #15803d; border-color: transparent; }
@@ -99,46 +101,39 @@
         .custom-select,
         .custom-textarea {
             width: 100%;
-            border: 1px solid #d1d5db;
+            border: 1px solid var(--border);
             border-radius: 8px;
             background: white;
             padding: 10px 12px;
             outline: none;
             font-family: inherit;
             font-size: 0.9rem;
+            color: var(--text-dark);
         }
 
         .custom-input:focus,
         .custom-select:focus,
         .custom-textarea:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.1);
         }
 
         .custom-select { min-width: 180px; }
 
         /* Plan List */
-        .plan-list {
-            display: grid;
-            gap: 14px;
-        }
+        .plan-list { display: grid; gap: 14px; }
 
         .plan-card {
             background: white;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--border);
             border-radius: 12px;
             padding: 18px;
             transition: box-shadow .15s ease;
         }
 
-        .plan-card:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, .06); }
+        .plan-card:hover { box-shadow: var(--shadow-sm); }
 
-        .plan-top {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-        }
-
+        .plan-top { display: flex; justify-content: space-between; gap: 20px; }
         .plan-main { min-width: 0; flex: 1; text-align: left; }
 
         .plan-title {
@@ -150,7 +145,7 @@
 
         .plan-description {
             margin: 0;
-            color: #6b7280;
+            color: var(--text-muted);
             font-size: 14px;
             white-space: pre-line;
             line-height: 1.5;
@@ -161,9 +156,14 @@
             display: flex;
             gap: 16px;
             flex-wrap: wrap;
-            color: #6b7280;
+            color: var(--text-muted);
             font-size: 13px;
             align-items: center;
+        }
+        .plan-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .plan-progress { width: 220px; flex-shrink: 0; }
@@ -173,20 +173,21 @@
             justify-content: space-between;
             font-size: 13px;
             margin-bottom: 6px;
+            color: var(--text-muted);
         }
 
         .progress-value { font-weight: 700; color: var(--text-dark); }
 
         .progress-track {
             height: 8px;
-            background: #e5e7eb;
+            background: var(--border);
             border-radius: 99px;
             overflow: hidden;
         }
 
         .progress-bar {
             height: 100%;
-            background: #2563eb;
+            background: var(--primary);
             border-radius: 99px;
             transition: width 0.3s ease;
         }
@@ -198,16 +199,24 @@
             gap: 10px;
             margin-top: 16px;
             padding-top: 14px;
-            border-top: 1px solid #f0f0f0;
+            border-top: 1px solid var(--border-light);
         }
 
-        .plan-stats { color: #6b7280; font-size: 13px; }
+        .plan-stats { 
+            color: var(--text-muted); 
+            font-size: 13px; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
         .plan-actions { display: flex; gap: 7px; }
 
         /* Badges */
         .status-badge {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
+            gap: 5px;
             border-radius: 999px;
             padding: 4px 9px;
             font-size: 12px;
@@ -215,8 +224,8 @@
             white-space: nowrap;
         }
 
-        .badge-gray { background: #f3f4f6; color: #4b5563; }
-        .badge-blue { background: #dbeafe; color: #1d4ed8; }
+        .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
+        .badge-blue { background: var(--primary-light); color: var(--primary-hover); }
         .badge-green { background: #dcfce7; color: #15803d; }
         .badge-yellow { background: #fef3c7; color: #a16207; }
         .badge-red { background: #fee2e2; color: #b91c1c; }
@@ -226,12 +235,14 @@
         .custom-modal-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, .45);
+            background: rgba(15, 23, 42, .6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             display: none;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            z-index: 2000; /* Hiển thị trên header chung */
+            z-index: 2000;
         }
         .custom-modal-backdrop.show { display: flex; }
 
@@ -248,7 +259,7 @@
 
         .modal-header {
             padding: 18px 20px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -263,15 +274,17 @@
             border: 0;
             background: transparent;
             font-size: 24px;
-            color: #6b7280;
+            color: var(--text-muted);
             cursor: pointer;
+            transition: 0.2s;
         }
+        .modal-close:hover { color: var(--text-dark); }
 
         .modal-body { padding: 20px; text-align: left; }
 
         .modal-footer {
             padding: 14px 20px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid var(--border);
             display: flex;
             justify-content: flex-end;
             gap: 8px;
@@ -296,11 +309,11 @@
         }
 
         .detail-title { margin: 0; font-size: 22px; color: var(--text-dark); }
-        .detail-meta { margin-top: 7px; color: #6b7280; font-size: 13px; }
+        .detail-meta { margin-top: 7px; color: var(--text-muted); font-size: 13px; display: flex; align-items: center; gap: 6px;}
         .task-list { display: grid; gap: 10px; }
 
         .task-card {
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--border);
             border-radius: 10px;
             padding: 14px;
             text-align: left;
@@ -313,7 +326,7 @@
         }
 
         .task-title { font-weight: 650; margin-bottom: 7px; color: var(--text-dark); font-size: 1rem; }
-        .task-description { color: #6b7280; font-size: 13px; white-space: pre-line; }
+        .task-description { color: var(--text-muted); font-size: 13px; white-space: pre-line; }
         .task-meta { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         .task-actions { display: flex; gap: 5px; flex-shrink: 0; }
 
@@ -321,21 +334,29 @@
         .staff-chip {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            background: #f3f4f6;
+            gap: 6px;
+            background: var(--bg-page);
+            border: 1px solid var(--border);
             border-radius: 999px;
-            padding: 4px 8px;
+            padding: 4px 10px;
             font-size: 12px;
             color: var(--text-dark);
         }
 
         /* Empty / Loading / Error */
-        .empty { padding: 50px 20px; text-align: center; color: #6b7280; background: white; border: 1px dashed #d1d5db; border-radius: 12px; }
-        .loading { padding: 30px; text-align: center; color: #6b7280; font-size: 1rem; }
+        .empty { padding: 50px 20px; text-align: center; color: var(--text-muted); background: white; border: 1px dashed var(--border); border-radius: 12px; }
+        .loading { padding: 30px; text-align: center; color: var(--text-muted); font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .error-msg {
             padding: 12px 14px; margin-bottom: 15px; background: #fee2e2; color: #991b1b;
             border-radius: 8px; display: none; font-size: 0.9rem;
         }
+
+        /* Temp Staff Item in Modal */
+        .temp-staff-item {
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 10px; border-bottom: 1px dashed var(--border); font-size: 0.9rem;
+        }
+        .temp-staff-item:last-child { border-bottom: none; }
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
@@ -353,6 +374,7 @@
             .task-actions { justify-content: flex-start; margin-top: 10px;}
             .toolbar { flex-direction: column; }
             .search-box, .custom-select { width: 100%; min-width: 0; }
+            .detail-header { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
@@ -421,7 +443,7 @@
                     <input id="plan-id" type="hidden">
                     <div class="form-grid">
                         <div class="form-group full">
-                            <label class="form-label">Tên kế hoạch <span style="color:red">*</span></label>
+                            <label class="form-label">Tên kế hoạch <span style="color:var(--accent)">*</span></label>
                             <input id="plan-name" class="custom-input" required>
                         </div>
                         <div class="form-group full">
@@ -456,7 +478,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-custom" onclick="closeModal('plan-modal')">Hủy</button>
-                    <button type="submit" class="btn-custom btn-custom-primary">Lưu kế hoạch</button>
+                    <button type="submit" class="btn-custom btn-custom-primary"><i class="fas fa-save"></i> Lưu kế hoạch</button>
                 </div>
             </form>
         </div>
@@ -492,7 +514,7 @@
                     <input id="task-plan-id" type="hidden">
                     <div class="form-grid">
                         <div class="form-group full">
-                            <label class="form-label">Tiêu đề <span style="color:red">*</span></label>
+                            <label class="form-label">Tiêu đề <span style="color:var(--accent)">*</span></label>
                             <input id="task-title" class="custom-input" required>
                         </div>
                         <div class="form-group full">
@@ -507,16 +529,7 @@
                             <label class="form-label">Hạn hoàn thành</label>
                             <input id="task-deadline" class="custom-input" type="date">
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Mức độ ưu tiên</label>
-                            <select id="task-priority" class="custom-select">
-                                <option value="thap">Thấp</option>
-                                <option value="binh-thuong" selected>Bình thường</option>
-                                <option value="cao">Cao</option>
-                                <option value="khan-cap">Khẩn cấp</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
+                        <div class="form-group full">
                             <label class="form-label">Trạng thái công việc</label>
                             <select id="task-status" class="custom-select">
                                 <option value="chua-thuc-hien">Chưa thực hiện</option>
@@ -532,7 +545,54 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-custom" onclick="closeModal('task-modal')">Hủy</button>
-                    <button type="submit" class="btn-custom btn-custom-primary">Lưu công việc</button>
+                    <button type="submit" class="btn-custom btn-custom-primary"><i class="fas fa-save"></i> Lưu công việc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         MODAL PHÂN CÔNG NHÂN SỰ
+    ===================================================== -->
+    <div id="staff-modal" class="custom-modal-backdrop">
+        <div class="custom-modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Phân công Nhân sự</h2>
+                <button class="modal-close" onclick="closeModal('staff-modal')">×</button>
+            </div>
+            <form id="staff-form" onsubmit="saveStaffAssignment(event)">
+                <div class="modal-body">
+                    <div style="display: flex; gap: 10px; align-items: flex-end; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 2; min-width: 200px;">
+                            <label class="form-label">Giảng viên</label>
+                            <select id="staff-gv-select" class="custom-select">
+                                <option value="">-- Chọn Giảng viên --</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 120px;">
+                            <label class="form-label">Vai trò</label>
+                            <select id="staff-role-select" class="custom-select">
+                                <option value="phu-trach">Phụ trách</option>
+                                <option value="phoi-hop" selected>Phối hợp</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 0 0 auto;">
+                            <button type="button" class="btn-custom btn-custom-success" style="height: 40px;" onclick="addTempStaff()">
+                                <i class="fas fa-plus"></i> Thêm
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
+                        <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; color: var(--text-dark);">Danh sách nhân sự thực hiện:</div>
+                        <div id="temp-staff-list">
+                            <!-- JS tự render danh sách tạm -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-custom" onclick="closeModal('staff-modal')">Đóng</button>
+                    <button type="submit" class="btn-custom btn-custom-primary" id="btnSaveStaff"><i class="fas fa-save"></i> Lưu phân công</button>
                 </div>
             </form>
         </div>
@@ -551,6 +611,9 @@
         let plans = [];
         let lecturers = [];
         let currentPlanId = null;
+
+        let currentManageTaskId = null;
+        let currentTempStaff = [];
 
         /* =========================================================
            INIT & ĐỒNG BỘ SUPABASE TỪ LAYOUT
@@ -645,7 +708,7 @@
             lecturers.forEach(gv => {
                 const option = document.createElement("option");
                 option.value = gv["ma-giang-vien"];
-                option.textContent = gv["ho-ten"] ? `${gv["ho-ten"]} (${gv["ma-giang-vien"]})` : gv["ma-giang-vien"];
+                option.textContent = gv["ho-ten"] ? gv["ho-ten"] : gv["ma-giang-vien"];
                 select.appendChild(option);
             });
         }
@@ -808,8 +871,8 @@
                     <div>
                         <h2 class="detail-title">${escapeHtml(plan.ten)}</h2>
                         <div class="detail-meta">
-                            <i class="far fa-calendar"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])}
-                            · Tiến độ chung: <b>${formatProgress(plan["tien-do"])}</b>
+                            <span><i class="far fa-calendar-alt"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])}</span>
+                            <span>· Tiến độ chung: <b>${formatProgress(plan["tien-do"])}</b></span>
                         </div>
                     </div>
                     ${canCreateTask ? `
@@ -853,7 +916,6 @@
 
                     <div class="task-meta">
                         ${taskStatusBadge(task["trang-thai"])}
-                        ${priorityBadge(task["muc-do-uu-tien"])}
                         ${task["han-hoan-thanh"] ? `
                             <span class="status-badge badge-gray"><i class="far fa-clock"></i> Hạn: ${formatDate(task["han-hoan-thanh"])}</span>
                         ` : ""}
@@ -866,7 +928,7 @@
                     ${isAdmin() ? `
                         <div style="margin-top:12px;">
                             <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}')">
-                                <i class="fas fa-user-plus"></i> Gán Nhân sự thực hiện
+                                <i class="fas fa-user-plus"></i> Gán Nhân sự
                             </button>
                         </div>
                     ` : ""}
@@ -881,7 +943,7 @@
 
             return `
                 <span class="staff-chip">
-                    ${iconStr} ${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])} <small class="text-muted">(${roleStr})</small>
+                    ${iconStr} <span>${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])} <small class="text-muted">(${roleStr})</small></span>
                 </span>
             `;
         }
@@ -966,7 +1028,6 @@
             document.getElementById("task-id").value = "";
             document.getElementById("task-plan-id").value = planId;
             document.getElementById("task-modal-title").innerHTML = '<i class="fas fa-tasks"></i> Tạo công việc';
-            document.getElementById("task-priority").value = "binh-thuong";
             document.getElementById("task-status").value = "chua-thuc-hien";
             openModal("task-modal");
         }
@@ -981,7 +1042,6 @@
             document.getElementById("task-description").value = task["mo-ta"] || "";
             document.getElementById("task-start").value = task["ngay-bat-dau"] || "";
             document.getElementById("task-deadline").value = task["han-hoan-thanh"] || "";
-            document.getElementById("task-priority").value = task["muc-do-uu-tien"] || "binh-thuong";
             document.getElementById("task-status").value = task["trang-thai"] || "chua-thuc-hien";
             document.getElementById("task-modal-title").innerHTML = '<i class="fas fa-edit"></i> Sửa công việc';
             openModal("task-modal");
@@ -996,7 +1056,6 @@
                 "mo-ta": document.getElementById("task-description").value.trim() || null,
                 "ngay-bat-dau": document.getElementById("task-start").value || null,
                 "han-hoan-thanh": document.getElementById("task-deadline").value || null,
-                "muc-do-uu-tien": document.getElementById("task-priority").value,
                 "trang-thai": document.getElementById("task-status").value
             };
 
@@ -1063,45 +1122,107 @@
         }
 
         /* =========================================================
-           GÁN NHÂN SỰ VÀO CÔNG VIỆC
+           GÁN NHÂN SỰ BẰNG MODAL TRỰC QUAN
         ========================================================= */
         async function manageStaff(taskId) {
+            currentManageTaskId = taskId;
+            
+            // Tải danh sách nhân sự hiện tại của task này
             const { data: existing, error } = await window.supabaseClient.from("nhan-su-cong-viec").select("*").eq("cong-viec-id", taskId);
             if (error) { showError(error.message); return; }
 
-            const current = (existing || []).map(x => `${x["ma-giang-vien"]}:${x["vai-tro"]}`).join(", ");
-            const value = prompt(
-                "Nhập Mã Giảng Viên phân công theo định dạng sau:\n" +
-                "MAGV:phu-trach, MAGV:phoi-hop\n\n" +
-                "Ví dụ: GV01:phu-trach, GV02:phoi-hop\n\n" +
-                "Phân công hiện tại đang lưu (bạn có thể copy sửa lại):\n" + current, current
-            );
+            currentTempStaff = existing || [];
 
-            if (value === null) return; // Nhấn hủy
-
-            const rows = value.split(",").map(x => x.trim()).filter(Boolean).map(item => {
-                const [maGV, vaiTro] = item.split(":").map(x => x.trim());
-                return {
-                    "cong-viec-id": taskId,
-                    "ma-giang-vien": maGV,
-                    "vai-tro": vaiTro || "phoi-hop"
-                };
+            // Đổ danh sách Giảng viên vào Select
+            const gvSelect = document.getElementById("staff-gv-select");
+            gvSelect.innerHTML = '<option value="">-- Chọn Giảng viên --</option>';
+            lecturers.forEach(gv => {
+                const opt = document.createElement("option");
+                opt.value = gv["ma-giang-vien"];
+                opt.textContent = gv["ho-ten"] ? gv["ho-ten"] : gv["ma-giang-vien"];
+                gvSelect.appendChild(opt);
             });
+            document.getElementById("staff-role-select").value = "phoi-hop";
+
+            renderTempStaff();
+            openModal("staff-modal");
+        }
+
+        function renderTempStaff() {
+            const list = document.getElementById("temp-staff-list");
+            list.innerHTML = "";
+            if (currentTempStaff.length === 0) {
+                list.innerHTML = "<div class='text-muted' style='font-style:italic;'>Chưa có nhân sự nào được phân công.</div>";
+                return;
+            }
+            currentTempStaff.forEach((item, index) => {
+                const gv = findLecturer(item["ma-giang-vien"]);
+                const roleStr = item["vai-tro"] === "phu-trach" ? "Phụ trách" : "Phối hợp";
+                const iconStr = item["vai-tro"] === "phu-trach" ? '<i class="fas fa-user-tie" style="color:var(--primary);"></i>' : '<i class="fas fa-user"></i>';
+
+                list.innerHTML += `
+                    <div class="temp-staff-item">
+                        <span style="display: inline-flex; align-items: center; gap: 6px;">${iconStr} ${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])} - <b>${roleStr}</b></span>
+                        <button type="button" class="btn-custom btn-custom-danger btn-custom-small" onclick="removeTempStaff(${index})" title="Xóa nhân sự">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function addTempStaff() {
+            const gv = document.getElementById("staff-gv-select").value;
+            const role = document.getElementById("staff-role-select").value;
+            if (!gv) {
+                alert("Vui lòng chọn Giảng viên!");
+                return;
+            }
+            // Không cho phép trùng mã Giảng viên
+            if (currentTempStaff.some(s => s["ma-giang-vien"] === gv)) {
+                alert("Giảng viên này đã có trong danh sách phân công.");
+                return;
+            }
+            currentTempStaff.push({
+                "cong-viec-id": currentManageTaskId,
+                "ma-giang-vien": gv,
+                "vai-tro": role
+            });
+            renderTempStaff();
+            // Reset ô chọn GV
+            document.getElementById("staff-gv-select").value = "";
+        }
+
+        function removeTempStaff(index) {
+            currentTempStaff.splice(index, 1);
+            renderTempStaff();
+        }
+
+        async function saveStaffAssignment(event) {
+            event.preventDefault();
+            const btn = document.getElementById("btnSaveStaff");
+            const oldText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+            btn.disabled = true;
 
             try {
-                // Xóa list cũ
-                const { error: deleteError } = await window.supabaseClient.from("nhan-su-cong-viec").delete().eq("cong-viec-id", taskId);
+                // Xóa list cũ trên Supabase
+                const { error: deleteError } = await window.supabaseClient.from("nhan-su-cong-viec").delete().eq("cong-viec-id", currentManageTaskId);
                 if (deleteError) throw deleteError;
 
-                // Thêm list mới nếu có
-                if (rows.length) {
-                    const { error: insertError } = await window.supabaseClient.from("nhan-su-cong-viec").insert(rows);
+                // Thêm list mới nếu mảng có dữ liệu
+                if (currentTempStaff.length > 0) {
+                    const { error: insertError } = await window.supabaseClient.from("nhan-su-cong-viec").insert(currentTempStaff);
                     if (insertError) throw insertError;
                 }
                 
+                closeModal("staff-modal");
                 await openPlanDetail(currentPlanId);
-            } catch (error) {
-                showError("Cập nhật nhân sự thất bại: " + error.message);
+            } catch (err) {
+                showError("Cập nhật nhân sự thất bại: " + err.message);
+            } finally {
+                btn.innerHTML = oldText;
+                btn.disabled = false;
             }
         }
 
@@ -1146,49 +1267,38 @@
 
         function statusBadge(status) {
             const map = {
-                "chua-bat-dau": ["Chưa bắt đầu", "gray"],
-                "dang-thuc-hien": ["Đang thực hiện", "blue"],
-                "hoan-thanh": ["Hoàn thành", "green"],
-                "tam-dung": ["Tạm dừng", "yellow"],
-                "huy": ["Hủy", "red"]
+                "chua-bat-dau": ["Chưa bắt đầu", "gray", "fa-clock"],
+                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-spinner fa-spin"],
+                "hoan-thanh": ["Hoàn thành", "green", "fa-check"],
+                "tam-dung": ["Tạm dừng", "yellow", "fa-pause"],
+                "huy": ["Hủy", "red", "fa-ban"]
             };
-            const [label, color] = map[status] || [status || "—", "gray"];
-            return `<span class="status-badge badge-${color}">${label}</span>`;
+            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
+            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> ${label}</span>`;
         }
 
         function taskStatusBadge(status) {
             const map = {
-                "chua-thuc-hien": ["Chưa thực hiện", "gray"],
-                "dang-thuc-hien": ["Đang thực hiện", "blue"],
-                "cho-kiem-tra": ["Chờ kiểm tra", "orange"],
-                "hoan-thanh": ["Hoàn thành", "green"],
-                "dong": ["Đóng", "gray"],
-                "tam-dung": ["Tạm dừng", "yellow"],
-                "huy": ["Hủy", "red"]
+                "chua-thuc-hien": ["Chưa thực hiện", "gray", "fa-clock"],
+                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-spinner fa-spin"],
+                "cho-kiem-tra": ["Chờ kiểm tra", "orange", "fa-search"],
+                "hoan-thanh": ["Hoàn thành", "green", "fa-check"],
+                "dong": ["Đóng", "gray", "fa-lock"],
+                "tam-dung": ["Tạm dừng", "yellow", "fa-pause"],
+                "huy": ["Hủy", "red", "fa-ban"]
             };
-            const [label, color] = map[status] || [status || "—", "gray"];
-            return `<span class="status-badge badge-${color}">${label}</span>`;
+            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
+            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> ${label}</span>`;
         }
 
         function approvalBadge(status) {
             const map = {
-                "cho-duyet": ["Chờ duyệt", "yellow"],
-                "da-duyet": ["Đã duyệt", "green"],
-                "tu-choi": ["Từ chối", "red"]
+                "cho-duyet": ["Chờ duyệt", "yellow", "fa-hourglass-half"],
+                "da-duyet": ["Đã duyệt", "green", "fa-clipboard-check"],
+                "tu-choi": ["Từ chối", "red", "fa-times-circle"]
             };
-            const [label, color] = map[status] || [status || "—", "gray"];
-            return `<span class="status-badge badge-${color}"><i class="fas fa-clipboard-check"></i> ${label}</span>`;
-        }
-
-        function priorityBadge(priority) {
-            const map = {
-                "thap": ["Mức độ thấp", "gray"],
-                "binh-thuong": ["Bình thường", "blue"],
-                "cao": ["Ưu tiên cao", "orange"],
-                "khan-cap": ["Khẩn cấp", "red"]
-            };
-            const [label, color] = map[priority] || [priority || "—", "gray"];
-            return `<span class="status-badge badge-${color}">${label}</span>`;
+            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
+            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> ${label}</span>`;
         }
 
         function escapeHtml(value) {
