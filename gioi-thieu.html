@@ -134,7 +134,7 @@
             facultyGrid.innerHTML = "";
 
             if (!facultyList.length) {
-                facultyGrid.innerHTML = `<div class="faculty-loading">Chưa có dữ liệu giảng viên.</div>`;
+                facultyGrid.innerHTML = `<div class="faculty-loading">Chưa có dữ liệu giảng viên cơ hữu.</div>`;
                 return;
             }
 
@@ -234,7 +234,13 @@
 
                 const storageApi = window.supabaseClient.storage.from('anh-ho-so');
 
-                facultyList = (data || []).map((lecturer) => {
+                // Lọc chỉ lấy giảng viên Cơ hữu (Không phân biệt hoa thường)
+                const coHuuData = (data || []).filter(lecturer => {
+                    const phanLoai = String(lecturer["phan-loai"] || "").trim().toLowerCase();
+                    return phanLoai === "cơ hữu";
+                });
+
+                facultyList = coHuuData.map((lecturer) => {
                     const maGv = String(lecturer["ma-giang-vien"] || "").trim();
                     const fileNameInDb = String(lecturer["anh"] || "").trim();
                     
