@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="description" content="Quản lý công việc Bộ môn Phục hồi chức năng.">
 
+    <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
             default-src 'self';
             connect-src 'self' https://*.supabase.co;
@@ -18,21 +19,58 @@
     
     <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
     
+    <!-- CSS dùng chung (Đảm bảo Header, Footer đồng bộ) -->
     <link rel="stylesheet" href="css/style.css">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        .app-container { max-width: 1400px; margin: 0 auto; padding: 24px 0; background: transparent; }
+        /* =========================================================
+           STYLE CHUYÊN BIỆT CHO TRANG QUẢN LÝ CÔNG VIỆC
+        ========================================================= */
 
-        .page-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
-        .page-title { margin: 0; font-size: 28px; font-weight: 700; }
-        .page-subtitle { margin: 6px 0 0; color: var(--text-muted); font-size: 14px; }
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 0;
+            background: transparent;
+        }
 
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .page-subtitle {
+            margin: 6px 0 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Nút tùy chỉnh đồng bộ màu hệ thống */
         .btn-custom {
-            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            border: 1px solid var(--border); background: white; color: var(--text-dark);
-            border-radius: 8px; padding: 9px 14px; font-weight: 500; cursor: pointer;
-            font-size: 0.9rem; transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--text-dark);
+            border-radius: 8px;
+            padding: 9px 14px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.2s;
         }
         .btn-custom:hover { background: var(--bg-page); }
 
@@ -45,46 +83,150 @@
         .btn-custom-success { color: #15803d; border-color: transparent; }
         .btn-custom-success:hover { background: #f0fdf4; }
 
+        .btn-custom-warning { color: #d97706; border-color: transparent; }
+        .btn-custom-warning:hover { background: #fffbeb; }
+
         .btn-custom-small { padding: 6px 10px; font-size: 13px; }
 
-        .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        .search-box { flex: 1; min-width: 240px; }
+        /* Filter Toolbar */
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
 
-        .custom-input, .custom-select, .custom-textarea {
-            width: 100%; border: 1px solid var(--border); border-radius: 8px;
-            background: white; padding: 10px 12px; outline: none; font-family: inherit;
-            font-size: 0.9rem; color: var(--text-dark);
+        .search-box {
+            flex: 1;
+            min-width: 240px;
         }
-        .custom-input:focus, .custom-select:focus, .custom-textarea:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.1);
+
+        .custom-input,
+        .custom-select,
+        .custom-textarea {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            padding: 10px 12px;
+            outline: none;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text-dark);
         }
+
+        .custom-input:focus,
+        .custom-select:focus,
+        .custom-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.1);
+        }
+
         .custom-select { min-width: 180px; }
 
+        /* Plan List */
         .plan-list { display: grid; gap: 14px; }
-        .plan-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px; transition: box-shadow .15s ease; }
+
+        .plan-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            transition: box-shadow .15s ease;
+        }
+
         .plan-card:hover { box-shadow: var(--shadow-sm); }
 
         .plan-top { display: flex; justify-content: space-between; gap: 20px; }
         .plan-main { min-width: 0; flex: 1; text-align: left; }
-        .plan-title { margin: 0 0 7px; font-size: 18px; font-weight: 650; color: var(--text-dark); }
-        .plan-description { margin: 0; color: var(--text-muted); font-size: 14px; white-space: pre-line; line-height: 1.5; }
 
-        .plan-meta { margin-top: 12px; display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-muted); font-size: 13px; align-items: center; }
-        .plan-meta span { display: inline-flex; align-items: center; gap: 6px; }
+        .plan-title {
+            margin: 0 0 7px;
+            font-size: 18px;
+            font-weight: 650;
+            color: var(--text-dark);
+        }
+
+        .plan-description {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 14px;
+            white-space: pre-line;
+            line-height: 1.5;
+        }
+
+        .plan-meta {
+            margin-top: 12px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            color: var(--text-muted);
+            font-size: 13px;
+            align-items: center;
+        }
+        .plan-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
 
         .plan-progress { width: 220px; flex-shrink: 0; }
-        .progress-header { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: var(--text-muted); }
-        .progress-value { font-weight: 700; color: var(--text-dark); }
-        .progress-track { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
-        .progress-bar { height: 100%; background: var(--primary); border-radius: 99px; transition: width 0.3s ease; }
 
-        .plan-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-light); flex-wrap: wrap;}
-        .plan-stats { color: var(--text-muted); font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        .progress-value { font-weight: 700; color: var(--text-dark); }
+
+        .progress-track {
+            height: 8px;
+            background: var(--border);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 99px;
+            transition: width 0.3s ease;
+        }
+
+        .plan-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-light);
+            flex-wrap: wrap;
+        }
+
+        .plan-stats { 
+            color: var(--text-muted); 
+            font-size: 13px; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
         .plan-actions { display: flex; gap: 7px; flex-wrap: wrap; }
 
+        /* Badges */
         .status-badge {
-            display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-            border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 600; white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            border-radius: 999px;
+            padding: 4px 9px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
         }
 
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
@@ -94,51 +236,136 @@
         .badge-red { background: #fee2e2; color: #b91c1c; }
         .badge-orange { background: #ffedd5; color: #c2410c; }
 
+        /* Modals */
         .custom-modal-backdrop {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, .6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-            display: none; align-items: center; justify-content: center; padding: 20px; z-index: 2000;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 2000;
         }
         .custom-modal-backdrop.show { display: flex; }
 
-        .custom-modal { width: min(720px, 100%); max-height: calc(100vh - 40px); overflow: auto; background: white; border-radius: 14px; box-shadow: 0 20px 60px rgba(0, 0, 0, .2); }
+        .custom-modal {
+            width: min(720px, 100%);
+            max-height: calc(100vh - 40px);
+            overflow: auto;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .2);
+        }
+
         .modal-large { width: min(1000px, 100%); }
 
-        .modal-header { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #fff; color: var(--text-dark); }
-        .modal-title { margin: 0; font-size: 19px; }
-        .modal-close { border: 0; background: transparent; font-size: 24px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
-        .modal-close:hover { color: var(--text-dark); }
-        .modal-body { padding: 20px; text-align: left; }
-        .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+        .modal-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            color: var(--text-dark);
+        }
 
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .modal-title { margin: 0; font-size: 19px; }
+
+        .modal-close {
+            border: 0;
+            background: transparent;
+            font-size: 24px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .modal-close:hover { color: var(--text-dark); }
+
+        .modal-body { padding: 20px; text-align: left; }
+
+        .modal-footer {
+            padding: 14px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* Form Layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group.full { grid-column: 1 / -1; }
         .form-label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
 
-        .detail-header { display: flex; justify-content: space-between; gap: 15px; margin-bottom: 20px; }
+        /* Task Details */
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
         .detail-title { margin: 0; font-size: 22px; color: var(--text-dark); }
         .detail-meta { margin-top: 7px; color: var(--text-muted); font-size: 13px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;}
         .task-list { display: grid; gap: 10px; }
 
-        .task-card { border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: left; }
-        .task-top { display: flex; justify-content: space-between; gap: 12px; }
+        .task-card {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: left;
+        }
+
+        .task-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
         .task-title { font-weight: 650; margin-bottom: 7px; color: var(--text-dark); font-size: 1rem; }
         .task-description { color: var(--text-muted); font-size: 13px; white-space: pre-line; }
         .task-meta { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         .task-actions { display: flex; gap: 5px; flex-shrink: 0; flex-wrap: wrap;}
 
         .staff-list { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
-        .staff-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--text-dark); }
+        .staff-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-page);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 12px;
+            color: var(--text-dark);
+        }
 
+        /* Empty / Loading / Error */
         .empty { padding: 50px 20px; text-align: center; color: var(--text-muted); background: white; border: 1px dashed var(--border); border-radius: 12px; }
         .loading { padding: 30px; text-align: center; color: var(--text-muted); font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .error-msg { padding: 12px 14px; margin-bottom: 15px; background: #fee2e2; color: #991b1b; border-radius: 8px; display: none; font-size: 0.9rem; }
+        .error-msg {
+            padding: 12px 14px; margin-bottom: 15px; background: #fee2e2; color: #991b1b;
+            border-radius: 8px; display: none; font-size: 0.9rem;
+        }
 
-        .temp-staff-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px dashed var(--border); font-size: 0.9rem; }
+        /* Temp Staff Item in Modal */
+        .temp-staff-item {
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 10px; border-bottom: 1px dashed var(--border); font-size: 0.9rem;
+        }
         .temp-staff-item:last-child { border-bottom: none; }
         
         .rejection-reason-box { margin-top:10px; color:#b91c1c; font-size:13px; background:#fef2f2; padding:10px; border-radius:8px; border:1px solid #fecaca; display: flex; gap: 6px; align-items: flex-start;}
 
+        /* Mobile Responsive */
         @media (max-width: 768px) {
             .app-container { padding: 10px; }
             .page-header { align-items: flex-start; flex-direction: column; }
@@ -160,8 +387,10 @@
 </head>
 <body>
 
+    <!-- GỌI HEADER CHUNG TỪ LAYOUT.JS -->
     <div id="header-placeholder"></div>
 
+    <!-- KHU VỰC ỨNG DỤNG -->
     <main style="opacity: 0; transition: opacity 0.3s ease;">
         <div class="app-container">
 
@@ -204,9 +433,12 @@
         </div>
     </main>
 
+    <!-- GỌI FOOTER CHUNG TỪ LAYOUT.JS -->
     <div id="footer-placeholder"></div>
 
-    <!-- MODAL KẾ HOẠCH -->
+    <!-- =====================================================
+         MODAL KẾ HOẠCH
+    ===================================================== -->
     <div id="plan-modal" class="custom-modal-backdrop">
         <div class="custom-modal">
             <div class="modal-header">
@@ -233,20 +465,10 @@
                             <label class="form-label">Ngày kết thúc</label>
                             <input id="plan-end" class="custom-input" type="date">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group full">
                             <label class="form-label">Người phụ trách</label>
                             <select id="plan-manager" class="custom-select">
                                 <option value="">-- Chọn người phụ trách --</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Trạng thái tiến độ</label>
-                            <select id="plan-status" class="custom-select">
-                                <option value="chua-bat-dau">Chưa bắt đầu</option>
-                                <option value="dang-thuc-hien">Đang thực hiện</option>
-                                <option value="hoan-thanh">Hoàn thành</option>
-                                <option value="tam-dung">Tạm dừng</option>
-                                <option value="huy">Hủy</option>
                             </select>
                         </div>
                     </div>
@@ -259,7 +481,9 @@
         </div>
     </div>
 
-    <!-- MODAL CHI TIẾT KẾ HOẠCH -->
+    <!-- =====================================================
+         MODAL CHI TIẾT KẾ HOẠCH
+    ===================================================== -->
     <div id="detail-modal" class="custom-modal-backdrop">
         <div class="custom-modal modal-large">
             <div class="modal-header">
@@ -272,7 +496,9 @@
         </div>
     </div>
 
-    <!-- MODAL CÔNG VIỆC -->
+    <!-- =====================================================
+         MODAL CÔNG VIỆC
+    ===================================================== -->
     <div id="task-modal" class="custom-modal-backdrop">
         <div class="custom-modal">
             <div class="modal-header">
@@ -300,18 +526,6 @@
                             <label class="form-label">Hạn hoàn thành</label>
                             <input id="task-deadline" class="custom-input" type="date">
                         </div>
-                        <div class="form-group full">
-                            <label class="form-label">Trạng thái công việc</label>
-                            <select id="task-status" class="custom-select">
-                                <option value="chua-thuc-hien">Chưa thực hiện</option>
-                                <option value="dang-thuc-hien">Đang thực hiện</option>
-                                <option value="cho-kiem-tra">Chờ kiểm tra</option>
-                                <option value="hoan-thanh">Hoàn thành</option>
-                                <option value="dong">Đóng</option>
-                                <option value="tam-dung">Tạm dừng</option>
-                                <option value="huy">Hủy</option>
-                            </select>
-                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -322,7 +536,9 @@
         </div>
     </div>
 
-    <!-- MODAL PHÂN CÔNG NHÂN SỰ -->
+    <!-- =====================================================
+         MODAL PHÂN CÔNG NHÂN SỰ
+    ===================================================== -->
     <div id="staff-modal" class="custom-modal-backdrop">
         <div class="custom-modal">
             <div class="modal-header">
@@ -367,7 +583,9 @@
         </div>
     </div>
 
-    <!-- MODAL XÓA KẾ HOẠCH -->
+    <!-- =====================================================
+         MODAL XÓA KẾ HOẠCH
+    ===================================================== -->
     <div id="delete-plan-modal" class="custom-modal-backdrop">
         <div class="custom-modal" style="max-width: 450px;">
             <div class="modal-header">
@@ -381,13 +599,15 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-custom" onclick="closeModal('delete-plan-modal')">Hủy</button>
-                    <button type="submit" class="btn-custom btn-custom-danger"><i class="fas fa-trash-alt"></i> Xóa Vĩnh Viễn</button>
+                    <button type="submit" class="btn-custom btn-custom-danger"><i class="fas fa-trash-alt"></i> Xóa</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL TỪ CHỐI -->
+    <!-- =====================================================
+         MODAL TỪ CHỐI
+    ===================================================== -->
     <div id="reject-modal" class="custom-modal-backdrop">
         <div class="custom-modal" style="max-width: 450px;">
             <div class="modal-header">
@@ -406,9 +626,14 @@
         </div>
     </div>
 
+    <!-- KHAI BÁO JS LAYOUT CHUNG -->
     <script src="js/layout.js"></script>
 
+    <!-- JS CHỨC NĂNG TRANG QUẢN LÝ -->
     <script>
+        /* =========================================================
+           STATE VÀ BIẾN TOÀN CỤC
+        ========================================================= */
         let currentUser = null;
         let currentAccount = null;
         let plans = [];
@@ -422,6 +647,9 @@
         let planToDeleteId = null;
         let deleteRandomCode = "";
 
+        /* =========================================================
+           INIT & ĐỒNG BỘ SUPABASE TỪ LAYOUT
+        ========================================================= */
         document.addEventListener("DOMContentLoaded", () => {
             let attempts = 0;
             const timer = setInterval(() => {
@@ -444,15 +672,13 @@
                 setupEvents();
             } catch (error) {
                 showError(error.message);
-                document.getElementById('plan-list').innerHTML = `<div class="empty text-danger">Bạn không có quyền truy cập hoặc lỗi kết nối.</div>`;
+                document.getElementById('plan-list').innerHTML = `<div class="empty" style="color:var(--accent);">Bạn không có quyền truy cập hoặc lỗi kết nối.</div>`;
             }
         }
 
         async function loadCurrentUser() {
             const { data, error } = await window.supabaseClient.auth.getUser();
-            if (error || !data.user) {
-                throw new Error("Chưa đăng nhập hệ thống.");
-            }
+            if (error || !data.user) throw new Error("Chưa đăng nhập hệ thống.");
             currentUser = data.user;
 
             const { data: account, error: accountError } = await window.supabaseClient
@@ -461,12 +687,8 @@
                 .eq("id", currentUser.id)
                 .single();
 
-            if (accountError || !account) {
-                throw new Error("Không tìm thấy thông tin quyền trên hệ thống.");
-            }
-            if (!account["trang-thai"]) {
-                throw new Error("Tài khoản hiện không hoạt động.");
-            }
+            if (accountError || !account) throw new Error("Không tìm thấy thông tin quyền trên hệ thống.");
+            if (!account["trang-thai"]) throw new Error("Tài khoản hiện không hoạt động.");
 
             currentAccount = account;
             applyRoleUI();
@@ -537,6 +759,8 @@
                 rejectHtml = `<div class="rejection-reason-box"><i class="fas fa-exclamation-circle" style="margin-top:3px;"></i> <div><b>Lý do từ chối:</b> ${escapeHtml(plan["ly-do-tu-choi"])}</div></div>`;
             }
 
+            const isPaused = plan["trang-thai"] === 'tam-dung';
+
             return `
                 <div class="plan-card">
                     <div class="plan-top">
@@ -546,8 +770,8 @@
                             
                             <div class="plan-meta">
                                 <span><i class="far fa-calendar-alt"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])}</span>
-                                <span><i class="fas fa-user-tie"></i> Phụ trách: ${escapeHtml(manager?.["ho-ten"] || plan["nguoi-phu-trach-ma-gv"] || "Chưa phân công")}</span>
-                                <span><i class="fas fa-user-edit"></i> Người tạo: ${escapeHtml(creator?.["ho-ten"] || plan["created-by-ma-gv"] || "Hệ thống")}</span>
+                                <span><i class="fas fa-user-tie"></i> Phụ trách: ${escapeHtml(manager?.["ho-ten"] || "Chưa phân công")}</span>
+                                <span><i class="fas fa-user-edit"></i> Người tạo: ${escapeHtml(creator?.["ho-ten"] || "Hệ thống")}</span>
                                 ${statusBadge(plan["trang-thai"])}
                                 ${approvalBadge(plan["trang-thai-duyet"])}
                             </div>
@@ -573,14 +797,17 @@
 
                         <div class="plan-actions">
                             <button class="btn-custom btn-custom-small" onclick="openPlanDetail('${plan.id}')">
-                                <i class="fas fa-eye"></i> Xem chi tiết
+                                <i class="fas fa-eye"></i> Xem công việc
                             </button>
                             ${canEditPlan(plan) ? `
                                 <button class="btn-custom btn-custom-small" onclick="editPlan('${plan.id}')">
-                                    <i class="fas fa-pen"></i> Sửa KH
+                                    <i class="fas fa-pen"></i> Sửa
+                                </button>
+                                <button class="btn-custom btn-custom-small btn-custom-warning" onclick="togglePausePlan('${plan.id}', '${plan["trang-thai"]}')">
+                                    <i class="fas ${isPaused ? 'fa-play' : 'fa-pause'}"></i> ${isPaused ? 'Tiếp tục' : 'Tạm dừng'}
                                 </button>
                                 <button class="btn-custom btn-custom-small btn-custom-danger" onclick="openDeletePlanModal('${plan.id}')">
-                                    <i class="fas fa-trash-alt"></i> Xóa KH
+                                    <i class="fas fa-trash-alt"></i> Xóa
                                 </button>
                             ` : ""}
                             ${isApprover() && plan["trang-thai-duyet"] === "cho-duyet" ? `
@@ -708,7 +935,7 @@
                         ${task["han-hoan-thanh"] ? `
                             <span class="status-badge badge-gray"><i class="far fa-clock"></i> Hạn: ${formatDate(task["han-hoan-thanh"])}</span>
                         ` : ""}
-                        <span><i class="fas fa-user-edit"></i> Người tạo: ${escapeHtml(creator?.["ho-ten"] || task["created-by-ma-gv"] || "Hệ thống")}</span>
+                        <span class="status-badge badge-gray"><i class="fas fa-user-edit"></i> Người tạo: ${escapeHtml(creator?.["ho-ten"] || "Hệ thống")}</span>
                     </div>
                     
                     ${rejectHtml}
@@ -747,11 +974,13 @@
             return false;
         }
 
+        /* =========================================================
+           CREATE/EDIT/SAVE PLAN
+        ========================================================= */
         document.getElementById("btn-create-plan").addEventListener("click", () => {
             document.getElementById("plan-form").reset();
             document.getElementById("plan-id").value = "";
             document.getElementById("plan-modal-title").innerHTML = 'Tạo kế hoạch';
-            document.getElementById("plan-status").value = "chua-bat-dau";
             openModal("plan-modal");
         });
 
@@ -764,7 +993,6 @@
             document.getElementById("plan-start").value = plan["ngay-bat-dau"] || "";
             document.getElementById("plan-end").value = plan["ngay-ket-thuc"] || "";
             document.getElementById("plan-manager").value = plan["nguoi-phu-trach-ma-gv"] || "";
-            document.getElementById("plan-status").value = plan["trang-thai"] || "chua-bat-dau";
             document.getElementById("plan-modal-title").innerHTML = 'Sửa kế hoạch';
             openModal("plan-modal");
         }
@@ -777,8 +1005,7 @@
                 "mo-ta": document.getElementById("plan-description").value.trim() || null,
                 "ngay-bat-dau": document.getElementById("plan-start").value || null,
                 "ngay-ket-thuc": document.getElementById("plan-end").value || null,
-                "nguoi-phu-trach-ma-gv": document.getElementById("plan-manager").value || null,
-                "trang-thai": document.getElementById("plan-status").value
+                "nguoi-phu-trach-ma-gv": document.getElementById("plan-manager").value || null
             };
 
             try {
@@ -790,6 +1017,8 @@
                     if (error) throw error;
                 } else {
                     payload["created-by-ma-gv"] = currentAccount["ma-giang-vien"];
+                    payload["trang-thai"] = "chua-bat-dau";
+                    
                     if (currentAccount.role === "admin") {
                         payload["trang-thai-duyet"] = "cho-duyet";
                     } else {
@@ -802,6 +1031,21 @@
                 await loadPlans();
             } catch (error) { showError(error.message); }
         });
+
+        async function togglePausePlan(planId, currentStatus) {
+            const isPaused = currentStatus === 'tam-dung';
+            if (!confirm(isPaused ? "Bạn muốn tiếp tục kế hoạch này?" : "Bạn muốn tạm dừng kế hoạch này?")) return;
+            
+            const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
+            try {
+                const { error } = await window.supabaseClient.from("ke-hoach").update({
+                    "trang-thai": newStatus
+                }).eq("id", planId);
+                
+                if (error) throw error;
+                await loadPlans();
+            } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
+        }
 
         /* =========================================================
            XOÁ KẾ HOẠCH
@@ -837,7 +1081,6 @@
             document.getElementById("task-id").value = "";
             document.getElementById("task-plan-id").value = planId;
             document.getElementById("task-modal-title").innerHTML = 'Tạo công việc';
-            document.getElementById("task-status").value = "chua-thuc-hien";
             openModal("task-modal");
         }
 
@@ -851,7 +1094,6 @@
             document.getElementById("task-description").value = task["mo-ta"] || "";
             document.getElementById("task-start").value = task["ngay-bat-dau"] || "";
             document.getElementById("task-deadline").value = task["han-hoan-thanh"] || "";
-            document.getElementById("task-status").value = task["trang-thai"] || "chua-thuc-hien";
             document.getElementById("task-modal-title").innerHTML = 'Sửa công việc';
             openModal("task-modal");
         }
@@ -864,8 +1106,7 @@
                 "tieu-de": document.getElementById("task-title").value.trim(),
                 "mo-ta": document.getElementById("task-description").value.trim() || null,
                 "ngay-bat-dau": document.getElementById("task-start").value || null,
-                "han-hoan-thanh": document.getElementById("task-deadline").value || null,
-                "trang-thai": document.getElementById("task-status").value
+                "han-hoan-thanh": document.getElementById("task-deadline").value || null
             };
 
             try {
@@ -877,6 +1118,8 @@
                     if (error) throw error;
                 } else {
                     payload["created-by-ma-gv"] = currentAccount["ma-giang-vien"];
+                    payload["trang-thai"] = "chua-thuc-hien";
+
                     if (currentAccount.role === "admin") {
                         payload["trang-thai-duyet"] = "cho-duyet";
                     } else {
