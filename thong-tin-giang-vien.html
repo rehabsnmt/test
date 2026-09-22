@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Thông tin chi tiết Giảng viên - Bộ môn Phục hồi chức năng.">
+    
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        connect-src 'self' https://*.supabase.co;
+        img-src 'self' data: blob: https://*.supabase.co;
+        style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+        font-src 'self' https://cdnjs.cloudflare.com;
+    ">
+
+    <title>Hồ sơ Giảng viên - Bộ môn PHCN</title>
+
+    <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* =========================================================
+           CƠ BẢN - CHỐNG TRÀN NGANG TOÀN TRANG
+        ========================================================= */
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { width: 100%; max-width: 100%; overflow-x: hidden; margin: 0; }
+
+        main { width: 100%; max-width: 1250px; padding: 2rem 2%; margin: 0 auto; min-height: 75vh; box-sizing: border-box; }
+        .hidden { display: none !important; }
+
+        /* =========================================================
+           BỐ CỤC CV CHÍNH
+        ========================================================= */
+        .cv-wrapper {
+            width: 100%; max-width: 100%; min-width: 0;
+            display: grid;
+            grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+            gap: 2rem; background: white; border-radius: 12px;
+            box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+            overflow: hidden; align-items: stretch; position: relative;
+        }
+
+        #btnEditProfile {
+            position: absolute; top: 15px; right: 15px;
+            background: var(--primary); color: white; border: none;
+            padding: 8px 15px; border-radius: 6px; font-weight: bold;
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px;
+            z-index: 10; box-shadow: 0 4px 6px rgba(2, 132, 199, 0.2);
+        }
+        #btnEditProfile:hover { background: var(--primary-hover); transform: translateY(-2px); }
+
+        /* =========================================================
+           CỘT TRÁI - SIDEBAR
+        ========================================================= */
+        .cv-sidebar {
+            min-width: 0; width: 100%; background: #f8fafc; padding: 2.5rem 2rem;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            border-right: 1px solid var(--border);
+        }
+
+        .cv-avatar-container { position: relative; display: flex; flex-direction: column; align-items: center; margin-bottom: 1.5rem; width: 100%; max-width: 100%; }
+        .cv-avatar {
+            width: 240px; height: 240px; max-width: 100%; aspect-ratio: 1 / 1;
+            border-radius: 12px; border: 4px solid white; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            background-color: white; display: flex; align-items: center; justify-content: center;
+            font-size: 4rem; color: #94a3b8; overflow: hidden; position: relative; margin-bottom: 5px; flex-shrink: 0;
+        }
+        .cv-avatar img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; }
+        .cv-avatar.editable { cursor: pointer; }
+
+        .cv-avatar-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+            color: white; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease; z-index: 2;
+        }
+        .cv-avatar.editable:hover .cv-avatar-overlay { opacity: 1; }
+
+        .cv-degree { width: 100%; font-size: 0.95rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; overflow-wrap: anywhere; }
+        .cv-name { width: 100%; font-size: 1.4rem; font-weight: 800; color: var(--text-dark); margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .cv-position { font-size: 0.9rem; font-weight: 600; color: var(--text-body); margin-bottom: 15px; background: #f1f5f9; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); display: inline-block; }
+        .pos-head { color: #dc2626 !important; font-weight: 700 !important; background: #fee2e2 !important; border-color: #fca5a5 !important; }
+        .pos-admin { color: #16a34a !important; font-weight: 700 !important; background: #dcfce7 !important; border-color: #86efac !important; }
+
+        .cv-major-container { margin-bottom: 15px; width: 100%; display: flex; justify-content: center; overflow: hidden; min-width: 0; }
+        .major-badge { padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .badge-vltl { background-color: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+        .badge-hdtl { background-color: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+        .badge-nntl { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+        .badge-default { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+        .cv-email { width: 100%; font-size: clamp(0.75rem, 3vw, 0.95rem); color: var(--text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+        /* =========================================================
+           CỘT PHẢI - NỘI DUNG TABS
+        ========================================================= */
+        .cv-main { min-width: 0; width: 100%; padding: 2.5rem 2.5rem 2.5rem 1rem; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .cv-watermark { position: absolute; top: 15px; right: 20px; width: 180px; max-width: 35%; opacity: 0.08; pointer-events: none; z-index: 0; user-select: none; }
+
+        .cv-tabs { width: 100%; display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; position: relative; z-index: 1; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .cv-tabs::-webkit-scrollbar { display: none; }
+        .cv-tab-btn { padding: 10px 15px; background: none; border: none; font-size: 1.05rem; font-weight: 700; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; white-space: nowrap; flex: 0 0 auto; line-height: 1.4;}
+        .cv-tab-btn:hover { color: var(--primary); }
+        .cv-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .mobile-br { display: none; }
+
+        .cv-section { display: none; position: relative; z-index: 1; min-height: 250px; width: 100%; }
+        .cv-section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ÉP BUỘC CĂN ĐỀU 2 BÊN NỘI DUNG TAB */
+        .cv-content { 
+            width: 100%; font-size: 0.95rem; color: var(--text-body); line-height: 1.8; 
+            text-align: justify; /* Căn đều 2 bên */
+            overflow-wrap: anywhere; word-break: break-word; 
+        }
+        .cv-content ul { padding-left: 20px; margin-top: 5px; list-style-type: disc; }
+        .cv-content ol { padding-left: 20px; margin-top: 5px; list-style-type: decimal; }
+        .cv-content li { margin-bottom: 5px; }
+        .empty-text { font-style: italic; color: #94a3b8; }
+
+        /* =========================================================
+           MODAL & FORM (TÍCH HỢP TRÌNH SOẠN THẢO)
+        ========================================================= */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 10px; overflow-y: auto; }
+        .modal-content { background: white; border-radius: 8px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); overflow: hidden; width: 100%; max-width: 800px; display: flex; flex-direction: column; max-height: 90vh; }
+        .modal-header { padding: 15px 20px; background: var(--primary); color: white; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { margin: 0; font-size: 1.2rem; }
+        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label { font-size: 0.9rem; font-weight: 600; color: var(--text-dark); margin-bottom: 5px; }
+        .form-control { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-size: 0.95rem; outline: none; transition: 0.2s; }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1); }
+        
+        /* CSS cho Rich Text Editor */
+        .editor-toolbar {
+            display: flex; gap: 5px; margin-bottom: 5px; padding: 5px;
+            background: #f1f5f9; border-radius: 6px; border: 1px solid var(--border);
+        }
+        .editor-toolbar button {
+            background: white; border: 1px solid #cbd5e1; border-radius: 4px; 
+            padding: 5px 10px; cursor: pointer; color: #475569; transition: 0.2s;
+        }
+        .editor-toolbar button:hover { background: #e2e8f0; color: var(--primary); }
+        .richtext-editor {
+            min-height: 120px; max-height: 300px; overflow-y: auto; background: white;
+            line-height: 1.6; text-align: justify;
+        }
+        .richtext-editor ul { list-style-type: disc; padding-left: 20px; margin: 5px 0;}
+        .richtext-editor ol { list-style-type: decimal; padding-left: 20px; margin: 5px 0;}
+
+        .btn-save { background: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 1.05rem; cursor: pointer; transition: 0.2s; width: 100%; margin-top: 10px; }
+        .btn-save:hover { background: #059669; }
+
+        /* Toast & Loading */
+        .toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;}
+        .toast { min-width: 250px; background-color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); display: flex; align-items: center; gap: 12px; transform: translateX(120%); transition: 0.4s; font-weight: 600; border-left: 5px solid #22c55e; opacity: 0; pointer-events: auto; }
+        .toast.show { transform: translateX(0); opacity: 1; }
+        .toast.danger { border-left-color: #ef4444; }
+        #loadingScreen { text-align: center; padding: 5rem 0; color: var(--primary); font-weight: 600; font-size: 1.2rem; }
+
+        /* =========================================================
+           RESPONSIVE (ĐIỆN THOẠI & TABLET)
+        ========================================================= */
+        @media (max-width: 900px) {
+            .cv-wrapper { grid-template-columns: 300px minmax(0, 1fr); }
+            .cv-sidebar, .cv-main { padding: 2rem 1.25rem; }
+            .cv-avatar { width: 200px; height: 200px; }
+        }
+
+        @media (max-width: 768px) {
+            main { padding: 1rem 10px; }
+            .cv-wrapper { grid-template-columns: minmax(0, 1fr); gap: 0; }
+            .cv-sidebar { padding: 1.5rem 1rem; border-right: none; border-bottom: 1px solid var(--border); }
+            .cv-avatar { width: min(220px, 75vw); height: auto; }
+            .cv-name { font-size: 1.3rem; }
+            .cv-main { padding: 1.25rem 1rem; }
+            .cv-watermark { width: 90px; top: 10px; right: 10px; }
+            
+            .mobile-br { display: block; }
+            .cv-tabs { gap: 5px; justify-content: space-between;}
+            .cv-tab-btn { white-space: normal; padding: 8px 5px; font-size: 0.85rem; text-align: center; }
+            
+            #btnEditProfile { position: relative; top: auto; right: auto; margin: 0 auto 15px auto; }
+            .form-grid { grid-template-columns: minmax(0, 1fr); }
+            .toast-container { top: 70px; left: 10px; right: 10px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- GỌI HEADER CHUNG -->
+    <div id="header-placeholder"></div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <main>
+        <div id="loadingScreen">
+            <i class="fas fa-spinner fa-spin fa-2x"></i><br><br>Đang tải thông tin...
+        </div>
+
+        <div id="cvWrapper" class="cv-wrapper hidden">
+            <!-- CỘT TRÁI: THÔNG TIN CƠ BẢN -->
+            <div class="cv-sidebar">
+                <div class="cv-avatar-container">
+                    <div class="cv-avatar" id="displayAvatar" onclick="triggerAvatarUpload()">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <input type="file" id="uploadAvatar" accept="image/jpeg, image/jpg, image/png" class="hidden">
+                    <div id="avatarNote" class="hidden" style="font-size:0.85rem;color:#64748b;margin-top:8px;font-weight:600;">(Chọn ảnh &lt; 2MB)</div>
+                </div>
+
+                <div class="cv-degree" id="displayDegree">Học vị</div>
+                <div class="cv-name" id="displayName">Họ và Tên</div>
+                <div class="cv-position" id="displayPosition">Chức vụ</div>
+                
+                <div class="cv-major-container" id="displayMajor"></div>
+
+                <div class="cv-email" id="displayEmail">Chưa cập nhật</div>
+            </div>
+
+            <!-- CỘT PHẢI: CHI TIẾT CV -->
+            <div class="cv-main">
+                <img src="images/logo_Bộ môn.png" class="cv-watermark" alt="Logo Bộ Môn">
+
+                <div class="cv-tabs">
+                    <button class="cv-tab-btn active" onclick="switchCvTab('edu', this)">Quá trình<br class="mobile-br"> đào tạo</button>
+                    <button class="cv-tab-btn" onclick="switchCvTab('exp', this)">Quá trình<br class="mobile-br"> công tác</button>
+                    <button class="cv-tab-btn" onclick="switchCvTab('res', this)">Nghiên cứu<br class="mobile-br"> khoa học</button>
+                </div>
+
+                <div class="cv-section active" id="sec-edu">
+                    <div class="cv-content" id="displayEducation"><span class="empty-text">Chưa cập nhật thông tin.</span></div>
+                </div>
+
+                <div class="cv-section" id="sec-exp">
+                    <div class="cv-content" id="displayExperience"><span class="empty-text">Chưa cập nhật thông tin.</span></div>
+                </div>
+
+                <div class="cv-section" id="sec-res">
+                    <div class="cv-content" id="displayResearch"><span class="empty-text">Chưa cập nhật thông tin.</span></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL CHỈNH SỬA THÔNG TIN -->
+    <div id="editModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cập nhật Thông tin Hồ sơ</h3>
+                <span style="cursor:pointer;font-size:1.2rem;font-weight:bold;" onclick="closeEditModal()">✕</span>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm" onsubmit="saveProfile(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Họ và Tên *</label>
+                            <input type="text" id="inputName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Học hàm / Học vị</label>
+                            <select id="inputDegree" class="form-control">
+                                <option value="">Không có</option>
+                                <option value="CN">Cử nhân (CN)</option>
+                                <option value="ThS">Thạc sĩ (ThS)</option>
+                                <option value="TS">Tiến sĩ (TS)</option>
+                                <option value="PGS.TS">Phó Giáo sư, Tiến sĩ (PGS.TS)</option>
+                                <option value="GS.TS">Giáo sư, Tiến sĩ (GS.TS)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Chức vụ</label>
+                            <select id="inputPositionSelect" class="form-control" onchange="toggleOtherInput('inputPositionSelect', 'inputPositionOther')">
+                                <option value="Trưởng Bộ môn">Trưởng Bộ môn</option>
+                                <option value="Giáo vụ">Giáo vụ</option>
+                                <option value="Giảng viên">Giảng viên</option>
+                                <option value="OTHER">Khác...</option>
+                            </select>
+                            <input type="text" id="inputPositionOther" class="form-control hidden" placeholder="Nhập chức vụ khác..." style="margin-top:5px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Chuyên ngành</label>
+                            <select id="inputMajorSelect" class="form-control" onchange="toggleOtherInput('inputMajorSelect', 'inputMajorOther')">
+                                <option value="Vật lý trị liệu">Vật lý trị liệu</option>
+                                <option value="Hoạt động trị liệu">Hoạt động trị liệu</option>
+                                <option value="Ngôn ngữ trị liệu">Ngôn ngữ trị liệu</option>
+                                <option value="OTHER">Khác...</option>
+                            </select>
+                            <input type="text" id="inputMajorOther" class="form-control hidden" placeholder="Nhập chuyên ngành khác..." style="margin-top:5px;">
+                        </div>
+                    </div>
+
+                    <!-- Khu vực trình soạn thảo HTML -->
+                    <div class="form-group full" style="margin-bottom:15px;">
+                        <label>Quá trình đào tạo</label>
+                        <div class="editor-toolbar">
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('bold', false, null)" title="In đậm"><i class="fas fa-bold"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('italic', false, null)" title="In nghiêng"><i class="fas fa-italic"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('underline', false, null)" title="Gạch chân"><i class="fas fa-underline"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('insertOrderedList', false, null)" title="Danh sách số"><i class="fas fa-list-ol"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('insertUnorderedList', false, null)" title="Danh sách chấm"><i class="fas fa-list-ul"></i></button>
+                        </div>
+                        <div id="inputEducation" class="form-control richtext-editor" contenteditable="true"></div>
+                    </div>
+
+                    <div class="form-group full" style="margin-bottom:15px;">
+                        <label>Quá trình công tác</label>
+                        <div class="editor-toolbar">
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('bold', false, null)" title="In đậm"><i class="fas fa-bold"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('italic', false, null)" title="In nghiêng"><i class="fas fa-italic"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('underline', false, null)" title="Gạch chân"><i class="fas fa-underline"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('insertOrderedList', false, null)" title="Danh sách số"><i class="fas fa-list-ol"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('insertUnorderedList', false, null)" title="Danh sách chấm"><i class="fas fa-list-ul"></i></button>
+                        </div>
+                        <div id="inputExperience" class="form-control richtext-editor" contenteditable="true"></div>
+                    </div>
+
+                    <div class="form-group full" style="margin-bottom:15px;">
+                        <label>Nghiên cứu khoa học</label>
+                        <div class="editor-toolbar">
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('bold', false, null)" title="In đậm"><i class="fas fa-bold"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('italic', false, null)" title="In nghiêng"><i class="fas fa-italic"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('underline', false, null)" title="Gạch chân"><i class="fas fa-underline"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('insertOrderedList', false, null)" title="Danh sách số"><i class="fas fa-list-ol"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('insertUnorderedList', false, null)" title="Danh sách chấm"><i class="fas fa-list-ul"></i></button>
+                        </div>
+                        <div id="inputResearch" class="form-control richtext-editor" contenteditable="true"></div>
+                    </div>
+                    
+                    <button type="submit" class="btn-save" id="btnSaveSubmit">Lưu thông tin</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- GỌI FOOTER CHUNG -->
+    <div id="footer-placeholder"></div>
+
+    <script src="js/layout.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            let targetMaGv = null;
+            let isHasPermissionToEdit = false;
+            let currentProfileData = {};
+
+            // Lấy ID từ URL param
+            const urlParams = new URLSearchParams(window.location.search);
+            targetMaGv = urlParams.get('id');
+
+            // Chuyển Tab
+            window.switchCvTab = (tabId, btnEl) => {
+                document.querySelectorAll('.cv-section').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.cv-tab-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById('sec-' + tabId).classList.add('active');
+                btnEl.classList.add('active');
+            };
+
+            // Toast
+            function showToast(message, type = 'success') {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `<span>${message}</span>`;
+                container.appendChild(toast);
+                setTimeout(() => toast.classList.add('show'), 10);
+                setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000);
+            }
+
+            // Hiện ô nhập khác
+            window.toggleOtherInput = (selectId, inputId) => {
+                const selectEl = document.getElementById(selectId);
+                const inputEl = document.getElementById(inputId);
+                if (selectEl.value === 'OTHER') {
+                    inputEl.classList.remove('hidden');
+                    inputEl.focus();
+                } else {
+                    inputEl.classList.add('hidden');
+                }
+            };
+
+            // RENDER GIAO DIỆN CHÍNH
+            function renderProfileCV(data) {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                const wrapper = document.getElementById('cvWrapper');
+                wrapper.classList.remove('hidden');
+
+                const hocHam = String(data['hoc-ham'] || '').trim();
+                const hocVi = String(data['hoc-vi'] || '').trim();
+                let degreeDisplay = hocHam && hocVi ? `${hocHam}, ${hocVi}` : (hocHam || hocVi || 'Giảng viên');
+
+                // Học vị & Tên
+                document.getElementById('displayDegree').innerText = degreeDisplay;
+                document.getElementById('displayName').innerText = data['ho-ten'] || 'Chưa cập nhật';
+
+                // Xử lý Chức vụ
+                const posEl = document.getElementById('displayPosition');
+                posEl.innerText = data['chuc-vu'] || 'Giảng viên';
+                posEl.className = 'cv-position';
+                if (data['chuc-vu'] === 'Trưởng Bộ môn') posEl.classList.add('pos-head');
+                else if (data['chuc-vu'] === 'Giáo vụ') posEl.classList.add('pos-admin');
+
+                // Cập nhật Email CÓ ICON
+                document.getElementById('displayEmail').innerHTML = `<i class="fas fa-envelope" style="color:var(--primary);"></i> ${data['email'] || 'Chưa cập nhật'}`;
+
+                // Xử lý Chuyên ngành
+                let majorText = data['chuyen-nganh'] || 'Chưa cập nhật';
+                let badgeClass = 'badge-default';
+                let textLower = majorText.toLowerCase();
+
+                if (textLower.includes('vật lý')) badgeClass = 'badge-vltl';
+                else if (textLower.includes('hoạt động')) badgeClass = 'badge-hdtl';
+                else if (textLower.includes('ngôn ngữ')) badgeClass = 'badge-nntl';
+
+                document.getElementById('displayMajor').innerHTML = `<span class="major-badge ${badgeClass}">${majorText}</span>`;
+
+                // Tự thu nhỏ chữ Tên và Ngành nếu quá dài
+                setTimeout(() => {
+                    const nameEl = document.getElementById('displayName');
+                    if (nameEl) {
+                        nameEl.style.fontSize = '';
+                        let currentSize = window.innerWidth <= 768 ? 1.3 : 1.4;
+                        nameEl.style.fontSize = currentSize + 'rem';
+                        while (nameEl.scrollWidth > nameEl.clientWidth && currentSize > 0.7) {
+                            currentSize -= 0.05;
+                            nameEl.style.fontSize = currentSize + 'rem';
+                        }
+                    }
+                    const majorContainer = document.getElementById('displayMajor');
+                    const badge = majorContainer.querySelector('.major-badge');
+                    if (badge) {
+                        badge.style.fontSize = '0.85rem';
+                        let fontSize = 0.85;
+                        while (badge.scrollWidth > majorContainer.clientWidth && fontSize > 0.3) {
+                            fontSize -= 0.02;
+                            badge.style.fontSize = fontSize + 'rem';
+                        }
+                    }
+                }, 50);
+
+                // Avatar
+                const avatarDiv = document.getElementById('displayAvatar');
+                let overlayHtml = isHasPermissionToEdit ? `<div class="cv-avatar-overlay"><span style="font-size:1.1rem;font-weight:bold;">Thay ảnh</span></div>` : '';
+
+                if (isHasPermissionToEdit) {
+                    avatarDiv.classList.add('editable');
+                    document.getElementById('avatarNote').classList.remove('hidden');
+                } else {
+                    avatarDiv.classList.remove('editable');
+                    document.getElementById('avatarNote').classList.add('hidden');
+                }
+
+                if (data['anh'] && data['anh'].trim() !== '') {
+                    // Nếu đã có sẵn URL public
+                    avatarDiv.innerHTML = `<img src="${data['anh']}" alt="Avatar" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>${overlayHtml}';">${overlayHtml}`;
+                } else {
+                    avatarDiv.innerHTML = `<i class="fas fa-user"></i>${overlayHtml}`;
+                }
+
+                // Làm sạch nội dung HTML
+                const cleanHTML = (html) => {
+                    if (!html) return '';
+                    const str = html.trim();
+                    if (str === '<br>' || str === '<div><br></div>' || str === '<p><br></p>') return '';
+                    return str;
+                };
+
+                const formatText = (text) => {
+                    const cleaned = cleanHTML(text);
+                    return cleaned !== '' ? cleaned : `<span class="empty-text">Chưa cập nhật thông tin.</span>`;
+                };
+
+                // Điền HTML (trình soạn thảo)
+                document.getElementById('displayEducation').innerHTML = formatText(data['qua-trinh-dao-tao']);
+                document.getElementById('displayExperience').innerHTML = formatText(data['qua-trinh-cong-tac']);
+                document.getElementById('displayResearch').innerHTML = formatText(data['nghien-cuu-khoa-hoc']);
+
+                // Nút Edit
+                const existingBtn = document.getElementById('btnEditProfile');
+                if (existingBtn) existingBtn.remove();
+                if (isHasPermissionToEdit) {
+                    const btnEdit = document.createElement('button');
+                    btnEdit.id = 'btnEditProfile';
+                    btnEdit.innerHTML = '<i class="fas fa-pencil-alt"></i> Chỉnh sửa Hồ sơ';
+                    btnEdit.onclick = openEditModal;
+                    wrapper.appendChild(btnEdit);
+                }
+            }
+
+            // FETCH DATA TỪ SUPABASE
+            async function loadProfile() {
+                if (!targetMaGv) {
+                    document.getElementById('loadingScreen').innerHTML = `Không tìm thấy mã giảng viên!`;
+                    return;
+                }
+                
+                try {
+                    const { data, error } = await window.supabaseClient
+                        .from('giang-vien')
+                        .select('*')
+                        .eq('ma-giang-vien', targetMaGv)
+                        .single();
+
+                    if (error) throw error;
+
+                    if (data) {
+                        currentProfileData = data;
+                        renderProfileCV(currentProfileData);
+                    } else {
+                        document.getElementById('loadingScreen').innerHTML = `Không tìm thấy thông tin Giảng viên này.`;
+                    }
+                } catch (error) {
+                    document.getElementById('loadingScreen').innerHTML = `Lỗi tải dữ liệu: ${error.message}`;
+                }
+            }
+
+            // KIỂM TRA ĐĂNG NHẬP VÀ PHÂN QUYỀN
+            async function checkAuthAndLoad() {
+                try {
+                    const { data: authData } = await window.supabaseClient.auth.getUser();
+                    
+                    if (authData && authData.user) {
+                        // Tra role từ tai-khoan-he-thong
+                        const { data: accData } = await window.supabaseClient
+                            .from('tai-khoan-he-thong')
+                            .select('*')
+                            .eq('id', authData.user.id)
+                            .single();
+                        
+                        if (accData) {
+                            if (['superadmin', 'head', 'admin'].includes(accData.role) || String(accData['ma-giang-vien']).trim() === String(targetMaGv).trim()) {
+                                isHasPermissionToEdit = true;
+                            }
+                        }
+                    }
+                    
+                    loadProfile();
+                } catch(e) {
+                    console.error("Lỗi kiểm tra phiên:", e);
+                    loadProfile(); // Dù lỗi vẫn load để người lạ xem
+                }
+            }
+
+            // ==========================================
+            // UPLOAD ẢNH (Resize + Convert -> Bucket Supabase)
+            // ==========================================
+            window.triggerAvatarUpload = () => {
+                if (isHasPermissionToEdit) document.getElementById('uploadAvatar').click();
+            };
+
+            document.getElementById('uploadAvatar').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                if (file.size > 2 * 1024 * 1024) {
+                    showToast("Vui lòng chọn ảnh có dung lượng nhỏ hơn 2MB!", "danger");
+                    e.target.value = '';
+                    return;
+                }
+
+                const overlay = document.querySelector('.cv-avatar-overlay');
+                if (overlay) {
+                    overlay.innerHTML = '<span style="font-weight:bold;">Đang tải...</span>';
+                    overlay.style.opacity = '1';
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+
+                        let width = img.width;
+                        let height = img.height;
+                        const maxSize = 500;
+
+                        if (width > height) {
+                            if (width > maxSize) { height *= maxSize / width; width = maxSize; }
+                        } else {
+                            if (height > maxSize) { width *= maxSize / height; height = maxSize; }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Lưu ảnh lên Bucket "anh-ho-so"
+                        canvas.toBlob(async (blob) => {
+                            try {
+                                const fileName = `${targetMaGv}_${Date.now()}.jpg`; // Dùng datetime để vượt cache
+                                
+                                const { data: uploadData, error: uploadError } = await window.supabaseClient.storage
+                                    .from('anh-ho-so')
+                                    .upload(fileName, blob, { 
+                                        upsert: true,
+                                        contentType: 'image/jpeg'
+                                    });
+
+                                if (uploadError) throw uploadError;
+
+                                const { data: urlData } = window.supabaseClient.storage
+                                    .from('anh-ho-so')
+                                    .getPublicUrl(fileName);
+
+                                const publicUrl = urlData.publicUrl;
+
+                                // Lưu link ảnh vào bảng giang-vien
+                                const { error: updateError } = await window.supabaseClient
+                                    .from('giang-vien')
+                                    .update({ 'anh': publicUrl })
+                                    .eq('ma-giang-vien', targetMaGv);
+                                    
+                                if (updateError) throw updateError;
+
+                                currentProfileData.anh = publicUrl;
+                                renderProfileCV(currentProfileData);
+                                showToast("Cập nhật ảnh đại diện thành công!");
+                                
+                            } catch (err) {
+                                showToast("Lỗi tải ảnh: " + err.message, "danger");
+                            } finally {
+                                e.target.value = ''; 
+                            }
+                        }, 'image/jpeg', 0.85);
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // ==========================================
+            // MODAL LOGIC (Tích hợp load nội dung HTML)
+            // ==========================================
+            window.openEditModal = () => {
+                document.getElementById('inputName').value = currentProfileData['ho-ten'] || '';
+                document.getElementById('inputDegree').value = currentProfileData['hoc-vi'] || '';
+
+                const pos = currentProfileData['chuc-vu'] || 'Giảng viên';
+                const validPositions = ['Trưởng Bộ môn', 'Giáo vụ', 'Giảng viên'];
+                if (validPositions.includes(pos)) {
+                    document.getElementById('inputPositionSelect').value = pos;
+                    document.getElementById('inputPositionOther').classList.add('hidden');
+                    document.getElementById('inputPositionOther').value = '';
+                } else {
+                    document.getElementById('inputPositionSelect').value = 'OTHER';
+                    document.getElementById('inputPositionOther').value = pos;
+                    document.getElementById('inputPositionOther').classList.remove('hidden');
+                }
+
+                const major = currentProfileData['chuyen-nganh'] || 'Vật lý trị liệu';
+                const validMajors = ['Vật lý trị liệu', 'Hoạt động trị liệu', 'Ngôn ngữ trị liệu'];
+                if (validMajors.includes(major)) {
+                    document.getElementById('inputMajorSelect').value = major;
+                    document.getElementById('inputMajorOther').classList.add('hidden');
+                    document.getElementById('inputMajorOther').value = '';
+                } else {
+                    document.getElementById('inputMajorSelect').value = 'OTHER';
+                    document.getElementById('inputMajorOther').value = major;
+                    document.getElementById('inputMajorOther').classList.remove('hidden');
+                }
+
+                document.getElementById('inputEducation').innerHTML = currentProfileData['qua-trinh-dao-tao'] || '';
+                document.getElementById('inputExperience').innerHTML = currentProfileData['qua-trinh-cong-tac'] || '';
+                document.getElementById('inputResearch').innerHTML = currentProfileData['nghien-cuu-khoa-hoc'] || '';
+
+                document.getElementById('editModal').classList.remove('hidden');
+            };
+
+            window.closeEditModal = () => document.getElementById('editModal').classList.add('hidden');
+
+            // LƯU PROFILE VÀO SUPABASE
+            window.saveProfile = async (e) => {
+                e.preventDefault();
+                const btnSubmit = document.getElementById('btnSaveSubmit');
+                btnSubmit.innerHTML = 'Đang lưu...';
+                btnSubmit.disabled = true;
+
+                let positionVal = document.getElementById('inputPositionSelect').value;
+                if (positionVal === 'OTHER') positionVal = document.getElementById('inputPositionOther').value.trim();
+
+                let majorVal = document.getElementById('inputMajorSelect').value;
+                if (majorVal === 'OTHER') majorVal = document.getElementById('inputMajorOther').value.trim();
+
+                // Làm sạch code HTML rác rỗng
+                const cleanHTML = (html) => {
+                    let str = html.trim();
+                    if (str === '<br>' || str === '<div><br></div>' || str === '<p><br></p>') return '';
+                    return str;
+                };
+
+                const updatedData = {
+                    'ho-ten': document.getElementById('inputName').value.trim(),
+                    'hoc-vi': document.getElementById('inputDegree').value,
+                    'chuc-vu': positionVal,
+                    'chuyen-nganh': majorVal,
+                    'qua-trinh-dao-tao': cleanHTML(document.getElementById('inputEducation').innerHTML),
+                    'qua-trinh-cong-tac': cleanHTML(document.getElementById('inputExperience').innerHTML),
+                    'nghien-cuu-khoa-hoc': cleanHTML(document.getElementById('inputResearch').innerHTML)
+                };
+
+                try {
+                    const { error } = await window.supabaseClient
+                        .from('giang-vien')
+                        .update(updatedData)
+                        .eq('ma-giang-vien', targetMaGv);
+
+                    if (error) throw error;
+                    
+                    showToast("Cập nhật thông tin thành công!");
+                    currentProfileData = { ...currentProfileData, ...updatedData };
+                    renderProfileCV(currentProfileData);
+                    closeEditModal();
+                } catch (error) {
+                    showToast("Lỗi khi lưu: " + error.message, "danger");
+                } finally {
+                    btnSubmit.innerHTML = 'Lưu thông tin';
+                    btnSubmit.disabled = false;
+                }
+            };
+
+            // Khởi động khi Supabase Client sẵn sàng
+            let attempts = 0;
+            const timer = setInterval(() => {
+                attempts++;
+                if (window.supabaseClient) {
+                    clearInterval(timer);
+                    checkAuthAndLoad();
+                } else if (attempts >= 50) {
+                    clearInterval(timer);
+                    document.getElementById('loadingScreen').innerHTML = "Không tải được CSDL.";
+                }
+            }, 100);
+
+        });
+    </script>
+</body>
+</html>
