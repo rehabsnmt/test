@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Trang chủ - Bộ môn Phục hồi chức năng, Đại học Y Dược TP.HCM">
 
-    <!-- Content Security Policy: Cho phép chạy script inline và gọi API/JSON nội bộ -->
+    <!-- Content Security Policy: Đã cấp quyền tải Font chữ từ Google -->
     <meta http-equiv="Content-Security-Policy" content="
             default-src 'self';
             connect-src 'self' https://*.supabase.co;
             img-src 'self' data: https://*.supabase.co;
-            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com;
             script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-            font-src 'self' https://cdnjs.cloudflare.com;
+            font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
         ">
 
     <title>Trang chủ - Bộ môn Phục hồi chức năng</title>
@@ -25,6 +25,17 @@
     
     <!-- Font Awesome cho Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* CSS ẩn/hiện dấu phẩy và ngắt dòng trên giao diện điện thoại */
+        .mobile-break { display: none; }
+        .desktop-comma { display: inline; }
+        
+        @media (max-width: 768px) {
+            .mobile-break { display: block; }
+            .desktop-comma { display: none; }
+        }
+    </style>
 </head>
 
 <body>
@@ -36,9 +47,9 @@
     <main>
         <!-- Lời chào / Banner đơn giản -->
         <div class="section-title" style="margin-top: 1rem;">
-            <h1>Chào mừng đến với <span class="title-break">Bộ môn Phục hồi chức năng</span></h1>
+            <h1>Bộ môn Phục hồi chức năng</h1>
             <div class="section-divider"></div>
-            <p>Trường Điều dưỡng - Kỹ thuật Y học, Đại học Y Dược Thành phố Hồ Chí Minh</p>
+            <p>Trường Điều dưỡng - Kỹ thuật Y học<span class="desktop-comma">, </span><br class="mobile-break">Đại học Y Dược Thành phố Hồ Chí Minh</p>
         </div>
 
         <!-- KHU VỰC HIỂN THỊ CÁC THẺ CARD (Lấy từ JSON) -->
