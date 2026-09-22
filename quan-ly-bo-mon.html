@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="Quản lý công việc Bộ môn Phục hồi chức năng.">
+
+    <!-- Content Security Policy: Đã cấp quyền tải Font chữ từ Google -->
+    <meta http-equiv="Content-Security-Policy" content="
+            default-src 'self';
+            connect-src 'self' https://*.supabase.co;
+            img-src 'self' data: https://*.supabase.co;
+            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com;
+            script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+            font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
+        ">
+
+    <title>Quản lý công việc - Bộ môn Phục hồi chức năng</title>
+    
+    <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
+    
+    <!-- CSS dùng chung (Đảm bảo Header, Footer đồng bộ) -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* =========================================================
+           STYLE CHUYÊN BIỆT CHO TRANG QUẢN LÝ CÔNG VIỆC
+           (Kế thừa từ mẫu và tinh chỉnh để không đụng độ style.css chung)
+        ========================================================= */
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 0;
+            background: transparent;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .page-subtitle {
+            margin: 6px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* Override nút chung để hợp form */
+        .btn-custom {
+            border: 1px solid #d1d5db;
+            background: white;
+            color: #374151;
+            border-radius: 8px;
+            padding: 9px 14px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+        .btn-custom:hover { background: #f9fafb; }
+
+        .btn-custom-primary { border-color: #2563eb; background: #2563eb; color: white; }
+        .btn-custom-primary:hover { background: #1d4ed8; color: white; }
+
+        .btn-custom-danger { color: #dc2626; border-color: transparent; }
+        .btn-custom-danger:hover { background: #fef2f2; }
+
+        .btn-custom-success { color: #15803d; border-color: transparent; }
+        .btn-custom-success:hover { background: #f0fdf4; }
+
+        .btn-custom-small { padding: 6px 10px; font-size: 13px; }
+
+        /* Filter Toolbar */
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .custom-input,
+        .custom-select,
+        .custom-textarea {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            padding: 10px 12px;
+            outline: none;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .custom-input:focus,
+        .custom-select:focus,
+        .custom-textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        .custom-select { min-width: 180px; }
+
+        /* Plan List */
+        .plan-list {
+            display: grid;
+            gap: 14px;
+        }
+
+        .plan-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 18px;
+            transition: box-shadow .15s ease;
+        }
+
+        .plan-card:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, .06); }
+
+        .plan-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .plan-main { min-width: 0; flex: 1; text-align: left; }
+
+        .plan-title {
+            margin: 0 0 7px;
+            font-size: 18px;
+            font-weight: 650;
+            color: var(--text-dark);
+        }
+
+        .plan-description {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+            white-space: pre-line;
+            line-height: 1.5;
+        }
+
+        .plan-meta {
+            margin-top: 12px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            color: #6b7280;
+            font-size: 13px;
+            align-items: center;
+        }
+
+        .plan-progress { width: 220px; flex-shrink: 0; }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .progress-value { font-weight: 700; color: var(--text-dark); }
+
+        .progress-track {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #2563eb;
+            border-radius: 99px;
+            transition: width 0.3s ease;
+        }
+
+        .plan-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .plan-stats { color: #6b7280; font-size: 13px; }
+        .plan-actions { display: flex; gap: 7px; }
+
+        /* Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 4px 9px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-gray { background: #f3f4f6; color: #4b5563; }
+        .badge-blue { background: #dbeafe; color: #1d4ed8; }
+        .badge-green { background: #dcfce7; color: #15803d; }
+        .badge-yellow { background: #fef3c7; color: #a16207; }
+        .badge-red { background: #fee2e2; color: #b91c1c; }
+        .badge-orange { background: #ffedd5; color: #c2410c; }
+
+        /* Modals */
+        .custom-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 2000; /* Hiển thị trên header chung */
+        }
+        .custom-modal-backdrop.show { display: flex; }
+
+        .custom-modal {
+            width: min(720px, 100%);
+            max-height: calc(100vh - 40px);
+            overflow: auto;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .2);
+        }
+
+        .modal-large { width: min(1000px, 100%); }
+
+        .modal-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            color: var(--text-dark);
+        }
+
+        .modal-title { margin: 0; font-size: 19px; }
+
+        .modal-close {
+            border: 0;
+            background: transparent;
+            font-size: 24px;
+            color: #6b7280;
+            cursor: pointer;
+        }
+
+        .modal-body { padding: 20px; text-align: left; }
+
+        .modal-footer {
+            padding: 14px 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* Form Layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+
+        /* Task Details */
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .detail-title { margin: 0; font-size: 22px; color: var(--text-dark); }
+        .detail-meta { margin-top: 7px; color: #6b7280; font-size: 13px; }
+        .task-list { display: grid; gap: 10px; }
+
+        .task-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: left;
+        }
+
+        .task-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .task-title { font-weight: 650; margin-bottom: 7px; color: var(--text-dark); font-size: 1rem; }
+        .task-description { color: #6b7280; font-size: 13px; white-space: pre-line; }
+        .task-meta { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .task-actions { display: flex; gap: 5px; flex-shrink: 0; }
+
+        .staff-list { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .staff-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #f3f4f6;
+            border-radius: 999px;
+            padding: 4px 8px;
+            font-size: 12px;
+            color: var(--text-dark);
+        }
+
+        /* Empty / Loading / Error */
+        .empty { padding: 50px 20px; text-align: center; color: #6b7280; background: white; border: 1px dashed #d1d5db; border-radius: 12px; }
+        .loading { padding: 30px; text-align: center; color: #6b7280; font-size: 1rem; }
+        .error-msg {
+            padding: 12px 14px; margin-bottom: 15px; background: #fee2e2; color: #991b1b;
+            border-radius: 8px; display: none; font-size: 0.9rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .app-container { padding: 10px; }
+            .page-header { align-items: flex-start; flex-direction: column; }
+            .page-title { font-size: 22px; }
+            .plan-top { flex-direction: column; }
+            .plan-progress { width: 100%; }
+            .plan-bottom { align-items: flex-start; flex-direction: column; gap: 12px;}
+            .plan-actions { width: 100%; flex-wrap: wrap; }
+            .plan-actions .btn-custom { flex: 1; text-align: center; min-width: 100px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group.full { grid-column: auto; }
+            .task-top { flex-direction: column; }
+            .task-actions { justify-content: flex-start; margin-top: 10px;}
+            .toolbar { flex-direction: column; }
+            .search-box, .custom-select { width: 100%; min-width: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- GỌI HEADER CHUNG TỪ LAYOUT.JS -->
+    <div id="header-placeholder"></div>
+
+    <!-- KHU VỰC ỨNG DỤNG -->
+    <main style="opacity: 0; transition: opacity 0.3s ease;">
+        <div class="app-container">
+
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">Quản lý công việc</h1>
+                    <p class="page-subtitle">Quản lý kế hoạch, công việc và phân công nhân sự nội bộ.</p>
+                </div>
+                <button id="btn-create-plan" class="btn-custom btn-custom-primary" style="display: none;">
+                    <i class="fas fa-plus"></i> Tạo kế hoạch
+                </button>
+            </header>
+
+            <div id="error-box" class="error-msg"></div>
+
+            <div class="toolbar">
+                <div class="search-box">
+                    <input id="search-input" class="custom-input" type="search" placeholder="Tìm kiếm kế hoạch...">
+                </div>
+                <select id="status-filter" class="custom-select">
+                    <option value="">Tất cả trạng thái tiến độ</option>
+                    <option value="chua-bat-dau">Chưa bắt đầu</option>
+                    <option value="dang-thuc-hien">Đang thực hiện</option>
+                    <option value="hoan-thanh">Hoàn thành</option>
+                    <option value="tam-dung">Tạm dừng</option>
+                    <option value="huy">Hủy</option>
+                </select>
+                <select id="approval-filter" class="custom-select">
+                    <option value="">Tất cả phê duyệt</option>
+                    <option value="cho-duyet">Chờ duyệt</option>
+                    <option value="da-duyet">Đã duyệt</option>
+                    <option value="tu-choi">Từ chối</option>
+                </select>
+            </div>
+
+            <div id="plan-list" class="plan-list">
+                <div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- GỌI FOOTER CHUNG TỪ LAYOUT.JS -->
+    <div id="footer-placeholder"></div>
+
+    <!-- =====================================================
+         MODAL KẾ HOẠCH
+    ===================================================== -->
+    <div id="plan-modal" class="custom-modal-backdrop">
+        <div class="custom-modal">
+            <div class="modal-header">
+                <h2 id="plan-modal-title" class="modal-title">Tạo kế hoạch</h2>
+                <button class="modal-close" onclick="closeModal('plan-modal')">×</button>
+            </div>
+            <form id="plan-form">
+                <div class="modal-body">
+                    <input id="plan-id" type="hidden">
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label class="form-label">Tên kế hoạch <span style="color:red">*</span></label>
+                            <input id="plan-name" class="custom-input" required>
+                        </div>
+                        <div class="form-group full">
+                            <label class="form-label">Mô tả</label>
+                            <textarea id="plan-description" class="custom-textarea" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ngày bắt đầu</label>
+                            <input id="plan-start" class="custom-input" type="date">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ngày kết thúc</label>
+                            <input id="plan-end" class="custom-input" type="date">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Người phụ trách</label>
+                            <select id="plan-manager" class="custom-select">
+                                <option value="">-- Chọn người phụ trách --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Trạng thái tiến độ</label>
+                            <select id="plan-status" class="custom-select">
+                                <option value="chua-bat-dau">Chưa bắt đầu</option>
+                                <option value="dang-thuc-hien">Đang thực hiện</option>
+                                <option value="hoan-thanh">Hoàn thành</option>
+                                <option value="tam-dung">Tạm dừng</option>
+                                <option value="huy">Hủy</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-custom" onclick="closeModal('plan-modal')">Hủy</button>
+                    <button type="submit" class="btn-custom btn-custom-primary">Lưu kế hoạch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         MODAL CHI TIẾT KẾ HOẠCH
+    ===================================================== -->
+    <div id="detail-modal" class="custom-modal-backdrop">
+        <div class="custom-modal modal-large">
+            <div class="modal-header">
+                <h2 class="modal-title">Chi tiết kế hoạch</h2>
+                <button class="modal-close" onclick="closeModal('detail-modal')">×</button>
+            </div>
+            <div id="detail-content" class="modal-body">
+                <div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         MODAL CÔNG VIỆC
+    ===================================================== -->
+    <div id="task-modal" class="custom-modal-backdrop">
+        <div class="custom-modal">
+            <div class="modal-header">
+                <h2 id="task-modal-title" class="modal-title">Tạo công việc</h2>
+                <button class="modal-close" onclick="closeModal('task-modal')">×</button>
+            </div>
+            <form id="task-form">
+                <div class="modal-body">
+                    <input id="task-id" type="hidden">
+                    <input id="task-plan-id" type="hidden">
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label class="form-label">Tiêu đề <span style="color:red">*</span></label>
+                            <input id="task-title" class="custom-input" required>
+                        </div>
+                        <div class="form-group full">
+                            <label class="form-label">Mô tả</label>
+                            <textarea id="task-description" class="custom-textarea" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ngày bắt đầu</label>
+                            <input id="task-start" class="custom-input" type="date">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Hạn hoàn thành</label>
+                            <input id="task-deadline" class="custom-input" type="date">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mức độ ưu tiên</label>
+                            <select id="task-priority" class="custom-select">
+                                <option value="thap">Thấp</option>
+                                <option value="binh-thuong" selected>Bình thường</option>
+                                <option value="cao">Cao</option>
+                                <option value="khan-cap">Khẩn cấp</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Trạng thái công việc</label>
+                            <select id="task-status" class="custom-select">
+                                <option value="chua-thuc-hien">Chưa thực hiện</option>
+                                <option value="dang-thuc-hien">Đang thực hiện</option>
+                                <option value="cho-kiem-tra">Chờ kiểm tra</option>
+                                <option value="hoan-thanh">Hoàn thành</option>
+                                <option value="dong">Đóng</option>
+                                <option value="tam-dung">Tạm dừng</option>
+                                <option value="huy">Hủy</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-custom" onclick="closeModal('task-modal')">Hủy</button>
+                    <button type="submit" class="btn-custom btn-custom-primary">Lưu công việc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- KHAI BÁO JS LAYOUT CHUNG -->
+    <script src="js/layout.js"></script>
+
+    <!-- JS CHỨC NĂNG TRANG QUẢN LÝ -->
+    <script>
+        /* =========================================================
+           STATE VÀ BIẾN TOÀN CỤC
+        ========================================================= */
+        let currentUser = null;
+        let currentAccount = null;
+        let plans = [];
+        let lecturers = [];
+        let currentPlanId = null;
+
+        /* =========================================================
+           INIT & ĐỒNG BỘ SUPABASE TỪ LAYOUT
+        ========================================================= */
+        document.addEventListener("DOMContentLoaded", () => {
+            // Đợi cho layout.js khởi tạo xong window.supabaseClient
+            let attempts = 0;
+            const timer = setInterval(() => {
+                attempts++;
+                if (window.supabaseClient) {
+                    clearInterval(timer);
+                    initApp();
+                } else if (attempts >= 50) {
+                    clearInterval(timer);
+                    showError("Lỗi kết nối cơ sở dữ liệu (Supabase Client chưa sẵn sàng).");
+                }
+            }, 100);
+        });
+
+        async function initApp() {
+            try {
+                await loadCurrentUser();
+                await loadLecturers();
+                await loadPlans();
+                setupEvents();
+            } catch (error) {
+                showError(error.message);
+                document.getElementById('plan-list').innerHTML = `<div class="empty text-danger">Bạn không có quyền truy cập hoặc lỗi kết nối.</div>`;
+            }
+        }
+
+        /* =========================================================
+           AUTH & PHÂN QUYỀN
+        ========================================================= */
+        async function loadCurrentUser() {
+            const { data, error } = await window.supabaseClient.auth.getUser();
+            if (error || !data.user) {
+                throw new Error("Chưa đăng nhập hệ thống.");
+            }
+            currentUser = data.user;
+
+            const { data: account, error: accountError } = await window.supabaseClient
+                .from("tai-khoan-he-thong")
+                .select(`id, role, "ma-giang-vien", "ho-ten", "trang-thai"`)
+                .eq("id", currentUser.id)
+                .single();
+
+            if (accountError || !account) {
+                throw new Error("Không tìm thấy thông tin quyền trên hệ thống.");
+            }
+
+            if (!account["trang-thai"]) {
+                throw new Error("Tài khoản hiện không hoạt động.");
+            }
+
+            currentAccount = account;
+            applyRoleUI();
+        }
+
+        function isAdmin() {
+            return ["superadmin", "head", "admin"].includes(currentAccount?.role);
+        }
+
+        function isApprover() {
+            return ["superadmin", "head"].includes(currentAccount?.role);
+        }
+
+        function applyRoleUI() {
+            const btn = document.getElementById("btn-create-plan");
+            if (isAdmin()) {
+                btn.style.display = "inline-flex";
+            } else {
+                btn.style.display = "none";
+            }
+        }
+
+        /* =========================================================
+           GIẢNG VIÊN (NGƯỜI PHỤ TRÁCH)
+        ========================================================= */
+        async function loadLecturers() {
+            const { data, error } = await window.supabaseClient
+                .from("giang-vien")
+                .select(`"ma-giang-vien", "ho-ten"`)
+                .order("ho-ten");
+
+            if (error) throw error;
+            lecturers = data || [];
+
+            const select = document.getElementById("plan-manager");
+            select.innerHTML = `<option value="">-- Chọn người phụ trách --</option>`;
+            
+            lecturers.forEach(gv => {
+                const option = document.createElement("option");
+                option.value = gv["ma-giang-vien"];
+                option.textContent = gv["ho-ten"] ? `${gv["ho-ten"]} (${gv["ma-giang-vien"]})` : gv["ma-giang-vien"];
+                select.appendChild(option);
+            });
+        }
+
+        /* =========================================================
+           LOAD PLANS
+        ========================================================= */
+        async function loadPlans() {
+            const { data, error } = await window.supabaseClient
+                .from("tien-do-ke-hoach")
+                .select("*")
+                .order("ngay-bat-dau", { ascending: false, nullsFirst: false });
+
+            if (error) throw error;
+            plans = data || [];
+            renderPlans();
+        }
+
+        /* =========================================================
+           RENDER PLANS VÀ LIST
+        ========================================================= */
+        function renderPlans() {
+            const container = document.getElementById("plan-list");
+            const keyword = document.getElementById("search-input").value.trim().toLowerCase();
+            const status = document.getElementById("status-filter").value;
+            const approval = document.getElementById("approval-filter").value;
+
+            const filtered = plans.filter(plan => {
+                const matchKeyword = !keyword || 
+                    String(plan.ten || "").toLowerCase().includes(keyword) || 
+                    String(plan["mo-ta"] || "").toLowerCase().includes(keyword);
+                
+                const matchStatus = !status || plan["trang-thai"] === status;
+                const matchApproval = !approval || plan["trang-thai-duyet"] === approval;
+
+                return matchKeyword && matchStatus && matchApproval;
+            });
+
+            if (!filtered.length) {
+                container.innerHTML = `<div class="empty">Không có kế hoạch phù hợp.</div>`;
+                return;
+            }
+            container.innerHTML = filtered.map(renderPlanCard).join("");
+        }
+
+        function renderPlanCard(plan) {
+            const progress = Number(plan["tien-do"] || 0);
+            const manager = findLecturer(plan["nguoi-phu-trach-ma-gv"]);
+
+            return `
+                <div class="plan-card">
+                    <div class="plan-top">
+                        <div class="plan-main">
+                            <h3 class="plan-title">${escapeHtml(plan.ten)}</h3>
+                            ${plan["mo-ta"] ? `<p class="plan-description">${escapeHtml(plan["mo-ta"])}</p>` : ""}
+                            
+                            <div class="plan-meta">
+                                <span><i class="far fa-calendar-alt"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])}</span>
+                                <span><i class="fas fa-user-tie"></i> Phụ trách: ${escapeHtml(manager?.["ho-ten"] || plan["nguoi-phu-trach-ma-gv"] || "Chưa phân công")}</span>
+                                ${statusBadge(plan["trang-thai"])}
+                                ${approvalBadge(plan["trang-thai-duyet"])}
+                            </div>
+                        </div>
+
+                        <div class="plan-progress">
+                            <div class="progress-header">
+                                <span>Tiến độ thực hiện</span>
+                                <span class="progress-value">${formatProgress(progress)}</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-bar" style="width:${Math.min(100, Math.max(0, progress))}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="plan-bottom">
+                        <div class="plan-stats">
+                            <i class="fas fa-tasks"></i> ${plan["tong-cong-viec"] || 0} công việc · 
+                            <i class="fas fa-check-circle" style="color:#16a34a;"></i> ${plan["so-cong-viec-hoan-thanh"] || 0} hoàn thành
+                        </div>
+
+                        <div class="plan-actions">
+                            <button class="btn-custom btn-custom-small" onclick="openPlanDetail('${plan.id}')">
+                                <i class="fas fa-eye"></i> Xem công việc
+                            </button>
+                            ${canEditPlan(plan) ? `
+                                <button class="btn-custom btn-custom-small" onclick="editPlan('${plan.id}')">
+                                    <i class="fas fa-pen"></i> Sửa
+                                </button>
+                            ` : ""}
+                            ${isApprover() && plan["trang-thai-duyet"] === "cho-duyet" ? `
+                                <button class="btn-custom btn-custom-small btn-custom-success" onclick="approvePlan('${plan.id}')">
+                                    <i class="fas fa-check"></i> Duyệt
+                                </button>
+                                <button class="btn-custom btn-custom-small btn-custom-danger" onclick="rejectPlan('${plan.id}')">
+                                    <i class="fas fa-times"></i> Từ chối
+                                </button>
+                            ` : ""}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /* =========================================================
+           PLAN PERMISSION
+        ========================================================= */
+        function canEditPlan(plan) {
+            if (!currentAccount) return false;
+            if (currentAccount.role === "superadmin" || currentAccount.role === "head") return true;
+            if (currentAccount.role === "admin") {
+                return (plan["created-by-ma-gv"] === currentAccount["ma-giang-vien"]);
+            }
+            return false;
+        }
+
+        /* =========================================================
+           OPEN PLAN DETAIL
+        ========================================================= */
+        async function openPlanDetail(planId) {
+            currentPlanId = planId;
+            openModal("detail-modal");
+            const container = document.getElementById("detail-content");
+            container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải danh sách công việc...</div>`;
+
+            try {
+                const plan = plans.find(p => p.id === planId);
+                const { data: tasks, error } = await window.supabaseClient
+                    .from("cong-viec")
+                    .select("*")
+                    .eq("ke-hoach-id", planId)
+                    .order("han-hoan-thanh", { ascending: true, nullsFirst: false });
+
+                if (error) throw error;
+
+                const taskIds = (tasks || []).map(task => task.id);
+                let assignments = [];
+
+                if (taskIds.length) {
+                    const { data, error: assignmentError } = await window.supabaseClient
+                        .from("nhan-su-cong-viec")
+                        .select("*")
+                        .in("cong-viec-id", taskIds);
+                    if (assignmentError) throw assignmentError;
+                    assignments = data || [];
+                }
+
+                renderPlanDetail(plan, tasks || [], assignments);
+            } catch (error) {
+                container.innerHTML = `<div class="error-msg" style="display:block">${escapeHtml(error.message)}</div>`;
+            }
+        }
+
+        function renderPlanDetail(plan, tasks, assignments) {
+            const container = document.getElementById("detail-content");
+            const canCreateTask = isAdmin();
+
+            container.innerHTML = `
+                <div class="detail-header">
+                    <div>
+                        <h2 class="detail-title">${escapeHtml(plan.ten)}</h2>
+                        <div class="detail-meta">
+                            <i class="far fa-calendar"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])}
+                            · Tiến độ chung: <b>${formatProgress(plan["tien-do"])}</b>
+                        </div>
+                    </div>
+                    ${canCreateTask ? `
+                        <button class="btn-custom btn-custom-primary btn-custom-small" onclick="openCreateTask('${plan.id}')">
+                            <i class="fas fa-plus"></i> Thêm công việc
+                        </button>
+                    ` : ""}
+                </div>
+
+                ${tasks.length ? `
+                    <div class="task-list">
+                        ${tasks.map(task => renderTask(task, assignments)).join("")}
+                    </div>
+                ` : `
+                    <div class="empty">Kế hoạch này chưa có công việc chi tiết.</div>
+                `}
+            `;
+        }
+
+        /* =========================================================
+           RENDER TASK TRONG POPUP
+        ========================================================= */
+        function renderTask(task, assignments) {
+            const staff = assignments.filter(item => item["cong-viec-id"] === task.id);
+            const canEdit = canEditTask(task);
+
+            return `
+                <div class="task-card">
+                    <div class="task-top">
+                        <div style="flex:1;">
+                            <div class="task-title">${escapeHtml(task["tieu-de"])}</div>
+                            ${task["mo-ta"] ? `<div class="task-description">${escapeHtml(task["mo-ta"])}</div>` : ""}
+                        </div>
+                        <div class="task-actions">
+                            ${canEdit ? `
+                                <button class="btn-custom btn-custom-small" onclick="editTask('${task.id}')" title="Chỉnh sửa chi tiết"><i class="fas fa-pen"></i></button>
+                                <button class="btn-custom btn-custom-small btn-custom-danger" onclick="deleteTask('${task.id}')" title="Xóa công việc"><i class="fas fa-trash-alt"></i></button>
+                            ` : ""}
+                        </div>
+                    </div>
+
+                    <div class="task-meta">
+                        ${taskStatusBadge(task["trang-thai"])}
+                        ${priorityBadge(task["muc-do-uu-tien"])}
+                        ${task["han-hoan-thanh"] ? `
+                            <span class="status-badge badge-gray"><i class="far fa-clock"></i> Hạn: ${formatDate(task["han-hoan-thanh"])}</span>
+                        ` : ""}
+                    </div>
+
+                    <div class="staff-list">
+                        ${staff.length ? staff.map(renderStaffChip).join("") : `<span class="status-badge badge-gray"><i class="fas fa-exclamation-circle"></i> Chưa phân công người làm</span>`}
+                    </div>
+
+                    ${isAdmin() ? `
+                        <div style="margin-top:12px;">
+                            <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}')">
+                                <i class="fas fa-user-plus"></i> Gán Nhân sự thực hiện
+                            </button>
+                        </div>
+                    ` : ""}
+                </div>
+            `;
+        }
+
+        function renderStaffChip(item) {
+            const gv = findLecturer(item["ma-giang-vien"]);
+            const roleStr = item["vai-tro"] === "phu-trach" ? "Phụ trách" : "Phối hợp";
+            const iconStr = item["vai-tro"] === "phu-trach" ? '<i class="fas fa-user-tie" style="color:var(--primary);"></i>' : '<i class="fas fa-user"></i>';
+
+            return `
+                <span class="staff-chip">
+                    ${iconStr} ${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])} <small class="text-muted">(${roleStr})</small>
+                </span>
+            `;
+        }
+
+        /* =========================================================
+           TASK PERMISSION
+        ========================================================= */
+        function canEditTask(task) {
+            if (!currentAccount) return false;
+            if (currentAccount.role === "superadmin" || currentAccount.role === "head") return true;
+            if (currentAccount.role === "admin") {
+                return (task["created-by-ma-gv"] === currentAccount["ma-giang-vien"]);
+            }
+            return false;
+        }
+
+        /* =========================================================
+           CREATE/EDIT/SAVE PLAN
+        ========================================================= */
+        document.getElementById("btn-create-plan").addEventListener("click", () => {
+            document.getElementById("plan-form").reset();
+            document.getElementById("plan-id").value = "";
+            document.getElementById("plan-modal-title").innerHTML = '<i class="fas fa-calendar-plus"></i> Tạo kế hoạch';
+            document.getElementById("plan-status").value = "chua-bat-dau";
+            openModal("plan-modal");
+        });
+
+        function editPlan(planId) {
+            const plan = plans.find(p => p.id === planId);
+            if (!plan) return;
+
+            document.getElementById("plan-id").value = plan.id;
+            document.getElementById("plan-name").value = plan.ten || "";
+            document.getElementById("plan-description").value = plan["mo-ta"] || "";
+            document.getElementById("plan-start").value = plan["ngay-bat-dau"] || "";
+            document.getElementById("plan-end").value = plan["ngay-ket-thuc"] || "";
+            document.getElementById("plan-manager").value = plan["nguoi-phu-trach-ma-gv"] || "";
+            document.getElementById("plan-status").value = plan["trang-thai"] || "chua-bat-dau";
+            document.getElementById("plan-modal-title").innerHTML = '<i class="fas fa-edit"></i> Sửa kế hoạch';
+            openModal("plan-modal");
+        }
+
+        document.getElementById("plan-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const id = document.getElementById("plan-id").value;
+            const payload = {
+                "ten": document.getElementById("plan-name").value.trim(),
+                "mo-ta": document.getElementById("plan-description").value.trim() || null,
+                "ngay-bat-dau": document.getElementById("plan-start").value || null,
+                "ngay-ket-thuc": document.getElementById("plan-end").value || null,
+                "nguoi-phu-trach-ma-gv": document.getElementById("plan-manager").value || null,
+                "trang-thai": document.getElementById("plan-status").value
+            };
+
+            try {
+                if (id) {
+                    const { error } = await window.supabaseClient.from("ke-hoach").update(payload).eq("id", id);
+                    if (error) throw error;
+                } else {
+                    payload["created-by-ma-gv"] = currentAccount["ma-giang-vien"];
+                    if (currentAccount.role === "admin") {
+                        payload["trang-thai-duyet"] = "cho-duyet";
+                    } else {
+                        // Nếu head/superadmin tạo thì mặc định đã duyệt
+                        payload["trang-thai-duyet"] = "da-duyet";
+                    }
+                    const { error } = await window.supabaseClient.from("ke-hoach").insert(payload);
+                    if (error) throw error;
+                }
+                closeModal("plan-modal");
+                await loadPlans();
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+
+        /* =========================================================
+           CREATE/EDIT/SAVE TASK
+        ========================================================= */
+        function openCreateTask(planId) {
+            document.getElementById("task-form").reset();
+            document.getElementById("task-id").value = "";
+            document.getElementById("task-plan-id").value = planId;
+            document.getElementById("task-modal-title").innerHTML = '<i class="fas fa-tasks"></i> Tạo công việc';
+            document.getElementById("task-priority").value = "binh-thuong";
+            document.getElementById("task-status").value = "chua-thuc-hien";
+            openModal("task-modal");
+        }
+
+        async function editTask(taskId) {
+            const { data: task, error } = await window.supabaseClient.from("cong-viec").select("*").eq("id", taskId).single();
+            if (error) { showError(error.message); return; }
+
+            document.getElementById("task-id").value = task.id;
+            document.getElementById("task-plan-id").value = task["ke-hoach-id"] || "";
+            document.getElementById("task-title").value = task["tieu-de"] || "";
+            document.getElementById("task-description").value = task["mo-ta"] || "";
+            document.getElementById("task-start").value = task["ngay-bat-dau"] || "";
+            document.getElementById("task-deadline").value = task["han-hoan-thanh"] || "";
+            document.getElementById("task-priority").value = task["muc-do-uu-tien"] || "binh-thuong";
+            document.getElementById("task-status").value = task["trang-thai"] || "chua-thuc-hien";
+            document.getElementById("task-modal-title").innerHTML = '<i class="fas fa-edit"></i> Sửa công việc';
+            openModal("task-modal");
+        }
+
+        document.getElementById("task-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const id = document.getElementById("task-id").value;
+            const payload = {
+                "ke-hoach-id": document.getElementById("task-plan-id").value || null,
+                "tieu-de": document.getElementById("task-title").value.trim(),
+                "mo-ta": document.getElementById("task-description").value.trim() || null,
+                "ngay-bat-dau": document.getElementById("task-start").value || null,
+                "han-hoan-thanh": document.getElementById("task-deadline").value || null,
+                "muc-do-uu-tien": document.getElementById("task-priority").value,
+                "trang-thai": document.getElementById("task-status").value
+            };
+
+            try {
+                if (id) {
+                    const { error } = await window.supabaseClient.from("cong-viec").update(payload).eq("id", id);
+                    if (error) throw error;
+                } else {
+                    payload["created-by-ma-gv"] = currentAccount["ma-giang-vien"];
+                    const { error } = await window.supabaseClient.from("cong-viec").insert(payload);
+                    if (error) throw error;
+                }
+                closeModal("task-modal");
+                await loadPlans();
+                if (currentPlanId) await openPlanDetail(currentPlanId);
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+
+        async function deleteTask(taskId) {
+            if (!confirm("Bạn có chắc muốn xóa vĩnh viễn công việc này?")) return;
+            try {
+                const { error } = await window.supabaseClient.from("cong-viec").delete().eq("id", taskId);
+                if (error) throw error;
+                await loadPlans();
+                if (currentPlanId) await openPlanDetail(currentPlanId);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        /* =========================================================
+           APPROVAL (DUYỆT KẾ HOẠCH)
+        ========================================================= */
+        async function approvePlan(planId) {
+            if (!isApprover()) return;
+            try {
+                const { error } = await window.supabaseClient.from("ke-hoach").update({
+                    "trang-thai-duyet": "da-duyet",
+                    "duyet-boi-ma-gv": currentAccount["ma-giang-vien"],
+                    "duyet-luc": new Date().toISOString(),
+                    "ly-do-tu-choi": null
+                }).eq("id", planId);
+                if (error) throw error;
+                await loadPlans();
+            } catch (error) { showError(error.message); }
+        }
+
+        async function rejectPlan(planId) {
+            if (!isApprover()) return;
+            const reason = prompt("Nhập lý do từ chối kế hoạch này:");
+            if (!reason) return;
+            try {
+                const { error } = await window.supabaseClient.from("ke-hoach").update({
+                    "trang-thai-duyet": "tu-choi",
+                    "duyet-boi-ma-gv": currentAccount["ma-giang-vien"],
+                    "duyet-luc": new Date().toISOString(),
+                    "ly-do-tu-choi": reason.trim()
+                }).eq("id", planId);
+                if (error) throw error;
+                await loadPlans();
+            } catch (error) { showError(error.message); }
+        }
+
+        /* =========================================================
+           GÁN NHÂN SỰ VÀO CÔNG VIỆC
+        ========================================================= */
+        async function manageStaff(taskId) {
+            const { data: existing, error } = await window.supabaseClient.from("nhan-su-cong-viec").select("*").eq("cong-viec-id", taskId);
+            if (error) { showError(error.message); return; }
+
+            const current = (existing || []).map(x => `${x["ma-giang-vien"]}:${x["vai-tro"]}`).join(", ");
+            const value = prompt(
+                "Nhập Mã Giảng Viên phân công theo định dạng sau:\n" +
+                "MAGV:phu-trach, MAGV:phoi-hop\n\n" +
+                "Ví dụ: GV01:phu-trach, GV02:phoi-hop\n\n" +
+                "Phân công hiện tại đang lưu (bạn có thể copy sửa lại):\n" + current, current
+            );
+
+            if (value === null) return; // Nhấn hủy
+
+            const rows = value.split(",").map(x => x.trim()).filter(Boolean).map(item => {
+                const [maGV, vaiTro] = item.split(":").map(x => x.trim());
+                return {
+                    "cong-viec-id": taskId,
+                    "ma-giang-vien": maGV,
+                    "vai-tro": vaiTro || "phoi-hop"
+                };
+            });
+
+            try {
+                // Xóa list cũ
+                const { error: deleteError } = await window.supabaseClient.from("nhan-su-cong-viec").delete().eq("cong-viec-id", taskId);
+                if (deleteError) throw deleteError;
+
+                // Thêm list mới nếu có
+                if (rows.length) {
+                    const { error: insertError } = await window.supabaseClient.from("nhan-su-cong-viec").insert(rows);
+                    if (insertError) throw insertError;
+                }
+                
+                await openPlanDetail(currentPlanId);
+            } catch (error) {
+                showError("Cập nhật nhân sự thất bại: " + error.message);
+            }
+        }
+
+        /* =========================================================
+           SỰ KIỆN FILTER & MODAL
+        ========================================================= */
+        function setupEvents() {
+            document.getElementById("search-input").addEventListener("input", renderPlans);
+            document.getElementById("status-filter").addEventListener("change", renderPlans);
+            document.getElementById("approval-filter").addEventListener("change", renderPlans);
+
+            document.querySelectorAll(".custom-modal-backdrop").forEach(modal => {
+                modal.addEventListener("click", event => {
+                    if (event.target === modal) modal.classList.remove("show");
+                });
+            });
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add("show"); }
+        function closeModal(id) { document.getElementById(id).classList.remove("show"); }
+
+        /* =========================================================
+           HÀM RENDER BADGES FORMAT VÀ HIỂN THỊ
+        ========================================================= */
+        function findLecturer(maGV) {
+            if (!maGV) return null;
+            return lecturers.find(gv => gv["ma-giang-vien"] === maGV);
+        }
+
+        function formatDate(value) {
+            if (!value) return "—";
+            const parts = value.split("-");
+            if (parts.length !== 3) return value;
+            return `${parts[2]}/${parts[1]}/${parts[0]}`; // Chuyển YYYY-MM-DD sang DD/MM/YYYY
+        }
+
+        function formatProgress(value) {
+            const number = Number(value || 0);
+            if (Number.isInteger(number)) return `${number}%`;
+            return `${number.toFixed(1)}%`;
+        }
+
+        function statusBadge(status) {
+            const map = {
+                "chua-bat-dau": ["Chưa bắt đầu", "gray"],
+                "dang-thuc-hien": ["Đang thực hiện", "blue"],
+                "hoan-thanh": ["Hoàn thành", "green"],
+                "tam-dung": ["Tạm dừng", "yellow"],
+                "huy": ["Hủy", "red"]
+            };
+            const [label, color] = map[status] || [status || "—", "gray"];
+            return `<span class="status-badge badge-${color}">${label}</span>`;
+        }
+
+        function taskStatusBadge(status) {
+            const map = {
+                "chua-thuc-hien": ["Chưa thực hiện", "gray"],
+                "dang-thuc-hien": ["Đang thực hiện", "blue"],
+                "cho-kiem-tra": ["Chờ kiểm tra", "orange"],
+                "hoan-thanh": ["Hoàn thành", "green"],
+                "dong": ["Đóng", "gray"],
+                "tam-dung": ["Tạm dừng", "yellow"],
+                "huy": ["Hủy", "red"]
+            };
+            const [label, color] = map[status] || [status || "—", "gray"];
+            return `<span class="status-badge badge-${color}">${label}</span>`;
+        }
+
+        function approvalBadge(status) {
+            const map = {
+                "cho-duyet": ["Chờ duyệt", "yellow"],
+                "da-duyet": ["Đã duyệt", "green"],
+                "tu-choi": ["Từ chối", "red"]
+            };
+            const [label, color] = map[status] || [status || "—", "gray"];
+            return `<span class="status-badge badge-${color}"><i class="fas fa-clipboard-check"></i> ${label}</span>`;
+        }
+
+        function priorityBadge(priority) {
+            const map = {
+                "thap": ["Mức độ thấp", "gray"],
+                "binh-thuong": ["Bình thường", "blue"],
+                "cao": ["Ưu tiên cao", "orange"],
+                "khan-cap": ["Khẩn cấp", "red"]
+            };
+            const [label, color] = map[priority] || [priority || "—", "gray"];
+            return `<span class="status-badge badge-${color}">${label}</span>`;
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function showError(message) {
+            const box = document.getElementById("error-box");
+            box.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message || "Có lỗi xảy ra."}`;
+            box.style.display = "block";
+            setTimeout(() => { box.style.display = "none"; }, 5000);
+        }
+
+    </script>
+
+</body>
+</html>
