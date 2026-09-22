@@ -46,19 +46,8 @@
 
                 <div class="history-wrapper">
                     <div class="history-content">
-                        <p>
-                            Bộ môn được thành lập năm <span class="highlight">1972</span>, tiền thân là
-                            <strong>Trường Cán sự Vật lý trị liệu</strong> - trường đào tạo vật lý trị liệu đầu tiên tại Việt Nam.
-                            Năm <span class="highlight">1975</span>, đơn vị được hợp nhất thành <strong>Ngành Vật lý trị liệu</strong>
-                            thuộc Trường Kỹ thuật Y tế Trung ương 3; đến năm <span class="highlight">1998</span>, trở thành
-                            <strong>Bộ môn Vật lý trị liệu</strong> thuộc Khoa Điều dưỡng - Kỹ thuật Y học, Đại học Y Dược Thành phố Hồ Chí Minh.
-                        </p>
-                        <p>
-                            Hiện nay, Bộ môn Phục hồi chức năng triển khai đào tạo hệ Đại học chính quy và Sau đại học bậc
-                            <strong>Thạc sĩ ngành Kỹ thuật Phục hồi chức năng</strong>, với các chuyên ngành
-                            <span class="highlight">Vật lý trị liệu</span>, <span class="highlight">Hoạt động trị liệu</span>
-                            và <span class="highlight">Ngôn ngữ trị liệu</span>.
-                        </p>
+                        <p>Bộ môn được thành lập năm <span class="highlight">1972</span>, tiền thân là <b>Trường Cán sự Vật lý trị liệu</b> - trường đào tạo vật lý trị liệu đầu tiên tại Việt Nam, đặt nền móng cho quá trình đào tạo nhân lực vật lý trị liệu trong nước. Năm <span class="highlight">1975</span>, đơn vị được hợp nhất thành <b>Ngành Vật lý trị liệu</b> thuộc Trường Kỹ thuật Y tế Trung ương 3; đến năm <span class="highlight">1998</span>, trở thành <b>Bộ môn Vật lý trị liệu</b> thuộc Khoa Điều dưỡng - Kỹ thuật Y học, Đại học Y Dược Thành phố Hồ Chí Minh.</p>                                        
+                        <p>Trải qua hơn 50 năm hình thành và phát triển, Bộ môn từng bước mở rộng quy mô đào tạo từ hệ Trung cấp đến Đại học và Sau đại học. Hiện nay, Bộ môn Phục hồi chức năng thuộc Trường Điều dưỡng - Kỹ thuật Y học, Đại học Y Dược Thành phố Hồ Chí Minh triển khai đào tạo hệ Đại học chính quy và Sau đại học bậc <b>Thạc sĩ ngành Kỹ thuật Phục hồi chức năng</b>, với các chuyên ngành <span class="highlight">Vật lý trị liệu</span>, <span class="highlight">Hoạt động trị liệu</span> và <span class="highlight">Ngôn ngữ trị liệu</span>, góp phần đào tạo nguồn nhân lực chất lượng cao đáp ứng nhu cầu chăm sóc sức khỏe cộng đồng.</p>
                     </div>
                 </div>
             </section>
@@ -153,7 +142,7 @@
                 const card = document.createElement("article");
                 card.className = "faculty-card";
 
-                // Hình ảnh Avatar (Tự động căn giữa do flex-direction: column và align-items: center)
+                // Hình ảnh Avatar (Tự động tải từ Bucket, nếu lỗi sẽ thay bằng icon mặc định)
                 const avatar = document.createElement("div");
                 avatar.className = "faculty-avatar";
                 if (data.image) {
@@ -226,15 +215,22 @@
 
                 if (error) throw error;
 
-                facultyList = (data || []).map((lecturer) => ({
-                    uid: lecturer["ma-giang-vien"],
-                    degree: getDegreeDisplay(lecturer),
-                    name: lecturer["ho-ten"] || "Đang cập nhật",
-                    position: lecturer["chuc-vu"] || "Giảng viên",
-                    major: lecturer["chuyen-nganh"] || "Đang cập nhật",
-                    email: lecturer["email"] || "",
-                    image: lecturer["anh"] || ""
-                }));
+                facultyList = (data || []).map((lecturer) => {
+                    // Tự động tạo Public URL từ bucket 'anh-ho-so' bằng ma-giang-vien
+                    const maGv = lecturer["ma-giang-vien"];
+                    const { data: urlData } = window.supabaseClient.storage.from('anh-ho-so').getPublicUrl(maGv);
+
+                    return {
+                        uid: maGv,
+                        degree: getDegreeDisplay(lecturer),
+                        name: lecturer["ho-ten"] || "Đang cập nhật",
+                        position: lecturer["chuc-vu"] || "Giảng viên",
+                        major: lecturer["chuyen-nganh"] || "Đang cập nhật",
+                        email: lecturer["email"] || "",
+                        // Gán đường dẫn URL vừa lấy được
+                        image: urlData ? urlData.publicUrl : ""
+                    };
+                });
 
                 renderFaculty();
             } catch (error) {
