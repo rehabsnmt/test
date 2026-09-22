@@ -1,9 +1,9 @@
 [
   {
-    "title": "Quản lý Giảng viên",
-    "description": "Thêm, sửa hồ sơ giảng viên, quản lý chức vụ và chuyên ngành công tác.",
+    "title": "Quản lý Bộ môn",
+    "description": "Theo dõi tiến độ thực hiện các kế hoạch, công việc.",
     "icon": "fas fa-chalkboard-teacher",
-    "link": "quan-ly-giang-vien.html"
+    "link": "quan-ly-bo-mon.html"
   },
   {
     "title": "Quản lý Sinh viên",
