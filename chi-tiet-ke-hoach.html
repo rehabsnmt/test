@@ -78,9 +78,31 @@
         .progress-track { height: 10px; background: var(--border); border-radius: 99px; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--primary); border-radius: 99px; transition: width 0.4s ease; }
 
-        /* Tiêu đề khu vực công việc */
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--primary-light);}
-        .section-title { margin: 0; font-size: 20px; color: var(--text-dark); font-weight: 700; }
+        /* Tiêu đề khu vực công việc ép trên 1 dòng ngang */
+        .section-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-top: 30px;
+            margin-bottom: 15px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid var(--primary-light);
+            flex-wrap: nowrap; /* Bắt buộc không xuống dòng */
+            gap: 10px;
+        }
+        .section-title { 
+            margin: 0; 
+            font-size: 20px; 
+            color: var(--text-dark); 
+            font-weight: 700; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; /* Thu nhỏ tiêu đề nếu màn hình quá hẹp */
+        }
+        .section-header .btn-custom {
+            flex-shrink: 0; /* Không cho nút bị bóp méo */
+            white-space: nowrap;
+        }
 
         /* Danh sách Công việc */
         .task-list { display: grid; gap: 14px; }
@@ -183,6 +205,10 @@
             .form-group.full { grid-column: auto; }
             .modal-footer { flex-direction: column-reverse; gap: 10px; align-items: stretch; }
             .modal-footer > div { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+            
+            /* Tối ưu Header Mobile */
+            .section-title { font-size: 1.15rem; }
+            .section-header .btn-custom { font-size: 0.8rem; padding: 6px 10px; }
         }
     </style>
 </head>
@@ -210,8 +236,8 @@
             </div>
 
             <!-- VÙNG HIỂN THỊ DANH SÁCH CÔNG VIỆC -->
-            <div class="section-header" style="margin-top: 30px;">
-                <h2 class="section-title"><i class="fas fa-tasks"></i> Danh sách công việc</h2>
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-tasks"></i> Công việc</h2>
                 <button id="btn-create-task" class="btn-custom btn-custom-primary" style="display: none;" onclick="openCreateTask()">
                     <i class="fas fa-plus"></i> Thêm công việc
                 </button>
@@ -998,6 +1024,18 @@
         function statusBadge(status) {
             const map = {
                 "chua-bat-dau": ["Chưa bắt đầu", "gray", "fa-circle"],
+                "chua-thuc-hien": ["Chưa thực hiện", "gray", "fa-circle"],
+                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
+                "cho-xac-nhan": ["Chờ xác nhận", "orange", "fa-clock"],
+                "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
+                "tam-dung": ["Tạm dừng", "yellow", "fa-pause-circle"]
+            };
+            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
+            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
+        }
+
+        function taskStatusBadge(status) {
+            const map = {
                 "chua-thuc-hien": ["Chưa thực hiện", "gray", "fa-circle"],
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
                 "cho-xac-nhan": ["Chờ xác nhận", "orange", "fa-clock"],
