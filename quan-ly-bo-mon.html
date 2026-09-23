@@ -23,11 +23,10 @@
     <style>
         .app-container { max-width: 1400px; margin: 0 auto; padding: 24px 0; background: transparent; }
 
-        /* KHẮC PHỤC LỖI NEO HEADER VÀ CHE MENU */
         .page-header { 
             display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; 
-            position: static !important; /* Gỡ bỏ cơ chế dính (sticky) từ CSS chung */
-            z-index: 1 !important; /* Đảm bảo nằm dưới Menu Header chung của hệ thống */
+            position: static !important; 
+            z-index: 1 !important; 
         }
         .page-title { margin: 0; font-size: 28px; font-weight: 700; }
         .page-subtitle { margin: 6px 0 0; color: var(--text-muted); font-size: 14px; }
@@ -101,7 +100,7 @@
         .plan-main { min-width: 0; flex: 1; text-align: left; }
         .plan-title { margin: 0 0 7px; font-size: 18px; font-weight: 650; color: var(--text-dark); }
 
-        .plan-meta { margin-top: 12px; display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-muted); font-size: 13px; align-items: center; }
+        .plan-meta { margin-top: 12px; display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-muted); font-size: 13.5px; align-items: center; }
         .plan-meta span { display: inline-flex; align-items: center; gap: 6px; }
 
         .plan-progress { width: 220px; flex-shrink: 0; }
@@ -113,10 +112,27 @@
         .plan-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-light); flex-wrap: wrap;}
         .plan-actions { display: flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
 
+        /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
+        @keyframes pulse-critical {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+        @keyframes pulse-high {
+            0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(234, 88, 12, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+        }
+        
         .status-badge {
             display: inline-flex; align-items: center; justify-content: center; gap: 5px;
             border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 600; white-space: nowrap;
         }
+
+        .badge-warning-critical { background: #dc2626; color: white; border: none; animation: pulse-critical 1.5s infinite; font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.3px;}
+        .badge-warning-high { background: #ea580c; color: white; border: none; animation: pulse-high 1.5s infinite; font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.3px;}
+        .badge-warning-medium { background: #f59e0b; color: white; border: none; font-weight: 700; font-size: 12.5px; padding: 4px 10px; border-radius: 6px;}
+        .badge-warning-low { background: #3b82f6; color: white; border: none; font-weight: 600; font-size: 12.5px; padding: 4px 10px; border-radius: 6px;}
 
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
         .badge-blue { background: var(--primary-light); color: var(--primary-hover); }
@@ -223,7 +239,7 @@
             <div class="search-bar-container">
                 <div class="search-bar-wrapper">
                     <i class="fas fa-search"></i>
-                    <input id="search-input" class="custom-input" type="search" placeholder="Tìm kiếm tên kế hoạch...">
+                    <input id="search-input" class="custom-input" type="search" placeholder="Tìm kiếm tên kế hoạch, mô tả...">
                 </div>
                 <select id="manager-filter" class="custom-select" style="max-width: 250px;">
                     <option value="">Lọc theo người phụ trách</option>
@@ -432,7 +448,7 @@
         }
 
         function getDeadlineWarning(dateStr, status) {
-            if (!dateStr || status === 'hoan-thanh') return "";
+            if (!dateStr || status === 'hoan-thanh' || status === 'tam-dung') return "";
             try {
                 const today = new Date();
                 today.setHours(0,0,0,0);
@@ -443,12 +459,12 @@
                 const diffTime = target - today;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-                if (diffDays < 0) return `<span class="status-badge badge-red"><i class="fas fa-exclamation-triangle"></i> Quá hạn ${Math.abs(diffDays)} ngày</span>`;
-                if (diffDays === 0) return `<span class="status-badge badge-red"><i class="fas fa-exclamation-circle"></i> Hết hạn hôm nay</span>`;
-                if (diffDays <= 1) return `<span class="status-badge badge-red"><i class="fas fa-exclamation-circle"></i> Còn 1 ngày</span>`;
-                if (diffDays <= 3) return `<span class="status-badge badge-orange"><i class="fas fa-exclamation-circle"></i> Còn ${diffDays} ngày</span>`;
-                if (diffDays <= 7) return `<span class="status-badge badge-yellow"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
-                if (diffDays <= 10) return `<span class="status-badge badge-blue"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
+                if (diffDays < 0) return `<span class="status-badge badge-warning-critical"><i class="fas fa-exclamation-triangle"></i> Quá hạn ${Math.abs(diffDays)} ngày</span>`;
+                if (diffDays === 0) return `<span class="status-badge badge-warning-critical"><i class="fas fa-exclamation-circle"></i> Hết hạn hôm nay!</span>`;
+                if (diffDays <= 1) return `<span class="status-badge badge-warning-critical"><i class="fas fa-exclamation-circle"></i> Còn 1 ngày!</span>`;
+                if (diffDays <= 3) return `<span class="status-badge badge-warning-high"><i class="fas fa-exclamation-circle"></i> Còn ${diffDays} ngày</span>`;
+                if (diffDays <= 7) return `<span class="status-badge badge-warning-medium"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
+                if (diffDays <= 10) return `<span class="status-badge badge-warning-low"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
             } catch (e) { return ""; }
             return "";
         }
@@ -515,7 +531,8 @@
                         <div class="plan-main">
                             <h3 class="plan-title">${escapeHtml(plan.ten)}</h3>
                             <div class="plan-meta">
-                                <span><i class="far fa-calendar-alt"></i> Hạn: ${formatDate(plan["ngay-ket-thuc"])} ${warningBadge}</span>
+                                <span><i class="far fa-calendar-alt"></i> Hạn: ${formatDate(plan["ngay-ket-thuc"])}</span>
+                                ${warningBadge}
                                 <span><i class="fas fa-user-tie"></i> Phụ trách: ${escapeHtml(manager?.["ho-ten"] || "Chưa phân công")}</span>
                             </div>
                         </div>
@@ -538,14 +555,9 @@
                         </div>
 
                         <div class="plan-actions">
-                            <button class="btn-custom btn-custom-small" onclick="window.location.href='chi-tiet-ke-hoach.html?id=${plan.id}'">
-                                <i class="fas fa-eye"></i> Xem công việc
+                            <button class="btn-custom btn-custom-small btn-custom-primary" onclick="window.location.href='chi-tiet-ke-hoach.html?id=${plan.id}'">
+                                <i class="fas fa-arrow-right"></i> Xem chi tiết
                             </button>
-                            ${canEditPlan(plan) ? `
-                                <button class="btn-custom btn-custom-small" onclick="editPlan('${plan.id}')">
-                                    <i class="fas fa-pen"></i> Sửa
-                                </button>
-                            ` : ""}
                             ${isApprover() && plan["trang-thai-duyet"] === "cho-duyet" ? `
                                 <button class="btn-custom btn-custom-small btn-custom-success" onclick="approvePlan('${plan.id}')">
                                     <i class="fas fa-check"></i> Duyệt
@@ -555,13 +567,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        function canEditPlan(plan) {
-            if (!currentAccount) return false;
-            if (currentAccount.role === "superadmin" || currentAccount.role === "head") return true;
-            if (currentAccount.role === "admin") return (plan["created-by-ma-gv"] === currentAccount["ma-giang-vien"]);
-            return false;
         }
 
         /* =========================================================
@@ -576,6 +581,7 @@
             openModal("plan-modal");
         });
 
+        // Hàm editPlan vẫn được giữ lại để sử dụng trong trang chi tiết hoặc nâng cấp về sau
         function editPlan(planId) {
             const plan = plans.find(p => p.id === planId);
             if (!plan) return;
@@ -588,7 +594,6 @@
             document.getElementById("plan-manager").value = plan["nguoi-phu-trach-ma-gv"] || "";
             document.getElementById("plan-modal-title").innerHTML = 'Sửa kế hoạch';
 
-            // Hiển thị nút xóa và tạm dừng trong popup sửa
             const extraActions = document.getElementById("plan-modal-extra-actions");
             extraActions.style.display = "flex";
             const btnPause = document.getElementById("btnPausePlanModal");
@@ -619,11 +624,9 @@
                 btn.disabled = true;
 
                 if (id) {
-                    // Cập nhật
                     const { error } = await window.supabaseClient.from("ke-hoach").update(payload).eq("id", id);
                     if (error) throw error;
                 } else {
-                    // Tạo mới
                     payload["created-by-ma-gv"] = currentAccount["ma-giang-vien"];
                     payload["trang-thai"] = "chua-bat-dau";
                     payload["trang-thai-duyet"] = currentAccount.role === "admin" ? "cho-duyet" : "da-duyet";
@@ -737,6 +740,9 @@
         function openModal(id) { document.getElementById(id).classList.add("show"); }
         function closeModal(id) { document.getElementById(id).classList.remove("show"); }
 
+        /* =========================================================
+           HÀM RENDER BADGES FORMAT VÀ HIỂN THỊ
+        ========================================================= */
         function findLecturer(maGV) {
             if (!maGV) return null;
             return lecturers.find(gv => gv["ma-giang-vien"] === maGV);
