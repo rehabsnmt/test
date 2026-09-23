@@ -151,9 +151,9 @@
         .badge-warning-low { background: #3b82f6; color: white; border: none; }
 
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
-        .badge-blue { background: var(--primary-light); color: var(--primary-hover); border: 1px solid #bae6fd;}
-        .badge-green { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;}
-        .badge-yellow { background: #fef3c7; color: #b45309; border: 1px solid #fde68a;}
+        .badge-blue { background: var(--primary-light); color: var(--primary-hover); }
+        .badge-green { background: #dcfce7; color: #15803d; }
+        .badge-yellow { background: #fef3c7; color: #b45309; }
 
         /* Modals */
         .custom-modal-backdrop {
@@ -202,7 +202,7 @@
             .plan-progress-container { max-width: 100%; margin-top: 15px; border-top: 1px solid var(--border-light); padding-top: 15px;}
             .task-top { flex-direction: column; }
             .task-actions { justify-content: flex-start; margin-top: 5px; width: 100%;}
-            .task-actions .btn-custom { flex: 1; text-align: center; }
+            .task-actions .btn-custom { flex: 1; }
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full { grid-column: auto; }
             .modal-footer { flex-direction: column-reverse; gap: 10px; align-items: stretch; }
@@ -481,6 +481,16 @@
                 const { data, error } = await window.supabaseClient.from("giang-vien").select(`"ma-giang-vien", "ho-ten"`).order("ho-ten");
                 if (error) throw error;
                 lecturers = data || [];
+                
+                // Đổ danh sách vào Modal Sửa kế hoạch (Tránh lỗi form)
+                const planManagerSelect = document.getElementById("plan-manager");
+                if (planManagerSelect) {
+                    planManagerSelect.innerHTML = `<option value="">-- Chọn người phụ trách --</option>`;
+                    lecturers.forEach(gv => {
+                        const name = gv["ho-ten"] ? gv["ho-ten"] : gv["ma-giang-vien"];
+                        planManagerSelect.appendChild(new Option(name, gv["ma-giang-vien"]));
+                    });
+                }
             } catch (err) {
                 console.warn("Lỗi loadLecturers: ", err);
             }
@@ -631,11 +641,15 @@
             const warningBadge = getDeadlineWarning(task["han-hoan-thanh"], task["trang-thai"]);
             const isAssigned = staff.some(s => s["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
 
+            const taskEvidences = evidences.filter(e => e['cong-viec-id'] === task.id);
+
             let processButtons = "";
             if (['cho-xac-nhan', 'hoan-thanh'].includes(task["trang-thai"])) {
                 processButtons += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
             }
-            if (task["trang-thai"] !== "hoan-thanh" && (canEdit || isAssigned || isApprover())) {
+            if (task["trang-thai"] === "cho-xac-nhan" && isApprover()) {
+                processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTaskCompletion('${task.id}')"><i class="fas fa-check-double"></i> Duyệt hoàn thành</button>`;
+            } else if (task["trang-thai"] !== "hoan-thanh" && (canEdit || isAssigned || isApprover())) {
                 processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="markTaskCompleted('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
             }
 
@@ -664,7 +678,7 @@
 
                     ${staff.length ? `
                         <div class="staff-list">
-                            ${staff.map(s => renderStaffChip(s, task["trang-thai"], evidences)).join("")}
+                            ${staff.map(s => renderStaffChip(s, task["trang-thai"], taskEvidences)).join("")}
                         </div>
                     ` : `
                         <div style="margin-bottom: 15px;"><span class="status-badge badge-gray"><i class="fas fa-exclamation-circle"></i> Chưa phân công</span></div>
@@ -758,9 +772,6 @@
                 
                 closeModal("plan-modal");
                 await syncPlanProgress(); // Trigger reload
-
-                btn.innerHTML = '<i class="fas fa-save"></i> Lưu kế hoạch';
-                btn.disabled = false;
             } catch (error) { 
                 showError(error.message); 
                 document.getElementById("btnSavePlan").disabled = false;
@@ -858,6 +869,19 @@
             } catch (error) { showError(error.message); }
         }
 
+        async function approveTaskCompletion(taskId) {
+            if (!isApprover()) return;
+            if (!confirm("Xác nhận công việc này đã HOÀN THÀNH?")) return;
+            try {
+                const { error } = await window.supabaseClient.from("cong-viec").update({
+                    "trang-thai": "hoan-thanh"
+                }).eq("id", taskId);
+                if (error) throw error;
+                
+                await syncPlanProgress();
+            } catch (error) { showError(error.message); }
+        }
+
         async function viewEvidence(taskId) {
             openModal("view-evidence-modal");
             const container = document.getElementById("evidence-list-content");
@@ -918,6 +942,7 @@
                     }
                 }
 
+                // Nếu kế hoạch đang tạm dừng thì giữ nguyên trạng thái
                 if (currentPlanData && currentPlanData["trang-thai"] === "tam-dung") {
                     autoStatus = "tam-dung";
                 }
@@ -1064,7 +1089,7 @@
                     if (insertError) throw insertError;
                 }
                 
-                await loadPlanDetails(true); 
+                await loadPlanDetails(true); // Reload để hiện staff
             } catch (err) {
                 showError("Cập nhật nhân sự thất bại: " + err.message);
             } finally {
