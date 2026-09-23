@@ -50,13 +50,13 @@
 
         .btn-custom-small { padding: 6px 12px; font-size: 0.8rem; }
 
-        /* Dashboard tương tác */
+        /* Dashboard tương tác - Flat Design */
         .interactive-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .dashboard-card { 
             background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px; 
             display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; user-select: none;
         }
-        .dashboard-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--primary-light); }
+        .dashboard-card:hover { border-color: var(--primary); }
         .dashboard-card.active { border: 2px solid var(--primary); background: var(--primary-light); }
         .db-icon { font-size: 2.2rem; color: var(--text-muted); }
         .db-icon.text-warning { color: #d97706; }
@@ -87,9 +87,10 @@
         .status-section-title.pending { color: #b45309; border-bottom: 2px solid #fef3c7; }
         .status-section-title.approved { color: #15803d; border-bottom: 2px solid #dcfce7; margin-top: 30px; }
 
+        /* Plan List - Flat Design */
         .plan-list { display: grid; gap: 14px; }
-        .plan-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px; transition: box-shadow .15s ease; }
-        .plan-card:hover { box-shadow: var(--shadow-sm); }
+        .plan-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px; transition: border-color .15s ease; }
+        .plan-card:hover { border-color: var(--primary-light); }
 
         .plan-top { display: flex; justify-content: space-between; gap: 20px; }
         .plan-main { min-width: 0; flex: 1; text-align: left; }
@@ -108,8 +109,6 @@
         .plan-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-light); flex-wrap: wrap;}
         .plan-stats { color: var(--text-muted); font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
         .plan-actions { display: flex; gap: 7px; flex-wrap: wrap; }
-
-        .plan-tasks-container { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-top: 15px; }
 
         .status-badge {
             display: inline-flex; align-items: center; justify-content: center; gap: 5px;
@@ -222,7 +221,7 @@
             <div class="search-bar-container">
                 <div class="search-bar-wrapper">
                     <i class="fas fa-search"></i>
-                    <input id="search-input" class="custom-input" type="search" placeholder="Tìm kiếm tên kế hoạch, mô tả...">
+                    <input id="search-input" class="custom-input" type="search" placeholder="Tìm kiếm tên kế hoạch...">
                 </div>
                 <select id="manager-filter" class="custom-select" style="max-width: 250px;">
                     <option value="">Lọc theo người phụ trách</option>
@@ -275,7 +274,6 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <!-- Khu vực nút chức năng bổ sung (Tạm dừng/Xóa) sẽ hiện khi ở chế độ Sửa -->
                     <div id="plan-modal-extra-actions" style="display: none; gap: 8px; flex: 1;">
                         <button type="button" class="btn-custom btn-custom-warning" id="btnPausePlanModal" onclick="handlePauseFromModal()">
                             <i class="fas fa-pause"></i> Tạm dừng
@@ -284,7 +282,6 @@
                             <i class="fas fa-trash-alt"></i> Xóa
                         </button>
                     </div>
-                    <!-- Khu vực Lưu/Hủy -->
                     <div style="display: flex; gap: 8px; margin-left: auto;">
                         <button type="button" class="btn-custom" onclick="closeModal('plan-modal')">Hủy</button>
                         <button type="submit" class="btn-custom btn-custom-primary" id="btnSavePlan"><i class="fas fa-save"></i> Lưu kế hoạch</button>
@@ -474,7 +471,6 @@
                 return;
             }
 
-            // Sắp xếp kế hoạch theo ngày kết thúc (tăng dần - gần nhất lên đầu)
             filtered.sort((a, b) => {
                 if (!a["ngay-ket-thuc"]) return 1;
                 if (!b["ngay-ket-thuc"]) return -1;
@@ -587,7 +583,6 @@
             document.getElementById("plan-manager").value = plan["nguoi-phu-trach-ma-gv"] || "";
             document.getElementById("plan-modal-title").innerHTML = 'Sửa kế hoạch';
 
-            // Hiển thị nút xóa và tạm dừng trong popup sửa
             const extraActions = document.getElementById("plan-modal-extra-actions");
             extraActions.style.display = "flex";
             const btnPause = document.getElementById("btnPausePlanModal");
@@ -618,11 +613,9 @@
                 btn.disabled = true;
 
                 if (id) {
-                    // Cập nhật
                     const { error } = await window.supabaseClient.from("ke-hoach").update(payload).eq("id", id);
                     if (error) throw error;
                 } else {
-                    // Tạo mới
                     payload["created-by-ma-gv"] = currentAccount["ma-giang-vien"];
                     payload["trang-thai"] = "chua-bat-dau";
                     payload["trang-thai-duyet"] = currentAccount.role === "admin" ? "cho-duyet" : "da-duyet";
@@ -736,9 +729,6 @@
         function openModal(id) { document.getElementById(id).classList.add("show"); }
         function closeModal(id) { document.getElementById(id).classList.remove("show"); }
 
-        /* =========================================================
-           HÀM RENDER BADGES FORMAT VÀ HIỂN THỊ
-        ========================================================= */
         function findLecturer(maGV) {
             if (!maGV) return null;
             return lecturers.find(gv => gv["ma-giang-vien"] === maGV);
