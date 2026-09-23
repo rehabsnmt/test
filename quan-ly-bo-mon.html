@@ -142,7 +142,7 @@
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group.full { grid-column: 1 / -1; }
         .form-label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
-
+        
         .task-list { display: grid; gap: 10px; }
         .task-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: left; }
         .task-top { display: flex; justify-content: space-between; gap: 12px; }
@@ -513,29 +513,38 @@
         }
 
         async function loadLecturers() {
-            const { data, error } = await window.supabaseClient.from("giang-vien").select(`"ma-giang-vien", "ho-ten"`).order("ho-ten");
-            if (error) throw error;
-            lecturers = data || [];
+            try {
+                const { data, error } = await window.supabaseClient.from("giang-vien").select(`"ma-giang-vien", "ho-ten"`).order("ho-ten");
+                if (error) throw error;
+                lecturers = data || [];
 
-            const select = document.getElementById("plan-manager");
-            const filterSelect = document.getElementById("manager-filter");
-            
-            select.innerHTML = `<option value="">-- Chọn người phụ trách --</option>`;
-            filterSelect.innerHTML = `<option value="">Lọc theo người phụ trách</option>`;
-            
-            lecturers.forEach(gv => {
-                const name = gv["ho-ten"] ? gv["ho-ten"] : gv["ma-giang-vien"];
-                select.appendChild(new Option(name, gv["ma-giang-vien"]));
-                filterSelect.appendChild(new Option(name, gv["ma-giang-vien"]));
-            });
+                const select = document.getElementById("plan-manager");
+                const filterSelect = document.getElementById("manager-filter");
+                
+                select.innerHTML = `<option value="">-- Chọn người phụ trách --</option>`;
+                filterSelect.innerHTML = `<option value="">Lọc theo người phụ trách</option>`;
+                
+                lecturers.forEach(gv => {
+                    const name = gv["ho-ten"] ? gv["ho-ten"] : gv["ma-giang-vien"];
+                    select.appendChild(new Option(name, gv["ma-giang-vien"]));
+                    filterSelect.appendChild(new Option(name, gv["ma-giang-vien"]));
+                });
+            } catch (err) {
+                console.warn("Lỗi loadLecturers: ", err);
+            }
         }
 
         async function loadPlans() {
-            const { data, error } = await window.supabaseClient.from("tien-do-ke-hoach").select("*");
-            if (error) throw error;
-            plans = data || [];
-            updateDashboardCounts();
-            renderPlans();
+            try {
+                const { data, error } = await window.supabaseClient.from("tien-do-ke-hoach").select("*");
+                if (error) throw error;
+                plans = data || [];
+                updateDashboardCounts();
+                renderPlans();
+            } catch (err) {
+                console.error(err);
+                throw new Error("Lỗi khi tải danh sách kế hoạch.");
+            }
         }
 
         function setDashboardFilter(type) {
@@ -638,7 +647,7 @@
             const warningBadge = getDeadlineWarning(plan["ngay-ket-thuc"], plan["trang-thai"]);
 
             return `
-                <div class="plan-card">
+                <div class="plan-card" id="plan-card-${plan.id}">
                     <div class="plan-top">
                         <div class="plan-main">
                             <h3 class="plan-title">${escapeHtml(plan.ten)}</h3>
@@ -692,6 +701,7 @@
                         </div>
                     </div>
                     
+                    <!-- Vùng chứa danh sách task hiển thị sổ xuống -->
                     <div class="plan-tasks-container" id="tasks-${plan.id}" style="display: none;"></div>
                 </div>
             `;
@@ -705,17 +715,16 @@
         }
 
         /* =========================================================
-           CƠ CHẾ ACCORDION (XEM CÔNG VIỆC SỔ XUỐNG) VÀ LOAD NGẦM
+           CƠ CHẾ ACCORDION (XEM CÔNG VIỆC SỔ XUỐNG)
         ========================================================= */
-        async function togglePlanTasks(planId, isSilentReload = false) {
+        async function togglePlanTasks(planId, forceReload = false) {
             const container = document.getElementById(`tasks-${planId}`);
             const btn = document.getElementById(`btn-toggle-${planId}`);
             if (!container || !btn) return;
 
             const isVisible = container.style.display !== "none";
 
-            // Bấm thủ công khi đang mở => Đóng lại
-            if (isVisible && !isSilentReload) {
+            if (isVisible && !forceReload) {
                 container.style.display = "none";
                 btn.innerHTML = `<i class="fas fa-chevron-down"></i> Xem công việc`;
                 expandedPlans.delete(planId);
@@ -726,12 +735,12 @@
             container.style.display = "block";
             btn.innerHTML = `<i class="fas fa-chevron-up"></i> Thu gọn`;
             
-            // Nếu không phải tải ngầm thì hiện trạng thái đang tải mượt mà
-            if (!isSilentReload) {
+            if (!forceReload) {
                 container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>`;
             }
 
             try {
+                const plan = plans.find(p => p.id === planId);
                 const [taskRes, evRes] = await Promise.all([
                     window.supabaseClient.from("cong-viec").select("*").eq("ke-hoach-id", planId),
                     window.supabaseClient.from("cong-viec-minh-chung").select("cong-viec-id, ma-giang-vien").limit(5000)
@@ -754,7 +763,6 @@
                     assignments = data || [];
                 }
 
-                // Sắp xếp Tasks theo Hạn hoàn thành tăng dần
                 tasks.sort((a, b) => {
                     if (!a["han-hoan-thanh"]) return 1;
                     if (!b["han-hoan-thanh"]) return -1;
@@ -771,6 +779,7 @@
             const container = document.getElementById(`tasks-${planId}`);
             if (!container) return;
 
+            const plan = plans.find(p => p.id === planId);
             const canCreateTask = isAdmin();
 
             let html = `
@@ -860,13 +869,14 @@
             const roleStr = item["vai-tro"] === "phu-trach" ? "Phụ trách" : "Phối hợp";
             const iconStr = item["vai-tro"] === "phu-trach" ? '<i class="fas fa-user-tie"></i>' : '<i class="fas fa-user"></i>';
             
+            const hasEvidence = taskEvidences.some(e => e["ma-giang-vien"] === item["ma-giang-vien"]);
             let statusHtml = "";
             let bgClass = "";
 
             if (taskStatus === "hoan-thanh") {
                 statusHtml = `<span class="staff-status-text completed"><i class="fas fa-check-circle"></i> Đã xong</span>`;
                 bgClass = "is-completed";
-            } else if (taskEvidences.some(e => e["ma-giang-vien"] === item["ma-giang-vien"])) {
+            } else if (hasEvidence) {
                 statusHtml = `<span class="staff-status-text evidence"><i class="fas fa-file-upload"></i> Đã gửi MC</span>`;
                 bgClass = "has-evidence";
             }
@@ -887,7 +897,7 @@
         }
 
         /* =========================================================
-           CREATE/EDIT/SAVE PLAN
+           CREATE/EDIT/SAVE PLAN (SILENT RELOAD)
         ========================================================= */
         document.getElementById("btn-create-plan").addEventListener("click", () => {
             document.getElementById("plan-form").reset();
@@ -938,7 +948,7 @@
                 }
                 
                 closeModal("plan-modal");
-                await loadPlans(); // Bao gồm việc render và khôi phục accordion
+                await loadPlans(); 
 
                 btn.innerHTML = '<i class="fas fa-save"></i> Lưu kế hoạch';
                 btn.disabled = false;
@@ -949,13 +959,16 @@
             const isPaused = currentStatus === 'tam-dung';
             if (!confirm(isPaused ? "Bạn muốn tiếp tục kế hoạch này?" : "Bạn muốn tạm dừng kế hoạch này?")) return;
             
+            const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
             try {
-                // Tiếp tục -> Đang làm
-                const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
                 const { error } = await window.supabaseClient.from("ke-hoach").update({"trang-thai": newStatus}).eq("id", planId);
                 if (error) throw error;
                 
-                await loadPlans();
+                if (isPaused) {
+                    await syncPlanProgress(planId);
+                } else {
+                    await loadPlans();
+                }
             } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
         }
 
@@ -981,11 +994,12 @@
                 const btn = document.getElementById("btnConfirmDeletePlan");
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Xóa...';
                 btn.disabled = true;
+                
+                closeModal("delete-plan-modal");
 
                 const { error } = await window.supabaseClient.from("ke-hoach").delete().eq("id", planToDeleteId);
                 if (error) throw error;
                 
-                closeModal("delete-plan-modal");
                 expandedPlans.delete(planToDeleteId);
                 await loadPlans();
 
@@ -1037,6 +1051,8 @@
                 const btn = document.getElementById("btnSaveTask");
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
                 btn.disabled = true;
+                
+                closeModal("task-modal");
 
                 if (id) {
                     const { error } = await window.supabaseClient.from("cong-viec").update(payload).eq("id", id);
@@ -1048,7 +1064,6 @@
                     if (error) throw error;
                 }
                 
-                closeModal("task-modal");
                 await syncPlanProgress(planId); 
 
                 btn.innerHTML = '<i class="fas fa-save"></i> Lưu công việc';
@@ -1070,7 +1085,6 @@
             if (!confirm(isPaused ? "Bạn muốn tiếp tục công việc này?" : "Bạn muốn tạm dừng công việc này?")) return;
             
             try {
-                // Tiếp tục -> Đang làm
                 const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
                 const { error } = await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
                 if (error) throw error;
@@ -1114,7 +1128,6 @@
             container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải minh chứng...</div>`;
 
             try {
-                // Cho phép lỗi missing table fail ngầm thay vì treo hệ thống
                 const { data, error } = await window.supabaseClient
                     .from("cong-viec-minh-chung")
                     .select("*")
@@ -1188,6 +1201,7 @@
                 console.error("Lỗi đồng bộ tiến độ: ", err);
             }
         }
+
 
         /* =========================================================
            PHÂN CÔNG NHÂN SỰ VÀO CÔNG VIỆC (HỖ TRỢ CHỌN NHIỀU CHECKBOX)
@@ -1307,6 +1321,8 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
                 btn.disabled = true;
 
+                closeModal("staff-modal");
+
                 const { error: deleteError } = await window.supabaseClient.from("nhan-su-cong-viec").delete().eq("cong-viec-id", currentManageTaskId);
                 if (deleteError) throw deleteError;
 
@@ -1315,7 +1331,6 @@
                     if (insertError) throw insertError;
                 }
                 
-                closeModal("staff-modal");
                 await syncPlanProgress(currentPlanId);
             } catch (err) {
                 showError("Cập nhật nhân sự thất bại: " + err.message);
@@ -1326,7 +1341,7 @@
         }
 
         /* =========================================================
-           SỰ KIỆN FILTER & MODAL
+           SỰ KIỆN FILTER BẢNG ĐIỀU KHIỂN & ĐỒNG BỘ DỮ LIỆU THỜI GIAN THỰC
         ========================================================= */
         function setupEvents() {
             document.getElementById("search-input").addEventListener("input", renderPlans);
@@ -1337,77 +1352,27 @@
                     if (event.target === modal) modal.classList.remove("show");
                 });
             });
+
+            // BẬT REALTIME CHO TẤT CẢ CÁC BẢNG LIÊN QUAN
+            window.supabaseClient.channel('realtime-bo-mon-updates')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'ke-hoach' }, handleRealtimeUpdate)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'cong-viec' }, handleRealtimeUpdate)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'nhan-su-cong-viec' }, handleRealtimeUpdate)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'cong-viec-minh-chung' }, handleRealtimeUpdate)
+                .subscribe();
+        }
+
+        let realtimeTimer = null;
+        function handleRealtimeUpdate(payload) {
+            // Dùng debounce để gom nhóm thay đổi nếu có nhiều trigger đồng thời (xóa/update hàng loạt)
+            if (realtimeTimer) clearTimeout(realtimeTimer);
+            realtimeTimer = setTimeout(() => {
+                loadPlans();
+            }, 300); 
         }
 
         function openModal(id) { document.getElementById(id).classList.add("show"); }
         function closeModal(id) { document.getElementById(id).classList.remove("show"); }
-
-        function findLecturer(maGV) {
-            if (!maGV) return null;
-            return lecturers.find(gv => gv["ma-giang-vien"] === maGV);
-        }
-
-        function formatDate(value) {
-            if (!value) return "—";
-            try {
-                const parts = value.split("-");
-                if (parts.length < 3) return value;
-                return `${parts[2].substring(0,2)}/${parts[1]}/${parts[0]}`; 
-            } catch(e) { return value; }
-        }
-
-        function formatProgress(value) {
-            const number = Number(value || 0);
-            if (Number.isInteger(number)) return `${number}%`;
-            return `${number.toFixed(1)}%`;
-        }
-
-        function statusBadge(status) {
-            const map = {
-                "chua-bat-dau": ["Chưa bắt đầu", "gray", "fa-circle"],
-                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
-                "tam-dung": ["Tạm dừng", "yellow", "fa-pause-circle"]
-            };
-            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
-            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
-        }
-
-        function taskStatusBadge(status) {
-            const map = {
-                "chua-thuc-hien": ["Chưa thực hiện", "gray", "fa-circle"],
-                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "cho-xac-nhan": ["Chờ xác nhận", "orange", "fa-clock"],
-                "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"]
-            };
-            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
-            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
-        }
-
-        function approvalBadge(status) {
-            const map = {
-                "cho-duyet": ["Chờ duyệt", "yellow", "fa-hourglass-half"],
-                "da-duyet": ["Đã duyệt", "green", "fa-clipboard-check"]
-            };
-            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
-            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
-        }
-
-        function escapeHtml(value) {
-            return String(value ?? "")
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#039;");
-        }
-
-        function showError(message) {
-            const box = document.getElementById("error-box");
-            box.innerHTML = `<i class="fas fa-exclamation-triangle"></i> <span>${message || "Có lỗi xảy ra."}</span>`;
-            box.style.display = "block";
-            setTimeout(() => { box.style.display = "none"; }, 5000);
-        }
 
     </script>
 
