@@ -715,16 +715,16 @@
         }
 
         /* =========================================================
-           CƠ CHẾ ACCORDION (XEM CÔNG VIỆC SỔ XUỐNG)
+           CƠ CHẾ ACCORDION (XEM CÔNG VIỆC SỔ XUỐNG) VÀ LOAD NGẦM
         ========================================================= */
-        async function togglePlanTasks(planId, forceReload = false) {
+        async function togglePlanTasks(planId, isSilentReload = false) {
             const container = document.getElementById(`tasks-${planId}`);
             const btn = document.getElementById(`btn-toggle-${planId}`);
             if (!container || !btn) return;
 
             const isVisible = container.style.display !== "none";
 
-            if (isVisible && !forceReload) {
+            if (isVisible && !isSilentReload) {
                 container.style.display = "none";
                 btn.innerHTML = `<i class="fas fa-chevron-down"></i> Xem công việc`;
                 expandedPlans.delete(planId);
@@ -735,7 +735,7 @@
             container.style.display = "block";
             btn.innerHTML = `<i class="fas fa-chevron-up"></i> Thu gọn`;
             
-            if (!forceReload) {
+            if (!isSilentReload) {
                 container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>`;
             }
 
@@ -779,7 +779,6 @@
             const container = document.getElementById(`tasks-${planId}`);
             if (!container) return;
 
-            const plan = plans.find(p => p.id === planId);
             const canCreateTask = isAdmin();
 
             let html = `
@@ -869,14 +868,13 @@
             const roleStr = item["vai-tro"] === "phu-trach" ? "Phụ trách" : "Phối hợp";
             const iconStr = item["vai-tro"] === "phu-trach" ? '<i class="fas fa-user-tie"></i>' : '<i class="fas fa-user"></i>';
             
-            const hasEvidence = taskEvidences.some(e => e["ma-giang-vien"] === item["ma-giang-vien"]);
             let statusHtml = "";
             let bgClass = "";
 
             if (taskStatus === "hoan-thanh") {
                 statusHtml = `<span class="staff-status-text completed"><i class="fas fa-check-circle"></i> Đã xong</span>`;
                 bgClass = "is-completed";
-            } else if (hasEvidence) {
+            } else if (taskEvidences.some(e => e["ma-giang-vien"] === item["ma-giang-vien"])) {
                 statusHtml = `<span class="staff-status-text evidence"><i class="fas fa-file-upload"></i> Đã gửi MC</span>`;
                 bgClass = "has-evidence";
             }
@@ -897,7 +895,7 @@
         }
 
         /* =========================================================
-           CREATE/EDIT/SAVE PLAN (SILENT RELOAD)
+           CREATE/EDIT/SAVE PLAN
         ========================================================= */
         document.getElementById("btn-create-plan").addEventListener("click", () => {
             document.getElementById("plan-form").reset();
@@ -959,14 +957,12 @@
             const isPaused = currentStatus === 'tam-dung';
             if (!confirm(isPaused ? "Bạn muốn tiếp tục kế hoạch này?" : "Bạn muốn tạm dừng kế hoạch này?")) return;
             
-            const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
             try {
-                const { error } = await window.supabaseClient.from("ke-hoach").update({"trang-thai": newStatus}).eq("id", planId);
-                if (error) throw error;
-                
                 if (isPaused) {
+                    await window.supabaseClient.from("ke-hoach").update({"trang-thai": "dang-thuc-hien"}).eq("id", planId);
                     await syncPlanProgress(planId);
                 } else {
+                    await window.supabaseClient.from("ke-hoach").update({"trang-thai": "tam-dung"}).eq("id", planId);
                     await loadPlans();
                 }
             } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
@@ -1128,6 +1124,7 @@
             container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải minh chứng...</div>`;
 
             try {
+                // Cho phép lỗi missing table fail ngầm thay vì treo hệ thống
                 const { data, error } = await window.supabaseClient
                     .from("cong-viec-minh-chung")
                     .select("*")
@@ -1374,7 +1371,72 @@
         function openModal(id) { document.getElementById(id).classList.add("show"); }
         function closeModal(id) { document.getElementById(id).classList.remove("show"); }
 
-    </script>
+        function findLecturer(maGV) {
+            if (!maGV) return null;
+            return lecturers.find(gv => gv["ma-giang-vien"] === maGV);
+        }
 
+        function formatDate(value) {
+            if (!value) return "—";
+            try {
+                const parts = value.split("-");
+                if (parts.length < 3) return value;
+                return `${parts[2].substring(0,2)}/${parts[1]}/${parts[0]}`; 
+            } catch(e) { return value; }
+        }
+
+        function formatProgress(value) {
+            const number = Number(value || 0);
+            if (Number.isInteger(number)) return `${number}%`;
+            return `${number.toFixed(1)}%`;
+        }
+
+        function statusBadge(status) {
+            const map = {
+                "chua-bat-dau": ["Chưa bắt đầu", "gray", "fa-circle"],
+                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
+                "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
+                "tam-dung": ["Tạm dừng", "yellow", "fa-pause-circle"]
+            };
+            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
+            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
+        }
+
+        function taskStatusBadge(status) {
+            const map = {
+                "chua-thuc-hien": ["Chưa thực hiện", "gray", "fa-circle"],
+                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
+                "cho-xac-nhan": ["Chờ xác nhận", "orange", "fa-clock"],
+                "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"]
+            };
+            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
+            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
+        }
+
+        function approvalBadge(status) {
+            const map = {
+                "cho-duyet": ["Chờ duyệt", "yellow", "fa-hourglass-half"],
+                "da-duyet": ["Đã duyệt", "green", "fa-clipboard-check"]
+            };
+            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
+            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function showError(message) {
+            const box = document.getElementById("error-box");
+            box.innerHTML = `<i class="fas fa-exclamation-triangle"></i> <span>${message || "Có lỗi xảy ra."}</span>`;
+            box.style.display = "block";
+            setTimeout(() => { box.style.display = "none"; }, 5000);
+        }
+    </script>
 </body>
 </html>
