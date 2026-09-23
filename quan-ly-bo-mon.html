@@ -94,7 +94,6 @@
         .plan-top { display: flex; justify-content: space-between; gap: 20px; }
         .plan-main { min-width: 0; flex: 1; text-align: left; }
         .plan-title { margin: 0 0 7px; font-size: 18px; font-weight: 650; color: var(--text-dark); }
-        .plan-description { margin: 0; color: var(--text-muted); font-size: 14px; white-space: pre-line; line-height: 1.5; }
 
         .plan-meta { margin-top: 12px; display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-muted); font-size: 13px; align-items: center; }
         .plan-meta span { display: inline-flex; align-items: center; gap: 6px; }
@@ -106,10 +105,7 @@
         .progress-bar { height: 100%; background: var(--primary); border-radius: 99px; transition: width 0.3s ease; }
 
         .plan-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-light); flex-wrap: wrap;}
-        .plan-stats { color: var(--text-muted); font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
-        .plan-actions { display: flex; gap: 7px; flex-wrap: wrap; }
-
-        .plan-tasks-container { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-top: 15px; }
+        .plan-actions { display: flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
 
         .status-badge {
             display: inline-flex; align-items: center; justify-content: center; gap: 5px;
@@ -136,50 +132,16 @@
         .modal-close { border: 0; background: transparent; font-size: 24px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
         .modal-close:hover { color: var(--text-dark); }
         .modal-body { padding: 20px; text-align: left; }
-        .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+        .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group.full { grid-column: 1 / -1; }
         .form-label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
-        
-        .task-list { display: grid; gap: 10px; }
-        .task-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: left; }
-        .task-top { display: flex; justify-content: space-between; gap: 12px; }
-        .task-title { font-weight: 650; margin-bottom: 7px; color: var(--text-dark); font-size: 1rem; }
-        .task-description { color: var(--text-muted); font-size: 13px; white-space: pre-line; margin-bottom: 10px;}
-        .task-meta { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-        .task-actions { display: flex; gap: 5px; flex-shrink: 0; flex-wrap: wrap;}
-
-        .staff-list { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
-        .staff-chip { 
-            display: inline-flex; align-items: center; gap: 6px; 
-            background: var(--bg-page); border: 1px solid var(--border); 
-            border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--text-dark); 
-        }
-        .staff-chip.has-evidence { background: #e0f2fe; border-color: #bae6fd; }
-        .staff-chip.is-completed { background: #dcfce7; border-color: #bbf7d0; }
-        .staff-status-text { font-size: 0.7rem; font-weight: bold; margin-left: 4px; }
-        .staff-status-text.evidence { color: var(--primary); }
-        .staff-status-text.completed { color: #15803d; }
 
         .empty { padding: 50px 20px; text-align: center; color: var(--text-muted); background: white; border: 1px dashed var(--border); border-radius: 12px; }
         .loading { padding: 30px; text-align: center; color: var(--text-muted); font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .error-msg { padding: 12px 14px; margin-bottom: 15px; background: #fee2e2; color: #991b1b; border-radius: 8px; display: none; font-size: 0.9rem; }
-
-        /* CHECKBOX LIST ĐA CHỌN GIẢNG VIÊN */
-        .custom-multi-select { border: 1px solid var(--border); border-radius: 8px; max-height: 180px; overflow-y: auto; padding: 10px; background: white; }
-        .checkbox-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .checkbox-item input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);}
-        .checkbox-item label { font-size: 0.95rem; cursor: pointer; flex: 1; color: var(--text-dark); user-select: none;}
-
-        .temp-staff-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px dashed var(--border); font-size: 0.9rem; }
-        .temp-staff-item:last-child { border-bottom: none; }
-        
-        .evidence-item { background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin-bottom: 8px; }
-        .evidence-item a { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.95rem;}
-        .evidence-item a:hover { text-decoration: underline; }
-        .evidence-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
 
         @media (max-width: 768px) {
             .app-container { padding: 10px; }
@@ -192,12 +154,12 @@
             .plan-actions .btn-custom { flex: 1; text-align: center; min-width: 100px; }
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full { grid-column: auto; }
-            .task-top { flex-direction: column; }
-            .task-actions { justify-content: flex-start; margin-top: 10px;}
             .search-bar-container { flex-direction: column; }
             .interactive-dashboard { grid-template-columns: 1fr 1fr; }
             .db-icon { font-size: 1.8rem; }
             .db-value { font-size: 1.4rem; }
+            .modal-footer { flex-direction: column-reverse; gap: 10px; align-items: stretch; }
+            .modal-footer > div { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         }
     </style>
 </head>
@@ -211,7 +173,7 @@
             <header class="page-header">
                 <div>
                     <h1 class="page-title">Quản lý công việc</h1>
-                    <p class="page-subtitle">Quản lý kế hoạch, công việc và phân công nhân sự nội bộ.</p>
+                    <p class="page-subtitle">Quản lý kế hoạch và điều phối phân công nội bộ.</p>
                 </div>
                 <button id="btn-create-plan" class="btn-custom btn-custom-primary" style="display: none;">
                     <i class="fas fa-plus"></i> Tạo kế hoạch
@@ -252,17 +214,18 @@
                 </div>
             </div>
 
-            <!-- THANH TÌM KIẾM VÀ LỌC TÊN -->
+            <!-- THANH TÌM KIẾM VÀ LỌC -->
             <div class="search-bar-container">
                 <div class="search-bar-wrapper">
                     <i class="fas fa-search"></i>
-                    <input id="search-input" class="custom-input" type="search" placeholder="Tìm kiếm tên kế hoạch, mô tả...">
+                    <input id="search-input" class="custom-input" type="search" placeholder="Tìm kiếm tên kế hoạch...">
                 </div>
                 <select id="manager-filter" class="custom-select" style="max-width: 250px;">
                     <option value="">Lọc theo người phụ trách</option>
                 </select>
             </div>
 
+            <!-- VÙNG HIỂN THỊ DANH SÁCH -->
             <div id="plan-list-container">
                 <div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>
             </div>
@@ -272,7 +235,7 @@
 
     <div id="footer-placeholder"></div>
 
-    <!-- MODAL KẾ HOẠCH -->
+    <!-- MODAL TẠO / SỬA KẾ HOẠCH -->
     <div id="plan-modal" class="custom-modal-backdrop">
         <div class="custom-modal">
             <div class="modal-header">
@@ -308,118 +271,22 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-custom" onclick="closeModal('plan-modal')">Hủy</button>
-                    <button type="submit" class="btn-custom btn-custom-primary" id="btnSavePlan"><i class="fas fa-save"></i> Lưu kế hoạch</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL CÔNG VIỆC -->
-    <div id="task-modal" class="custom-modal-backdrop">
-        <div class="custom-modal">
-            <div class="modal-header">
-                <h2 id="task-modal-title" class="modal-title">Tạo công việc</h2>
-                <button class="modal-close" onclick="closeModal('task-modal')">×</button>
-            </div>
-            <form id="task-form">
-                <div class="modal-body">
-                    <input id="task-id" type="hidden">
-                    <input id="task-plan-id" type="hidden">
-                    <div class="form-grid">
-                        <div class="form-group full">
-                            <label class="form-label">Tiêu đề <span style="color:var(--accent)">*</span></label>
-                            <input id="task-title" class="custom-input" required>
-                        </div>
-                        <div class="form-group full">
-                            <label class="form-label">Mô tả</label>
-                            <textarea id="task-description" class="custom-textarea" rows="4"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Ngày bắt đầu <span style="color:var(--accent)">*</span></label>
-                            <input id="task-start" class="custom-input" type="date" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Hạn hoàn thành <span style="color:var(--accent)">*</span></label>
-                            <input id="task-deadline" class="custom-input" type="date" required>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-custom" onclick="closeModal('task-modal')">Hủy</button>
-                    <button type="submit" class="btn-custom btn-custom-primary" id="btnSaveTask"><i class="fas fa-save"></i> Lưu công việc</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL PHÂN CÔNG NHÂN SỰ -->
-    <div id="staff-modal" class="custom-modal-backdrop">
-        <div class="custom-modal">
-            <div class="modal-header">
-                <h2 class="modal-title">Phân công Nhân sự</h2>
-                <button class="modal-close" onclick="closeModal('staff-modal')">×</button>
-            </div>
-            <div class="modal-body">
-                <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 1rem; flex-direction: column;">
-                    
-                    <div class="form-group" style="width: 100%;">
-                        <label class="form-label">Vai trò phân công</label>
-                        <select id="staff-role-select" class="custom-select">
-                            <option value="phu-trach">Phụ trách (Chỉ 1 người)</option>
-                            <option value="phoi-hop" selected>Phối hợp (Nhiều người)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group" style="width: 100%;">
-                        <label class="form-label">Chọn Giảng viên</label>
-                        <div class="custom-multi-select" id="staff-multi-select">
-                            <div class="checkbox-item" style="border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px; font-weight: bold;">
-                                <input type="checkbox" id="selectAllStaff" onclick="toggleSelectAllStaff(this)">
-                                <label for="selectAllStaff">Chọn tất cả</label>
-                            </div>
-                            <div id="staff-checkbox-list">
-                                <!-- JS tự render checkbox -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="width: 100%; text-align: right; margin-bottom: 10px;">
-                        <button type="button" class="btn-custom btn-custom-success" onclick="addTempStaff()">
-                            <i class="fas fa-plus"></i> Đưa vào danh sách
+                    <!-- Khu vực nút chức năng bổ sung (Tạm dừng/Xóa) sẽ hiện khi ở chế độ Sửa -->
+                    <div id="plan-modal-extra-actions" style="display: none; gap: 8px; flex: 1;">
+                        <button type="button" class="btn-custom btn-custom-warning" id="btnPausePlanModal" onclick="handlePauseFromModal()">
+                            <i class="fas fa-pause"></i> Tạm dừng
+                        </button>
+                        <button type="button" class="btn-custom btn-custom-danger" id="btnDeletePlanModal" onclick="handleDeleteFromModal()">
+                            <i class="fas fa-trash-alt"></i> Xóa
                         </button>
                     </div>
-                </div>
-
-                <div style="background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
-                    <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; color: var(--text-dark);">Danh sách nhân sự sẽ thực hiện:</div>
-                    <div id="temp-staff-list">
-                        <!-- JS tự render danh sách tạm -->
+                    <!-- Khu vực Lưu/Hủy -->
+                    <div style="display: flex; gap: 8px; margin-left: auto;">
+                        <button type="button" class="btn-custom" onclick="closeModal('plan-modal')">Hủy</button>
+                        <button type="submit" class="btn-custom btn-custom-primary" id="btnSavePlan"><i class="fas fa-save"></i> Lưu kế hoạch</button>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-custom" onclick="closeModal('staff-modal')">Đóng</button>
-                <button type="button" class="btn-custom btn-custom-primary" id="btnSaveStaff" onclick="saveStaffAssignment(event)"><i class="fas fa-save"></i> Lưu phân công</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL XEM MINH CHỨNG -->
-    <div id="view-evidence-modal" class="custom-modal-backdrop">
-        <div class="custom-modal" style="max-width: 600px;">
-            <div class="modal-header">
-                <h2 class="modal-title">Danh sách Minh chứng</h2>
-                <button class="modal-close" onclick="closeModal('view-evidence-modal')">×</button>
-            </div>
-            <div class="modal-body">
-                <div id="evidence-list-content">
-                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải...</div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-custom" onclick="closeModal('view-evidence-modal')">Đóng</button>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -435,7 +302,7 @@
                     <p style="margin-bottom: 10px; line-height: 1.5; color: var(--text-dark);">Hành động này sẽ xóa vĩnh viễn kế hoạch và toàn bộ công việc đi kèm. Vui lòng nhập mã số <strong id="delete-random-code" style="color:var(--accent); font-size:1.15rem;"></strong> để xác nhận.</p>
                     <input id="delete-confirm-input" class="custom-input" type="text" autocomplete="off" placeholder="Nhập mã xác nhận..." required>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" style="justify-content: flex-end;">
                     <button type="button" class="btn-custom" onclick="closeModal('delete-plan-modal')">Hủy</button>
                     <button type="submit" class="btn-custom btn-custom-danger" id="btnConfirmDeletePlan"><i class="fas fa-trash-alt"></i> Xóa Vĩnh Viễn</button>
                 </div>
@@ -446,15 +313,13 @@
     <script src="js/layout.js"></script>
 
     <script>
+        // QUẢN LÝ TRẠNG THÁI TOÀN CỤC
         let currentUser = null;
         let currentAccount = null;
         let plans = [];
         let lecturers = [];
-        let expandedPlans = new Set(); 
 
-        let currentManageTaskId = null;
         let currentPlanId = null; 
-        let currentTempStaff = [];
         let planToDeleteId = null;
         let deleteRandomCode = "";
 
@@ -632,18 +497,11 @@
             }
 
             container.innerHTML = htmlStr;
-
-            // Tự động khôi phục lại trạng thái mở rộng của các kế hoạch sau khi load
-            expandedPlans.forEach(id => {
-                togglePlanTasks(id, true);
-            });
         }
 
         function renderPlanCard(plan) {
             const progress = Number(plan["tien-do"] || 0);
             const manager = findLecturer(plan["nguoi-phu-trach-ma-gv"]);
-            const creator = findLecturer(plan["created-by-ma-gv"]);
-            const isPaused = plan["trang-thai"] === 'tam-dung';
             const warningBadge = getDeadlineWarning(plan["ngay-ket-thuc"], plan["trang-thai"]);
 
             return `
@@ -651,19 +509,15 @@
                     <div class="plan-top">
                         <div class="plan-main">
                             <h3 class="plan-title">${escapeHtml(plan.ten)}</h3>
-                            ${plan["mo-ta"] ? `<p class="plan-description">${escapeHtml(plan["mo-ta"])}</p>` : ""}
-                            
                             <div class="plan-meta">
-                                <span><i class="far fa-calendar-alt"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])} ${warningBadge}</span>
+                                <span><i class="far fa-calendar-alt"></i> Hạn: ${formatDate(plan["ngay-ket-thuc"])} ${warningBadge}</span>
                                 <span><i class="fas fa-user-tie"></i> Phụ trách: ${escapeHtml(manager?.["ho-ten"] || "Chưa phân công")}</span>
-                                <span><i class="fas fa-user-edit"></i> Người tạo: ${escapeHtml(creator?.["ho-ten"] || "Hệ thống")}</span>
-                                ${statusBadge(plan["trang-thai"])}
                             </div>
                         </div>
 
                         <div class="plan-progress">
                             <div class="progress-header">
-                                <span>Tiến độ thực hiện</span>
+                                <span>Tiến độ</span>
                                 <span class="progress-value">${formatProgress(progress)}</span>
                             </div>
                             <div class="progress-track">
@@ -673,24 +527,18 @@
                     </div>
 
                     <div class="plan-bottom">
-                        <div class="plan-stats">
-                            <span><i class="fas fa-tasks"></i> ${plan["tong-cong-viec"] || 0} công việc</span>
-                            <span><i class="fas fa-check-circle" style="color:#16a34a;"></i> ${plan["so-cong-viec-hoan-thanh"] || 0} hoàn thành</span>
+                        <div style="display:flex; gap:6px;">
+                            ${statusBadge(plan["trang-thai"])}
+                            ${approvalBadge(plan["trang-thai-duyet"])}
                         </div>
 
                         <div class="plan-actions">
-                            <button id="btn-toggle-${plan.id}" class="btn-custom btn-custom-small" onclick="togglePlanTasks('${plan.id}')">
-                                <i class="fas fa-chevron-down"></i> Xem công việc
+                            <button class="btn-custom btn-custom-small" onclick="window.location.href='chi-tiet-ke-hoach.html?id=${plan.id}'">
+                                <i class="fas fa-eye"></i> Xem chi tiết
                             </button>
                             ${canEditPlan(plan) ? `
                                 <button class="btn-custom btn-custom-small" onclick="editPlan('${plan.id}')">
                                     <i class="fas fa-pen"></i> Sửa
-                                </button>
-                                <button class="btn-custom btn-custom-small btn-custom-warning" onclick="togglePausePlan('${plan.id}', '${plan["trang-thai"]}')">
-                                    <i class="fas ${isPaused ? 'fa-play' : 'fa-pause'}"></i> ${isPaused ? 'Tiếp tục' : 'Tạm dừng'}
-                                </button>
-                                <button class="btn-custom btn-custom-small btn-custom-danger" onclick="openDeletePlanModal('${plan.id}')">
-                                    <i class="fas fa-trash-alt"></i> Xóa
                                 </button>
                             ` : ""}
                             ${isApprover() && plan["trang-thai-duyet"] === "cho-duyet" ? `
@@ -700,9 +548,6 @@
                             ` : ""}
                         </div>
                     </div>
-                    
-                    <!-- Vùng chứa danh sách task hiển thị sổ xuống -->
-                    <div class="plan-tasks-container" id="tasks-${plan.id}" style="display: none;"></div>
                 </div>
             `;
         }
@@ -715,198 +560,21 @@
         }
 
         /* =========================================================
-           CƠ CHẾ ACCORDION (XEM CÔNG VIỆC SỔ XUỐNG) VÀ LOAD NGẦM
-        ========================================================= */
-        async function togglePlanTasks(planId, isSilentReload = false) {
-            const container = document.getElementById(`tasks-${planId}`);
-            const btn = document.getElementById(`btn-toggle-${planId}`);
-            if (!container || !btn) return;
-
-            const isVisible = container.style.display !== "none";
-
-            if (isVisible && !isSilentReload) {
-                container.style.display = "none";
-                btn.innerHTML = `<i class="fas fa-chevron-down"></i> Xem công việc`;
-                expandedPlans.delete(planId);
-                return;
-            }
-
-            expandedPlans.add(planId);
-            container.style.display = "block";
-            btn.innerHTML = `<i class="fas fa-chevron-up"></i> Thu gọn`;
-            
-            if (!isSilentReload) {
-                container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>`;
-            }
-
-            try {
-                const plan = plans.find(p => p.id === planId);
-                const [taskRes, evRes] = await Promise.all([
-                    window.supabaseClient.from("cong-viec").select("*").eq("ke-hoach-id", planId),
-                    window.supabaseClient.from("cong-viec-minh-chung").select("cong-viec-id, ma-giang-vien").limit(5000)
-                ]);
-
-                if (taskRes.error) throw taskRes.error;
-                const tasks = taskRes.data || [];
-                let evidences = [];
-                if (!evRes.error) evidences = evRes.data || [];
-
-                const taskIds = tasks.map(task => task.id);
-                let assignments = [];
-
-                if (taskIds.length) {
-                    const { data, error: assignmentError } = await window.supabaseClient
-                        .from("nhan-su-cong-viec")
-                        .select("*")
-                        .in("cong-viec-id", taskIds);
-                    if (assignmentError) throw assignmentError;
-                    assignments = data || [];
-                }
-
-                tasks.sort((a, b) => {
-                    if (!a["han-hoan-thanh"]) return 1;
-                    if (!b["han-hoan-thanh"]) return -1;
-                    return new Date(a["han-hoan-thanh"]) - new Date(b["han-hoan-thanh"]);
-                });
-
-                renderTasksInPlan(planId, tasks, assignments, evidences);
-            } catch (error) {
-                container.innerHTML = `<div class="error-msg" style="display:block">${escapeHtml(error.message)}</div>`;
-            }
-        }
-
-        function renderTasksInPlan(planId, tasks, assignments, evidences) {
-            const container = document.getElementById(`tasks-${planId}`);
-            if (!container) return;
-
-            const canCreateTask = isAdmin();
-
-            let html = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap:10px;">
-                    <h4 style="margin: 0; color: var(--text-dark); font-size: 1.1rem;"><i class="fas fa-list-ul"></i> Danh sách công việc con</h4>
-                    ${canCreateTask ? `
-                        <button class="btn-custom btn-custom-primary btn-custom-small" onclick="openCreateTask('${planId}')">
-                            <i class="fas fa-plus"></i> Thêm công việc
-                        </button>
-                    ` : ""}
-                </div>
-            `;
-
-            if (tasks.length) {
-                html += `<div class="task-list">`;
-                html += tasks.map(task => renderTask(task, assignments, evidences)).join("");
-                html += `</div>`;
-            } else {
-                html += `<div class="empty">Kế hoạch này chưa có công việc chi tiết.</div>`;
-            }
-
-            container.innerHTML = html;
-        }
-
-        function renderTask(task, assignments, evidences) {
-            const staff = assignments.filter(item => item["cong-viec-id"] === task.id);
-            const canEdit = canEditTask(task);
-            const creator = findLecturer(task["created-by-ma-gv"]);
-            const isPaused = task["trang-thai"] === 'tam-dung';
-            const warningBadge = getDeadlineWarning(task["han-hoan-thanh"], task["trang-thai"]);
-
-            const taskEvidences = evidences.filter(e => e['cong-viec-id'] === task.id);
-
-            let processButtons = "";
-            if (['cho-xac-nhan', 'hoan-thanh'].includes(task["trang-thai"])) {
-                processButtons += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
-            }
-            if (task["trang-thai"] === "cho-xac-nhan" && isApprover()) {
-                processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTaskCompletion('${task.id}', '${task["ke-hoach-id"]}')"><i class="fas fa-check-double"></i> Duyệt hoàn thành</button>`;
-            }
-
-            return `
-                <div class="task-card">
-                    <div class="task-top">
-                        <div style="flex:1;">
-                            <div class="task-title">${escapeHtml(task["tieu-de"])}</div>
-                            ${task["mo-ta"] ? `<div class="task-description">${escapeHtml(task["mo-ta"])}</div>` : ""}
-                        </div>
-                        <div class="task-actions">
-                            ${canEdit ? `
-                                <button class="btn-custom btn-custom-small" onclick="editTask('${task.id}', '${task["ke-hoach-id"]}')" title="Sửa"><i class="fas fa-pen"></i></button>
-                                <button class="btn-custom btn-custom-small btn-custom-warning" onclick="togglePauseTask('${task.id}', '${task["trang-thai"]}', '${task["ke-hoach-id"]}')" title="${isPaused ? 'Tiếp tục' : 'Tạm dừng'}">
-                                    <i class="fas ${isPaused ? 'fa-play' : 'fa-pause'}"></i>
-                                </button>
-                                <button class="btn-custom btn-custom-small btn-custom-danger" onclick="deleteTask('${task.id}', '${task["ke-hoach-id"]}')" title="Xóa"><i class="fas fa-trash-alt"></i></button>
-                            ` : ""}
-                        </div>
-                    </div>
-
-                    <div class="task-meta">
-                        ${taskStatusBadge(task["trang-thai"])}
-                        ${task["han-hoan-thanh"] ? `
-                            <span class="status-badge badge-gray"><i class="far fa-clock"></i> Hạn: ${formatDate(task["han-hoan-thanh"])}</span>
-                            ${warningBadge}
-                        ` : ""}
-                        <span class="status-badge badge-gray"><i class="fas fa-user-edit"></i> Người tạo: ${escapeHtml(creator?.["ho-ten"] || "Hệ thống")}</span>
-                    </div>
-
-                    <div class="staff-list">
-                        ${staff.length ? staff.map(s => renderStaffChip(s, task["trang-thai"], taskEvidences)).join("") : `<span class="status-badge badge-gray"><i class="fas fa-exclamation-circle"></i> Chưa phân công</span>`}
-                    </div>
-
-                    <div style="margin-top:12px; display: flex; gap: 7px; flex-wrap: wrap;">
-                        ${isAdmin() ? `
-                            <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}', '${task["ke-hoach-id"]}')">
-                                <i class="fas fa-user-plus"></i> Phân công Nhân sự
-                            </button>
-                        ` : ""}
-                        ${processButtons}
-                    </div>
-                </div>
-            `;
-        }
-
-        function renderStaffChip(item, taskStatus, taskEvidences) {
-            const gv = findLecturer(item["ma-giang-vien"]);
-            const roleStr = item["vai-tro"] === "phu-trach" ? "Phụ trách" : "Phối hợp";
-            const iconStr = item["vai-tro"] === "phu-trach" ? '<i class="fas fa-user-tie"></i>' : '<i class="fas fa-user"></i>';
-            
-            let statusHtml = "";
-            let bgClass = "";
-
-            if (taskStatus === "hoan-thanh") {
-                statusHtml = `<span class="staff-status-text completed"><i class="fas fa-check-circle"></i> Đã xong</span>`;
-                bgClass = "is-completed";
-            } else if (taskEvidences.some(e => e["ma-giang-vien"] === item["ma-giang-vien"])) {
-                statusHtml = `<span class="staff-status-text evidence"><i class="fas fa-file-upload"></i> Đã gửi MC</span>`;
-                bgClass = "has-evidence";
-            }
-
-            return `
-                <span class="staff-chip ${bgClass}">
-                    ${iconStr} <span>${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])} <small class="text-muted">(${roleStr})</small></span>
-                    ${statusHtml}
-                </span>
-            `;
-        }
-
-        function canEditTask(task) {
-            if (!currentAccount) return false;
-            if (currentAccount.role === "superadmin" || currentAccount.role === "head") return true;
-            if (currentAccount.role === "admin") return (task["created-by-ma-gv"] === currentAccount["ma-giang-vien"]);
-            return false;
-        }
-
-        /* =========================================================
-           CREATE/EDIT/SAVE PLAN
+           CREATE/EDIT/SAVE PLAN MODAL
         ========================================================= */
         document.getElementById("btn-create-plan").addEventListener("click", () => {
+            currentPlanId = null;
             document.getElementById("plan-form").reset();
             document.getElementById("plan-id").value = "";
             document.getElementById("plan-modal-title").innerHTML = 'Tạo kế hoạch';
+            document.getElementById("plan-modal-extra-actions").style.display = "none";
             openModal("plan-modal");
         });
 
         function editPlan(planId) {
             const plan = plans.find(p => p.id === planId);
             if (!plan) return;
+            currentPlanId = planId;
             document.getElementById("plan-id").value = plan.id;
             document.getElementById("plan-name").value = plan.ten || "";
             document.getElementById("plan-description").value = plan["mo-ta"] || "";
@@ -914,6 +582,18 @@
             document.getElementById("plan-end").value = plan["ngay-ket-thuc"] || "";
             document.getElementById("plan-manager").value = plan["nguoi-phu-trach-ma-gv"] || "";
             document.getElementById("plan-modal-title").innerHTML = 'Sửa kế hoạch';
+
+            // Hiển thị nút xóa và tạm dừng trong popup sửa
+            const extraActions = document.getElementById("plan-modal-extra-actions");
+            extraActions.style.display = "flex";
+            const btnPause = document.getElementById("btnPausePlanModal");
+            const isPaused = plan["trang-thai"] === 'tam-dung';
+            if(isPaused) {
+                btnPause.innerHTML = '<i class="fas fa-play"></i> Tiếp tục';
+            } else {
+                btnPause.innerHTML = '<i class="fas fa-pause"></i> Tạm dừng';
+            }
+
             openModal("plan-modal");
         }
 
@@ -934,10 +614,11 @@
                 btn.disabled = true;
 
                 if (id) {
-                    if (currentAccount.role === "admin") payload["trang-thai-duyet"] = "cho-duyet";
+                    // Cập nhật
                     const { error } = await window.supabaseClient.from("ke-hoach").update(payload).eq("id", id);
                     if (error) throw error;
                 } else {
+                    // Tạo mới
                     payload["created-by-ma-gv"] = currentAccount["ma-giang-vien"];
                     payload["trang-thai"] = "chua-bat-dau";
                     payload["trang-thai-duyet"] = currentAccount.role === "admin" ? "cho-duyet" : "da-duyet";
@@ -946,26 +627,42 @@
                 }
                 
                 closeModal("plan-modal");
-                await loadPlans(); 
+                await loadPlans();
 
                 btn.innerHTML = '<i class="fas fa-save"></i> Lưu kế hoạch';
                 btn.disabled = false;
-            } catch (error) { showError(error.message); }
+            } catch (error) { 
+                showError(error.message); 
+                document.getElementById("btnSavePlan").disabled = false;
+                document.getElementById("btnSavePlan").innerHTML = '<i class="fas fa-save"></i> Lưu kế hoạch';
+            }
         });
 
-        async function togglePausePlan(planId, currentStatus) {
-            const isPaused = currentStatus === 'tam-dung';
+        /* =========================================================
+           TẠM DỪNG VÀ XÓA TỪ MODAL SỬA
+        ========================================================= */
+        async function handlePauseFromModal() {
+            if(!currentPlanId) return;
+            const plan = plans.find(p => p.id === currentPlanId);
+            if(!plan) return;
+            
+            const isPaused = plan["trang-thai"] === 'tam-dung';
             if (!confirm(isPaused ? "Bạn muốn tiếp tục kế hoạch này?" : "Bạn muốn tạm dừng kế hoạch này?")) return;
             
+            const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
             try {
-                if (isPaused) {
-                    await window.supabaseClient.from("ke-hoach").update({"trang-thai": "dang-thuc-hien"}).eq("id", planId);
-                    await syncPlanProgress(planId);
-                } else {
-                    await window.supabaseClient.from("ke-hoach").update({"trang-thai": "tam-dung"}).eq("id", planId);
-                    await loadPlans();
-                }
+                const { error } = await window.supabaseClient.from("ke-hoach").update({"trang-thai": newStatus}).eq("id", currentPlanId);
+                if (error) throw error;
+                
+                closeModal('plan-modal');
+                await loadPlans();
             } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
+        }
+
+        function handleDeleteFromModal() {
+            if(!currentPlanId) return;
+            closeModal('plan-modal');
+            openDeletePlanModal(currentPlanId);
         }
 
         /* =========================================================
@@ -990,13 +687,11 @@
                 const btn = document.getElementById("btnConfirmDeletePlan");
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Xóa...';
                 btn.disabled = true;
-                
-                closeModal("delete-plan-modal");
 
                 const { error } = await window.supabaseClient.from("ke-hoach").delete().eq("id", planToDeleteId);
                 if (error) throw error;
                 
-                expandedPlans.delete(planToDeleteId);
+                closeModal("delete-plan-modal");
                 await loadPlans();
 
                 btn.innerHTML = '<i class="fas fa-trash-alt"></i> Xóa Vĩnh Viễn';
@@ -1005,92 +700,7 @@
         }
 
         /* =========================================================
-           CREATE/EDIT/SAVE/DELETE TASK (SILENT RELOAD TRONG ACCORDION)
-        ========================================================= */
-        function openCreateTask(planId) {
-            currentPlanId = planId; 
-            document.getElementById("task-form").reset();
-            document.getElementById("task-id").value = "";
-            document.getElementById("task-plan-id").value = planId;
-            document.getElementById("task-modal-title").innerHTML = 'Tạo công việc';
-            openModal("task-modal");
-        }
-
-        async function editTask(taskId, planId) {
-            currentPlanId = planId;
-            const { data: task, error } = await window.supabaseClient.from("cong-viec").select("*").eq("id", taskId).single();
-            if (error) { showError(error.message); return; }
-
-            document.getElementById("task-id").value = task.id;
-            document.getElementById("task-plan-id").value = planId || "";
-            document.getElementById("task-title").value = task["tieu-de"] || "";
-            document.getElementById("task-description").value = task["mo-ta"] || "";
-            document.getElementById("task-start").value = task["ngay-bat-dau"] || "";
-            document.getElementById("task-deadline").value = task["han-hoan-thanh"] || "";
-            document.getElementById("task-modal-title").innerHTML = 'Sửa công việc';
-            openModal("task-modal");
-        }
-
-        document.getElementById("task-form").addEventListener("submit", async (event) => {
-            event.preventDefault();
-            const id = document.getElementById("task-id").value;
-            const planId = document.getElementById("task-plan-id").value;
-            const payload = {
-                "ke-hoach-id": planId || null,
-                "tieu-de": document.getElementById("task-title").value.trim(),
-                "mo-ta": document.getElementById("task-description").value.trim() || null,
-                "ngay-bat-dau": document.getElementById("task-start").value,
-                "han-hoan-thanh": document.getElementById("task-deadline").value
-            };
-
-            try {
-                const btn = document.getElementById("btnSaveTask");
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
-                btn.disabled = true;
-                
-                closeModal("task-modal");
-
-                if (id) {
-                    const { error } = await window.supabaseClient.from("cong-viec").update(payload).eq("id", id);
-                    if (error) throw error;
-                } else {
-                    payload["created-by-ma-gv"] = currentAccount["ma-giang-vien"];
-                    payload["trang-thai"] = "chua-thuc-hien";
-                    const { error } = await window.supabaseClient.from("cong-viec").insert(payload);
-                    if (error) throw error;
-                }
-                
-                await syncPlanProgress(planId); 
-
-                btn.innerHTML = '<i class="fas fa-save"></i> Lưu công việc';
-                btn.disabled = false;
-            } catch (error) { showError(error.message); }
-        });
-
-        async function deleteTask(taskId, planId) {
-            if (!confirm("Bạn có chắc muốn xóa vĩnh viễn công việc này?")) return;
-            try {
-                const { error } = await window.supabaseClient.from("cong-viec").delete().eq("id", taskId);
-                if (error) throw error;
-                await syncPlanProgress(planId);
-            } catch (error) { showError(error.message); }
-        }
-
-        async function togglePauseTask(taskId, currentStatus, planId) {
-            const isPaused = currentStatus === 'tam-dung';
-            if (!confirm(isPaused ? "Bạn muốn tiếp tục công việc này?" : "Bạn muốn tạm dừng công việc này?")) return;
-            
-            try {
-                const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
-                const { error } = await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
-                if (error) throw error;
-                
-                await syncPlanProgress(planId);
-            } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
-        }
-
-        /* =========================================================
-           DUYỆT VÀ XEM MINH CHỨNG
+           DUYỆT
         ========================================================= */
         async function approvePlan(planId) {
             if (!isApprover()) return;
@@ -1103,238 +713,6 @@
                 if (error) throw error;
                 await loadPlans();
             } catch (error) { showError(error.message); }
-        }
-
-        async function approveTaskCompletion(taskId, planId) {
-            if (!isApprover()) return;
-            if (!confirm("Xác nhận công việc này đã HOÀN THÀNH? Hệ thống sẽ tự động cập nhật tiến độ tổng.")) return;
-            try {
-                const { error } = await window.supabaseClient.from("cong-viec").update({
-                    "trang-thai": "hoan-thanh"
-                }).eq("id", taskId);
-                if (error) throw error;
-                
-                await syncPlanProgress(planId);
-            } catch (error) { showError(error.message); }
-        }
-
-        async function viewEvidence(taskId) {
-            openModal("view-evidence-modal");
-            const container = document.getElementById("evidence-list-content");
-            container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải minh chứng...</div>`;
-
-            try {
-                // Cho phép lỗi missing table fail ngầm thay vì treo hệ thống
-                const { data, error } = await window.supabaseClient
-                    .from("cong-viec-minh-chung")
-                    .select("*")
-                    .eq("cong-viec-id", taskId)
-                    .order("created-at", { ascending: false });
-
-                if (error) throw error;
-
-                if (!data || data.length === 0) {
-                    container.innerHTML = `<div class="empty">Chưa có minh chứng nào được gửi.</div>`;
-                    return;
-                }
-
-                container.innerHTML = data.map(item => {
-                    const gv = findLecturer(item["ma-giang-vien"]);
-                    return `
-                        <div class="evidence-item">
-                            <a href="${escapeHtml(item.url)}" target="_blank"><i class="fas fa-external-link-alt"></i> ${escapeHtml(item["tieu-de"])}</a>
-                            ${item["mo-ta"] ? `<div style="font-size:0.85rem; margin-top:5px; color:var(--text-dark);">${escapeHtml(item["mo-ta"])}</div>` : ''}
-                            <div class="evidence-meta">
-                                Gửi bởi: <b>${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])}</b> lúc ${new Date(item["created-at"]).toLocaleString("vi-VN")}
-                            </div>
-                        </div>
-                    `;
-                }).join("");
-            } catch (error) {
-                container.innerHTML = `<div class="error-msg" style="display:block">${escapeHtml(error.message)}</div>`;
-            }
-        }
-
-        /* =========================================================
-           TÍNH TOÁN VÀ ĐỒNG BỘ TIẾN ĐỘ KẾ HOẠCH (SILENT RELOAD ACCORDION)
-        ========================================================= */
-        async function syncPlanProgress(planId) {
-            try {
-                const { data: tasks, error: tErr } = await window.supabaseClient.from("cong-viec").select("trang-thai").eq("ke-hoach-id", planId);
-                if (tErr) throw tErr;
-
-                const plan = plans.find(p => p.id === planId);
-                if (!plan) return;
-
-                const total = tasks.length;
-                const completed = tasks.filter(t => t["trang-thai"] === "hoan-thanh").length;
-                
-                let progress = 0;
-                let autoStatus = "chua-bat-dau";
-
-                if (total > 0) {
-                    progress = (completed / total) * 100;
-                    if (completed === total) {
-                        autoStatus = "hoan-thanh";
-                    } else {
-                        const hasStarted = tasks.some(t => ["dang-thuc-hien", "cho-xac-nhan", "hoan-thanh"].includes(t["trang-thai"]));
-                        if (hasStarted) autoStatus = "dang-thuc-hien";
-                    }
-                }
-
-                if (plan["trang-thai"] === "tam-dung") {
-                    autoStatus = "tam-dung";
-                }
-
-                const { error: pErr } = await window.supabaseClient.from("ke-hoach").update({
-                    "tien-do": progress,
-                    "trang-thai": autoStatus
-                }).eq("id", planId);
-                if (pErr) throw pErr;
-
-                await loadPlans(); // Đã chứa logic khôi phục accordion expanded
-                
-            } catch (err) {
-                console.error("Lỗi đồng bộ tiến độ: ", err);
-            }
-        }
-
-
-        /* =========================================================
-           PHÂN CÔNG NHÂN SỰ VÀO CÔNG VIỆC (HỖ TRỢ CHỌN NHIỀU CHECKBOX)
-        ========================================================= */
-        async function manageStaff(taskId, planId) {
-            currentManageTaskId = taskId;
-            currentPlanId = planId;
-            
-            const { data: existing, error } = await window.supabaseClient.from("nhan-su-cong-viec").select("*").eq("cong-viec-id", taskId);
-            if (error) { showError(error.message); return; }
-
-            currentTempStaff = existing || [];
-            
-            document.getElementById("staff-role-select").value = "phoi-hop";
-            const selectAllBtn = document.getElementById("selectAllStaff");
-            if(selectAllBtn) selectAllBtn.checked = false;
-
-            renderStaffCheckboxes();
-            renderTempStaff();
-            openModal("staff-modal");
-        }
-
-        function renderStaffCheckboxes() {
-            const list = document.getElementById("staff-checkbox-list");
-            list.innerHTML = "";
-            lecturers.forEach(gv => {
-                const name = gv["ho-ten"] ? gv["ho-ten"] : gv["ma-giang-vien"];
-                list.innerHTML += `
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="chk-${gv["ma-giang-vien"]}" value="${gv["ma-giang-vien"]}" class="staff-chk">
-                        <label for="chk-${gv["ma-giang-vien"]}">${name}</label>
-                    </div>
-                `;
-            });
-        }
-
-        function toggleSelectAllStaff(source) {
-            const checkboxes = document.querySelectorAll(".staff-chk");
-            checkboxes.forEach(chk => chk.checked = source.checked);
-        }
-
-        function renderTempStaff() {
-            const list = document.getElementById("temp-staff-list");
-            list.innerHTML = "";
-            if (currentTempStaff.length === 0) {
-                list.innerHTML = "<div class='text-muted' style='font-style:italic;'>Chưa có nhân sự nào được phân công.</div>";
-                return;
-            }
-            currentTempStaff.forEach((item, index) => {
-                const gv = findLecturer(item["ma-giang-vien"]);
-                const roleStr = item["vai-tro"] === "phu-trach" ? "Phụ trách" : "Phối hợp";
-                const iconStr = item["vai-tro"] === "phu-trach" ? '<i class="fas fa-user-tie"></i>' : '<i class="fas fa-user"></i>';
-
-                list.innerHTML += `
-                    <div class="temp-staff-item">
-                        <span style="display: inline-flex; align-items: center; gap: 6px;">${iconStr} <span>${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])} - <b>${roleStr}</b></span></span>
-                        <button type="button" class="btn-custom btn-custom-danger btn-custom-small" onclick="removeTempStaff(${index})" title="Xóa nhân sự">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                `;
-            });
-        }
-
-        function addTempStaff() {
-            const checkboxes = document.querySelectorAll(".staff-chk:checked");
-            const role = document.getElementById("staff-role-select").value;
-            
-            if (checkboxes.length === 0) {
-                alert("Vui lòng tích chọn ít nhất một Giảng viên!");
-                return;
-            }
-
-            if (role === "phu-trach") {
-                const currentPhuTrachCount = currentTempStaff.filter(s => s["vai-tro"] === "phu-trach").length;
-                if (currentPhuTrachCount > 0 || checkboxes.length > 1) {
-                    alert("Mỗi công việc chỉ được phép có 1 người phụ trách chính. Vui lòng chỉ chọn 1 người hoặc đổi vai trò thành Phối hợp.");
-                    return;
-                }
-            }
-
-            let addedCount = 0;
-            checkboxes.forEach(chk => {
-                const gv = chk.value;
-                if (!currentTempStaff.some(s => s["ma-giang-vien"] === gv)) {
-                    currentTempStaff.push({
-                        "cong-viec-id": currentManageTaskId,
-                        "ma-giang-vien": gv,
-                        "vai-tro": role
-                    });
-                    addedCount++;
-                }
-            });
-
-            if (addedCount === 0) {
-                alert("Các giảng viên được chọn đã có trong danh sách phân công.");
-                return;
-            }
-
-            renderTempStaff();
-            document.querySelectorAll(".staff-chk").forEach(c => c.checked = false);
-            const selectAll = document.getElementById("selectAllStaff");
-            if(selectAll) selectAll.checked = false;
-        }
-
-        function removeTempStaff(index) {
-            currentTempStaff.splice(index, 1);
-            renderTempStaff();
-        }
-
-        async function saveStaffAssignment(event) {
-            event.preventDefault();
-            const btn = document.getElementById("btnSaveStaff");
-            const oldText = btn.innerHTML;
-            
-            try {
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
-                btn.disabled = true;
-
-                closeModal("staff-modal");
-
-                const { error: deleteError } = await window.supabaseClient.from("nhan-su-cong-viec").delete().eq("cong-viec-id", currentManageTaskId);
-                if (deleteError) throw deleteError;
-
-                if (currentTempStaff.length > 0) {
-                    const { error: insertError } = await window.supabaseClient.from("nhan-su-cong-viec").insert(currentTempStaff);
-                    if (insertError) throw insertError;
-                }
-                
-                await syncPlanProgress(currentPlanId);
-            } catch (err) {
-                showError("Cập nhật nhân sự thất bại: " + err.message);
-            } finally {
-                btn.innerHTML = oldText;
-                btn.disabled = false;
-            }
         }
 
         /* =========================================================
@@ -1361,7 +739,7 @@
 
         let realtimeTimer = null;
         function handleRealtimeUpdate(payload) {
-            // Dùng debounce để gom nhóm thay đổi nếu có nhiều trigger đồng thời (xóa/update hàng loạt)
+            // Dùng debounce để gom nhóm thay đổi nếu có nhiều trigger đồng thời
             if (realtimeTimer) clearTimeout(realtimeTimer);
             realtimeTimer = setTimeout(() => {
                 loadPlans();
@@ -1371,6 +749,9 @@
         function openModal(id) { document.getElementById(id).classList.add("show"); }
         function closeModal(id) { document.getElementById(id).classList.remove("show"); }
 
+        /* =========================================================
+           HÀM RENDER BADGES FORMAT VÀ HIỂN THỊ
+        ========================================================= */
         function findLecturer(maGV) {
             if (!maGV) return null;
             return lecturers.find(gv => gv["ma-giang-vien"] === maGV);
@@ -1402,17 +783,6 @@
             return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
         }
 
-        function taskStatusBadge(status) {
-            const map = {
-                "chua-thuc-hien": ["Chưa thực hiện", "gray", "fa-circle"],
-                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "cho-xac-nhan": ["Chờ xác nhận", "orange", "fa-clock"],
-                "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"]
-            };
-            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
-            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
-        }
-
         function approvalBadge(status) {
             const map = {
                 "cho-duyet": ["Chờ duyệt", "yellow", "fa-hourglass-half"],
@@ -1437,6 +807,8 @@
             box.style.display = "block";
             setTimeout(() => { box.style.display = "none"; }, 5000);
         }
+
     </script>
+
 </body>
 </html>
