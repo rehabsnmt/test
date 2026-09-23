@@ -65,14 +65,14 @@
 
         /* Thẻ Kế hoạch chính */
         .plan-overview-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 30px; }
-        .plan-title-large { margin: 0 0 10px; font-size: 22px; font-weight: 700; color: var(--text-dark); }
-        .plan-description { margin: 0 0 20px; color: var(--text-muted); font-size: 15px; white-space: pre-line; line-height: 1.6; }
-        .plan-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-light); }
-        .meta-item { display: flex; flex-direction: column; gap: 4px; font-size: 14px;}
+        .plan-title-large { margin: 0 0 15px; font-size: 24px; font-weight: 700; color: var(--text-dark); }
+        .plan-description { margin: 0; color: var(--text-muted); font-size: 15px; white-space: pre-line; line-height: 1.6; }
+        .plan-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 0; }
+        .meta-item { display: flex; flex-direction: column; gap: 6px; font-size: 14px;}
         .meta-label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;}
         .meta-value { color: var(--text-dark); font-weight: 600; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;}
 
-        .plan-progress-container { width: 100%; max-width: 400px;}
+        .plan-progress-container { width: 100%; max-width: 400px; margin-top: 4px; }
         .progress-header { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: var(--text-muted); font-weight: 600;}
         .progress-value { font-weight: 700; color: var(--text-dark); }
         .progress-track { height: 10px; background: var(--border); border-radius: 99px; overflow: hidden; }
@@ -87,7 +87,7 @@
             margin-bottom: 15px; 
             padding-bottom: 10px; 
             border-bottom: 2px solid var(--primary-light);
-            flex-wrap: nowrap; /* Bắt buộc không xuống dòng */
+            flex-wrap: nowrap; 
             gap: 10px;
         }
         .section-title { 
@@ -95,12 +95,14 @@
             font-size: 20px; 
             color: var(--text-dark); 
             font-weight: 700; 
+            text-align: left; /* Đảm bảo căn trái */
+            flex: 1; /* Ép giãn dồn nút về bên phải */
             white-space: nowrap; 
             overflow: hidden; 
-            text-overflow: ellipsis; /* Thu nhỏ tiêu đề nếu màn hình quá hẹp */
+            text-overflow: ellipsis; 
         }
         .section-header .btn-custom {
-            flex-shrink: 0; /* Không cho nút bị bóp méo */
+            flex-shrink: 0; 
             white-space: nowrap;
         }
 
@@ -197,7 +199,7 @@
             .page-header { align-items: flex-start; flex-direction: column; gap: 12px;}
             .plan-overview-card { padding: 16px; }
             .plan-meta-grid { grid-template-columns: 1fr; gap: 12px; border-bottom: none; padding-bottom: 0;}
-            .plan-progress-container { max-width: 100%; margin-top: 15px; border-top: 1px solid var(--border-light); padding-top: 15px;}
+            .plan-progress-container { max-width: 100%;}
             .task-top { flex-direction: column; }
             .task-actions { justify-content: flex-start; margin-top: 5px; width: 100%;}
             .task-actions .btn-custom { flex: 1; }
@@ -490,7 +492,7 @@
         }
 
         /* =========================================================
-           RENDER GIAO DIỆN
+           RENDER GIAO DIỆN CHÍNH
         ========================================================= */
 
         function renderPlanOverview() {
@@ -503,11 +505,37 @@
             const html = `
                 <div class="plan-overview-card">
                     <h2 class="plan-title-large">${escapeHtml(plan.ten)}</h2>
-                    ${plan["mo-ta"] ? `<div class="plan-description">${escapeHtml(plan["mo-ta"])}</div>` : ""}
                     
-                    <div class="plan-meta-grid">
+                    <div class="plan-meta-grid" style="border-bottom: none; padding-bottom: 0;">
+                        <!-- Ngày bắt đầu/kết thúc (Có cảnh báo) -->
+                        <div class="meta-item" style="grid-column: 1 / -1;">
+                            <span class="meta-label">Thời hạn</span>
+                            <span class="meta-value" style="gap:10px;">
+                                <span><i class="far fa-calendar-alt" style="color:var(--text-muted);"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])}</span>
+                                ${warningBadge}
+                            </span>
+                        </div>
+                        
+                        <!-- Tiến độ -->
+                        <div class="meta-item" style="grid-column: 1 / -1; margin-bottom: 10px;">
+                            <div class="plan-progress-container" style="margin: 0; max-width: 100%;">
+                                <div class="progress-header">
+                                    <span class="meta-label" style="color:var(--text-muted); font-size:12px;">Tiến độ hoàn thành chung</span>
+                                    <span class="progress-value">${formatProgress(progress)}</span>
+                                </div>
+                                <div class="progress-track" style="margin-top: 4px;">
+                                    <div class="progress-bar" style="width:${Math.min(100, Math.max(0, progress))}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Các thông tin khác -->
                         <div class="meta-item">
-                            <span class="meta-label">Trạng thái Kế hoạch</span>
+                            <span class="meta-label">Người phụ trách</span>
+                            <span class="meta-value"><i class="fas fa-user-tie" style="color:var(--text-muted);"></i> ${escapeHtml(manager?.["ho-ten"] || "Chưa phân công")}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Trạng thái</span>
                             <span class="meta-value">${statusBadge(plan["trang-thai"])}</span>
                         </div>
                         <div class="meta-item">
@@ -515,38 +543,18 @@
                             <span class="meta-value">${approvalBadge(plan["trang-thai-duyet"])}</span>
                         </div>
                         <div class="meta-item">
-                            <span class="meta-label">Người phụ trách</span>
-                            <span class="meta-value"><i class="fas fa-user-tie" style="color:var(--text-muted);"></i> ${escapeHtml(manager?.["ho-ten"] || "Chưa phân công")}</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">Thời hạn</span>
-                            <span class="meta-value" style="gap:10px;">
-                                <span><i class="far fa-calendar-alt" style="color:var(--text-muted);"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])}</span>
-                                ${warningBadge}
-                            </span>
-                        </div>
-                        <div class="meta-item">
                             <span class="meta-label">Người tạo</span>
                             <span class="meta-value"><i class="fas fa-user-edit" style="color:var(--text-muted);"></i> ${escapeHtml(creator?.["ho-ten"] || "Hệ thống")}</span>
                         </div>
-                        <div class="meta-item">
-                            <span class="meta-label">Tổng kết</span>
-                            <span class="meta-value">
-                                <span style="color:#16a34a;"><i class="fas fa-check-circle"></i> ${plan["so-cong-viec-hoan-thanh"] || 0}</span> / 
-                                <span style="color:var(--text-muted);"><i class="fas fa-tasks"></i> ${plan["tong-cong-viec"] || 0}</span>
-                            </span>
-                        </div>
                     </div>
 
-                    <div class="plan-progress-container">
-                        <div class="progress-header">
-                            <span>Tiến độ hoàn thành chung</span>
-                            <span class="progress-value">${formatProgress(progress)}</span>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-bar" style="width:${Math.min(100, Math.max(0, progress))}%;"></div>
-                        </div>
+                    <!-- Mô tả Kế hoạch (Nằm cuối cùng) -->
+                    ${plan["mo-ta"] ? `
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-light);">
+                        <span class="meta-label" style="display:block; margin-bottom:8px;">Mô tả kế hoạch</span>
+                        <div class="plan-description" style="margin:0;">${escapeHtml(plan["mo-ta"])}</div>
                     </div>
+                    ` : ""}
                 </div>
             `;
             document.getElementById('plan-detail-container').innerHTML = html;
@@ -569,7 +577,6 @@
         function renderTaskCard(task, assignments, evidences) {
             const staff = assignments.filter(item => item["cong-viec-id"] === task.id);
             const canEdit = canEditTask(task);
-            const isPaused = task["trang-thai"] === 'tam-dung';
             const warningBadge = getDeadlineWarning(task["han-hoan-thanh"], task["trang-thai"]);
 
             const taskEvidences = evidences.filter(e => e['cong-viec-id'] === task.id);
@@ -592,9 +599,6 @@
                         <div class="task-actions">
                             ${canEdit ? `
                                 <button class="btn-custom btn-custom-small" onclick="editTask('${task.id}')" title="Sửa công việc"><i class="fas fa-pen"></i></button>
-                                <button class="btn-custom btn-custom-small btn-custom-warning" onclick="togglePauseTask('${task.id}', '${task["trang-thai"]}')" title="${isPaused ? 'Tiếp tục' : 'Tạm dừng'}">
-                                    <i class="fas ${isPaused ? 'fa-play' : 'fa-pause'}"></i>
-                                </button>
                                 <button class="btn-custom btn-custom-small btn-custom-danger" onclick="deleteTask('${task.id}')" title="Xóa công việc"><i class="fas fa-trash-alt"></i></button>
                             ` : ""}
                         </div>
@@ -724,19 +728,6 @@
                 if (error) throw error;
                 await syncPlanProgress();
             } catch (error) { showError(error.message); }
-        }
-
-        async function togglePauseTask(taskId, currentStatus) {
-            const isPaused = currentStatus === 'tam-dung';
-            if (!confirm(isPaused ? "Bạn muốn tiếp tục công việc này?" : "Bạn muốn tạm dừng công việc này?")) return;
-            
-            try {
-                const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
-                const { error } = await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
-                if (error) throw error;
-                
-                await syncPlanProgress();
-            } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
         }
 
         async function approveTaskCompletion(taskId) {
@@ -960,7 +951,7 @@
                     if (insertError) throw insertError;
                 }
                 
-                await loadPlanDetails(true); // Cập nhật lại giao diện sau khi phân công xong
+                await loadPlanDetails(true); // Reload để hiện staff
             } catch (err) {
                 showError("Cập nhật nhân sự thất bại: " + err.message);
             } finally {
