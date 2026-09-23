@@ -447,7 +447,10 @@
             }
         }
 
-        async function loadPlanDetails() {
+        async function loadPlanDetails(showLoader = false) {
+            if (showLoader) {
+                document.getElementById("task-list-container").innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang làm mới dữ liệu...</div>`;
+            }
             try {
                 // 1. Tải Kế hoạch
                 const { data: plan, error: pErr } = await window.supabaseClient.from("tien-do-ke-hoach").select("*").eq("id", currentPlanId).single();
@@ -818,13 +821,14 @@
                     "tien-do": progress,
                     "trang-thai": autoStatus
                 }).eq("id", currentPlanId);
-                if (pErr) throw pErr;
-
-                // Load lại toàn bộ thông tin trên trang hiện tại
-                await loadPlanDetails(); 
+                
+                if (pErr) console.warn("Lỗi cập nhật tiến độ (có thể do quyền RLS):", pErr);
                 
             } catch (err) {
                 console.error("Lỗi đồng bộ tiến độ: ", err);
+            } finally {
+                // Đảm bảo LUÔN gọi hàm làm mới giao diện sau khi thêm/sửa/xóa thành công
+                await loadPlanDetails(true); 
             }
         }
 
@@ -956,7 +960,7 @@
                     if (insertError) throw insertError;
                 }
                 
-                await loadPlanDetails(); // Reload để hiện staff
+                await loadPlanDetails(true); // Cập nhật lại giao diện sau khi phân công xong
             } catch (err) {
                 showError("Cập nhật nhân sự thất bại: " + err.message);
             } finally {
