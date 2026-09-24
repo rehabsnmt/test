@@ -120,16 +120,32 @@
         .plan-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-light); flex-wrap: wrap;}
         .plan-actions { display: flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
 
+        /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
+        @keyframes pulse-critical {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+        @keyframes pulse-high {
+            0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(234, 88, 12, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+        }
+        
         .status-badge {
             display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-            border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 600; white-space: nowrap;
+            border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; white-space: nowrap;
         }
+
+        .badge-warning-critical { background: #dc2626; color: white; border: none; animation: pulse-critical 1.5s infinite; font-weight: 700; letter-spacing: 0.3px;}
+        .badge-warning-high { background: #ea580c; color: white; border: none; animation: pulse-high 1.5s infinite; font-weight: 700; letter-spacing: 0.3px;}
+        .badge-warning-medium { background: #f59e0b; color: white; border: none; }
+        .badge-warning-low { background: #3b82f6; color: white; border: none; }
 
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
         .badge-blue { background: #e0f2fe; color: #0284c7; }
         .badge-green { background: #dcfce7; color: #15803d; }
         .badge-yellow { background: #fef3c7; color: #b45309; }
-        .badge-red { background: #fee2e2; color: #b91c1c; }
 
         .custom-modal-backdrop {
             position: fixed; inset: 0; background: rgba(15, 23, 42, .6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
@@ -228,7 +244,7 @@
                     </h3>
                     <!-- Bộ lọc biểu đồ -->
                     <select id="chart-status-filter" class="custom-select" style="max-width: 250px; font-size: 0.85rem; padding: 6px 10px; height: auto;" onchange="renderChart()">
-                        <option value="active" selected>Đang thực hiện (Chưa xong)</option>
+                        <option value="active" selected>Đang thực hiện</option>
                         <option value="completed">Đã hoàn thành</option>
                         <option value="all">Tất cả</option>
                     </select>
@@ -338,7 +354,6 @@
         let currentAccount = null;
         let plans = [];
         let allAssignments = [];
-        let allTasks = [];
         let lecturers = [];
         let workloadChartInstance = null;
 
@@ -438,12 +453,12 @@
 
                 plans = planRes.data || [];
                 allAssignments = assignRes.data || [];
-                allTasks = taskRes.data || [];
+                const allTasks = taskRes.data || [];
 
                 // Gắn trạng thái công việc vào từng phân công để dễ lọc
                 allAssignments.forEach(a => {
                     const task = allTasks.find(t => t.id === a["cong-viec-id"]);
-                    a["trang-thai"] = task ? task["trang-thai"] : "chua-thuc-hien";
+                    a["trang-thai"] = task ? task["trang-thai"] : "dang-thuc-hien";
                 });
 
                 updateDashboardCounts();
@@ -456,7 +471,7 @@
         }
 
         /* =========================================================
-           VẼ BIỂU ĐỒ CHART.JS KÈM LỌC TRẠNG THÁI
+           VẼ BIỂU ĐỒ CHART.JS KÈM LỌC TRẠNG THÁI (GỘP CỘT)
         ========================================================= */
         function renderChart() {
             const ctx = document.getElementById('workloadChart');
@@ -486,7 +501,6 @@
                     pCount = gvPlans.filter(p => p["trang-thai"] === "hoan-thanh").length;
                     tCount = gvTasks.filter(a => a["trang-thai"] === "hoan-thanh").length;
                 } else if (filterVal === 'active') {
-                    // Mặc định đang làm: Bao gồm Chưa làm, Đang làm, Chờ xác nhận, Tạm dừng... Miễn là KHÔNG phải hoàn thành
                     pCount = gvPlans.filter(p => p["trang-thai"] !== "hoan-thanh").length;
                     tCount = gvTasks.filter(a => a["trang-thai"] !== "hoan-thanh").length;
                 }
@@ -528,12 +542,14 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
+                        x: { 
+                            stacked: true, // Gộp thành 1 cột
+                            grid: { display: false } 
+                        },
                         y: { 
+                            stacked: true, // Gộp thành 1 cột
                             beginAtZero: true, 
                             ticks: { stepSize: 1 } 
-                        },
-                        x: { 
-                            grid: { display: false } 
                         }
                     },
                     plugins: {
@@ -563,8 +579,8 @@
             document.getElementById('count-completed').textContent = plans.filter(p => p["trang-thai"] === "hoan-thanh").length;
         }
 
-        function getDeadlineWarning(dateStr) {
-            if (!dateStr) return "";
+        function getDeadlineWarning(dateStr, status) {
+            if (!dateStr || status === 'hoan-thanh' || status === 'tam-dung') return "";
             try {
                 const today = new Date();
                 today.setHours(0,0,0,0);
@@ -575,9 +591,12 @@
                 const diffTime = target - today;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-                if (diffDays < 0) return `<span class="status-badge badge-red"><i class="fas fa-exclamation-triangle"></i> Quá hạn</span>`;
-                if (diffDays === 0) return `<span class="status-badge badge-red"><i class="fas fa-exclamation-circle"></i> Hôm nay</span>`;
-                if (diffDays <= 3) return `<span class="status-badge badge-yellow"><i class="fas fa-exclamation-circle"></i> Sắp hạn</span>`;
+                if (diffDays < 0) return `<span class="status-badge badge-warning-critical"><i class="fas fa-exclamation-triangle"></i> Quá hạn ${Math.abs(diffDays)} ngày</span>`;
+                if (diffDays === 0) return `<span class="status-badge badge-warning-critical"><i class="fas fa-exclamation-circle"></i> Hết hạn hôm nay!</span>`;
+                if (diffDays <= 1) return `<span class="status-badge badge-warning-critical"><i class="fas fa-exclamation-circle"></i> Còn 1 ngày!</span>`;
+                if (diffDays <= 3) return `<span class="status-badge badge-warning-high"><i class="fas fa-exclamation-circle"></i> Còn ${diffDays} ngày</span>`;
+                if (diffDays <= 7) return `<span class="status-badge badge-warning-medium"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
+                if (diffDays <= 10) return `<span class="status-badge badge-warning-low"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
             } catch (e) { return ""; }
             return "";
         }
@@ -644,12 +663,7 @@
         function renderPlanCard(plan) {
             const progress = Number(plan["tien-do"] || 0);
             const manager = findLecturer(plan["nguoi-phu-trach-ma-gv"]);
-            
-            // Xử lý warning riêng cho trang danh sách (chỉ hiện text nhỏ)
-            let warningText = "";
-            if (plan["trang-thai"] !== "hoan-thanh" && plan["trang-thai"] !== "tam-dung") {
-               warningText = getDeadlineWarning(plan["ngay-ket-thuc"]);
-            }
+            const warningBadge = getDeadlineWarning(plan["ngay-ket-thuc"], plan["trang-thai"]);
 
             return `
                 <div class="plan-card" id="plan-card-${plan.id}">
@@ -658,7 +672,7 @@
                             <h3 class="plan-title">${escapeHtml(plan.ten)}</h3>
                             <div class="plan-meta">
                                 <span><i class="far fa-calendar-alt"></i> Hạn: ${formatDate(plan["ngay-ket-thuc"])}</span>
-                                ${warningText}
+                                ${warningBadge}
                                 <span><i class="fas fa-user-tie"></i> Phụ trách: ${escapeHtml(manager?.["ho-ten"] || "Chưa phân công")}</span>
                             </div>
                         </div>
@@ -723,7 +737,7 @@
                     if (error) throw error;
                 } else {
                     payload["created-by-ma-gv"] = currentAccount["ma-giang-vien"];
-                    payload["trang-thai"] = "chua-bat-dau";
+                    payload["trang-thai"] = "dang-thuc-hien"; // Loại bỏ trạng thái "Chưa bắt đầu"
                     payload["trang-thai-duyet"] = currentAccount.role === "admin" ? "cho-duyet" : "da-duyet";
                     const { error } = await window.supabaseClient.from("ke-hoach").insert(payload);
                     if (error) throw error;
@@ -788,8 +802,6 @@
         function setupEvents() {
             document.getElementById("search-input").addEventListener("input", renderPlans);
             document.getElementById("manager-filter").addEventListener("change", renderPlans);
-            
-            // Xóa sự kiện tắt popup khi click ra ngoài
         }
 
         function openModal(id) { document.getElementById(id).classList.add("show"); }
@@ -820,7 +832,7 @@
 
         function statusBadge(status) {
             const map = {
-                "chua-bat-dau": ["Chưa bắt đầu", "gray", "fa-circle"],
+                "chua-bat-dau": ["Đang thực hiện", "blue", "fa-play-circle"], // Ánh xạ data cũ sang Đang thực hiện
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
                 "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
                 "tam-dung": ["Tạm dừng", "yellow", "fa-pause-circle"]
