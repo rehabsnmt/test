@@ -126,7 +126,7 @@
         .staff-status-text { font-size: 0.75rem; font-weight: bold; margin-left: 4px; }
         .staff-status-text.completed { color: #15803d; }
 
-        /* Cảnh báo đếm ngược nổi bật */
+        /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
         @keyframes pulse-critical {
             0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
             70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
@@ -524,7 +524,7 @@
                 const { data: tasks, error: tErr } = await window.supabaseClient.from("cong-viec").select("*").eq("ke-hoach-id", currentPlanId);
                 if (tErr) throw tErr;
 
-                // 3. Tải Minh chứng (Cập nhật Select để không bị lỗi Missing Column)
+                // 3. Tải Minh chứng (Lấy tất cả các cột đúng cấu trúc database mới)
                 let evidences = [];
                 const { data: evRes, error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung").select("*").limit(5000);
                 if (!evErr && evRes) evidences = evRes;
@@ -688,25 +688,27 @@
             let processButtonsLeft = "";
             let processButtonsRight = "";
 
+            // Luôn hiện nút xem nếu có minh chứng
             if (taskEvidences.length > 0) {
                 processButtonsLeft += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
             }
             
-            let canComplete = false;
-            
-            // Quy tắc xét duyệt quyền Hoàn thành
-            if (staff.length > 0) {
-                if (isAssigned) canComplete = true;
-            } else {
-                if (canEdit || isApprover()) canComplete = true;
-            }
-
-            if (canComplete) {
-                const myEvidence = taskEvidences.find(e => e["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
-                if (myEvidence) {
-                    processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-warning" onclick="openSubmitEvidenceModal('${task.id}', '${myEvidence.id}')"><i class="fas fa-edit"></i> Sửa minh chứng</button>`;
+            // Xử lý nút Hoàn thành/Sửa minh chứng
+            if (task["trang-thai"] !== "hoan-thanh") {
+                let canComplete = false;
+                if (staff.length > 0) {
+                    if (isAssigned) canComplete = true;
                 } else {
-                    processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
+                    if (canEdit || isApprover()) canComplete = true;
+                }
+
+                if (canComplete) {
+                    const myEvidence = taskEvidences.find(e => e["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
+                    if (myEvidence) {
+                        processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-warning" onclick="openSubmitEvidenceModal('${task.id}', '${myEvidence.id}')"><i class="fas fa-edit"></i> Sửa minh chứng</button>`;
+                    } else {
+                        processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
+                    }
                 }
             }
 
@@ -773,7 +775,6 @@
             let statusHtml = "";
             let bgClass = "";
 
-            // CHỈ AI NỘP MINH CHỨNG MỚI ĐƯỢC TÔ XANH
             if (taskEvidences.some(e => e["ma-giang-vien"] === item["ma-giang-vien"])) {
                 statusHtml = `<span class="staff-status-text completed"><i class="fas fa-check"></i> Đã nộp MC</span>`;
                 bgClass = "is-completed"; // Xanh lá
@@ -938,9 +939,9 @@
                 openModal("submit-evidence-modal");
 
                 try {
-                    const { data, error } = await window.supabaseClient.from("cong-viec-minh-chung").select("minh-chung, url").eq("id", evidenceId).single();
+                    const { data, error } = await window.supabaseClient.from("cong-viec-minh-chung").select("*").eq("id", evidenceId).single();
                     if (data) {
-                        document.getElementById("evidence-content").value = data["minh-chung"] || data["url"] || "";
+                        document.getElementById("evidence-content").value = data["minh-chung"] || "";
                     }
                 } catch(e) {
                     console.warn(e);
@@ -951,7 +952,7 @@
             }
         }
 
-        // Xử lý Gửi minh chứng & Chuyển sang Hoàn thành (Bỏ duyệt)
+        // Xử lý Gửi minh chứng & Chuyển sang Hoàn thành
         document.getElementById("evidence-form").addEventListener("submit", async (event) => {
             event.preventDefault();
             const taskId = document.getElementById("evidence-task-id").value;
@@ -1011,11 +1012,11 @@
 
                 if (error) throw error;
 
-                // JS Sort để an toàn không bị lỗi khi column name đổi
+                // JS Sort
                 let evList = data || [];
                 evList.sort((a, b) => {
-                    const d1 = new Date(a.created_at || a["created-at"] || 0);
-                    const d2 = new Date(b.created_at || b["created-at"] || 0);
+                    const d1 = new Date(a["created-at"] || 0);
+                    const d2 = new Date(b["created-at"] || 0);
                     return d2 - d1;
                 });
 
@@ -1027,13 +1028,12 @@
                 container.innerHTML = evList.map(item => {
                     const gv = findLecturer(item["ma-giang-vien"]);
                     
-                    // Fallback cho dữ liệu cũ lỡ đang nằm ở cột url
-                    const evidenceContent = item["minh-chung"] || item["url"] || "";
+                    const evidenceContent = item["minh-chung"] || "";
                     
                     const canDelete = isAdmin() || currentAccount?.["ma-giang-vien"] === item["ma-giang-vien"];
                     const deleteBtn = canDelete ? `<button class="btn-custom btn-custom-small btn-custom-danger" style="padding: 2px 8px; font-size: 12px; margin-top: 5px;" onclick="deleteEvidence('${item.id}', '${taskId}')"><i class="fas fa-trash-alt"></i> Xóa</button>` : "";
 
-                    const timeStr = item.created_at || item["created-at"] || "";
+                    const timeStr = item["created-at"] || "";
                     const displayTime = timeStr ? new Date(timeStr).toLocaleString("vi-VN") : "";
 
                     return `
@@ -1054,25 +1054,20 @@
         async function deleteEvidence(evidenceId, taskId) {
             if (!confirm("Bạn có chắc chắn muốn xóa minh chứng này?")) return;
             try {
-                // Xóa minh chứng
                 const { error } = await window.supabaseClient.from("cong-viec-minh-chung").delete().eq("id", evidenceId);
                 if (error) throw error;
 
-                // Kiểm tra xem còn minh chứng nào không
                 const { data, error: countErr } = await window.supabaseClient.from("cong-viec-minh-chung").select("id").eq("cong-viec-id", taskId);
                 if (countErr) throw countErr;
 
                 if (!data || data.length === 0) {
-                    // Trả lại trạng thái dang-thuc-hien nếu hết sạch minh chứng
                     const { error: updateErr } = await window.supabaseClient.from("cong-viec").update({
                         "trang-thai": "dang-thuc-hien"
                     }).eq("id", taskId);
                     if (updateErr) throw updateErr;
                 }
 
-                // Cập nhật lại UI sau lưng
                 await syncPlanProgress();
-                // Render lại popup
                 viewEvidence(taskId); 
             } catch (err) {
                 showError("Lỗi khi xóa minh chứng: " + err.message);
