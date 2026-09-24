@@ -92,15 +92,17 @@
         .plan-overview-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 30px; }
         .plan-title-large { font-size: 24px; font-weight: 700; color: var(--text-dark); margin: 0; }
         .plan-description { margin: 0; color: var(--text-muted); font-size: 15px; white-space: pre-line; line-height: 1.6; }
+        .plan-description a { color: var(--primary); text-decoration: underline; }
         .plan-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 0; }
         .meta-item { display: flex; flex-direction: column; gap: 6px; font-size: 14px;}
         .meta-label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;}
         .meta-value { color: var(--text-dark); font-weight: 600; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;}
 
+        /* THANH TIẾN ĐỘ THU NHỎ */
         .plan-progress-container { width: 100%; max-width: 400px; margin-top: 4px; }
         .progress-header { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: var(--text-muted); font-weight: 600;}
         .progress-value { font-weight: 700; color: var(--text-dark); }
-        .progress-track { height: 10px; background: var(--border); border-radius: 99px; overflow: hidden; }
+        .progress-track { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--primary); border-radius: 99px; transition: width 0.4s ease; }
 
         /* Tiêu đề khu vực công việc ép trên 1 dòng ngang */
@@ -122,6 +124,7 @@
         .task-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start;}
         .task-title { font-weight: 700; margin: 0 0 8px; color: var(--text-dark); font-size: 17px; }
         .task-description { color: var(--text-muted); font-size: 14px; white-space: pre-line; margin: 0 0 12px; line-height: 1.5;}
+        .task-description a { color: var(--primary); text-decoration: underline; }
         .task-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px;}
 
         .staff-list { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px; background: var(--bg-page); border-radius: 8px; margin-bottom: 15px;}
@@ -213,7 +216,7 @@
             .plan-progress-container { max-width: 100%; margin-top: 15px; border-top: 1px solid var(--border-light); padding-top: 15px;}
             .task-top { flex-direction: column; }
             .task-actions { justify-content: flex-start; margin-top: 5px; width: 100%;}
-            .task-actions .btn-custom { flex: 1; }
+            .task-actions .btn-custom { flex: 1; text-align: center; }
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full { grid-column: auto; }
             .modal-footer { flex-direction: column-reverse; gap: 10px; align-items: stretch; }
@@ -333,6 +336,37 @@
                 <div class="modal-footer">
                     <button type="button" class="btn-custom" onclick="closeModal('task-modal')">Hủy</button>
                     <button type="submit" class="btn-custom btn-custom-primary" id="btnSaveTask"><i class="fas fa-save"></i> Lưu công việc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL GỬI MINH CHỨNG & HOÀN THÀNH -->
+    <div id="submit-evidence-modal" class="custom-modal-backdrop">
+        <div class="custom-modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Gửi Minh chứng & Hoàn thành</h2>
+                <button class="modal-close" onclick="closeModal('submit-evidence-modal')">×</button>
+            </div>
+            <form id="evidence-form">
+                <div class="modal-body">
+                    <input id="evidence-task-id" type="hidden">
+                    <div class="form-group full" style="margin-bottom: 12px;">
+                        <label class="form-label">Tên minh chứng <span style="color:var(--accent)">*</span></label>
+                        <input id="evidence-title" class="custom-input" placeholder="Ví dụ: Link Google Drive báo cáo..." required>
+                    </div>
+                    <div class="form-group full" style="margin-bottom: 12px;">
+                        <label class="form-label">Đường dẫn (URL) <span style="color:var(--accent)">*</span></label>
+                        <input id="evidence-url" type="url" class="custom-input" placeholder="https://..." required>
+                    </div>
+                    <div class="form-group full">
+                        <label class="form-label">Ghi chú thêm</label>
+                        <textarea id="evidence-desc" class="custom-textarea" rows="3" placeholder="Ghi chú về minh chứng (nếu có)"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-custom" onclick="closeModal('submit-evidence-modal')">Hủy</button>
+                    <button type="submit" class="btn-custom btn-custom-success" id="btnSaveEvidence"><i class="fas fa-check"></i> Xác nhận hoàn thành</button>
                 </div>
             </form>
         </div>
@@ -549,24 +583,27 @@
         }
 
         /* =========================================================
-           HÀM XỬ LÝ MENU 3 CHẤM (DROPDOWN)
+           HÀM XỬ LÝ MENU 3 CHẤM VÀ CÁC TIỆN ÍCH
         ========================================================= */
         function toggleDropdown(id, event) {
-            // Ngăn chặn sự kiện click lan tỏa để không bị đóng ngay lập tức
             event.stopPropagation();
-            
             const el = document.getElementById(id);
             const isShowing = el.classList.contains('show');
-            
-            // Đóng tất cả dropdown đang mở
             document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
                 menu.classList.remove('show');
             });
-
-            // Mở menu được chọn nếu nó chưa mở
             if (!isShowing) {
                 el.classList.add('show');
             }
+        }
+
+        function linkify(text) {
+            if (!text) return "";
+            // Tìm các đoạn văn bản bắt đầu bằng http:// hoặc https:// và biến nó thành thẻ a
+            const urlRegex = /(https?:\/\/[^\s"'<>]+)/g;
+            return text.replace(urlRegex, function(url) {
+                return '<a href="' + url + '" target="_blank" title="Nhấn để mở link">' + url + '</a>';
+            });
         }
 
         /* =========================================================
@@ -614,7 +651,7 @@
                                     <span class="meta-label" style="color:var(--text-muted); font-size:12px;">Tiến độ hoàn thành chung</span>
                                     <span class="progress-value">${formatProgress(progress)}</span>
                                 </div>
-                                <div class="progress-track" style="margin-top: 4px;">
+                                <div class="progress-track" style="margin-top: 6px; height: 6px;">
                                     <div class="progress-bar" style="width:${Math.min(100, Math.max(0, progress))}%;"></div>
                                 </div>
                             </div>
@@ -641,7 +678,7 @@
                     ${plan["mo-ta"] ? `
                     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-light);">
                         <span class="meta-label" style="display:block; margin-bottom:8px;">Mô tả kế hoạch</span>
-                        <div class="plan-description" style="margin:0;">${escapeHtml(plan["mo-ta"])}</div>
+                        <div class="plan-description" style="margin:0;">${linkify(escapeHtml(plan["mo-ta"]))}</div>
                     </div>
                     ` : ""}
                 </div>
@@ -678,7 +715,8 @@
             if (task["trang-thai"] === "cho-xac-nhan" && isApprover()) {
                 processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTaskCompletion('${task.id}')"><i class="fas fa-check-double"></i> Duyệt hoàn thành</button>`;
             } else if (task["trang-thai"] !== "hoan-thanh" && (canEdit || isAssigned || isApprover())) {
-                processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="markTaskCompleted('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
+                // Thay vì chuyển ngay thành Hoàn thành, giờ sẽ mở Modal nộp minh chứng
+                processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
             }
 
             return `
@@ -686,7 +724,7 @@
                     <div class="task-top">
                         <div style="flex:1; padding-right: 15px;">
                             <div class="task-title">${escapeHtml(task["tieu-de"])}</div>
-                            ${task["mo-ta"] ? `<div class="task-description">${escapeHtml(task["mo-ta"])}</div>` : ""}
+                            ${task["mo-ta"] ? `<div class="task-description">${linkify(escapeHtml(task["mo-ta"]))}</div>` : ""}
                         </div>
                         
                         <!-- Nút Dropdown Menu Công việc -->
@@ -828,7 +866,7 @@
         }
 
         /* =========================================================
-           CÁC HÀM XỬ LÝ TASK
+           CÁC HÀM XỬ LÝ TASK & MINH CHỨNG
         ========================================================= */
         function openCreateTask() {
             document.getElementById("task-form").reset();
@@ -892,17 +930,54 @@
             } catch (error) { showError(error.message); }
         }
 
-        async function markTaskCompleted(taskId) {
-            if (!confirm("Xác nhận đánh dấu công việc này là HOÀN THÀNH?")) return;
-            try {
-                const { error } = await window.supabaseClient.from("cong-viec").update({
-                    "trang-thai": "hoan-thanh"
-                }).eq("id", taskId);
-                if (error) throw error;
-                
-                await syncPlanProgress();
-            } catch (error) { showError(error.message); }
+        // Mở popup nộp minh chứng
+        function openSubmitEvidenceModal(taskId) {
+            document.getElementById("evidence-form").reset();
+            document.getElementById("evidence-task-id").value = taskId;
+            openModal("submit-evidence-modal");
         }
+
+        // Xử lý Gửi minh chứng & Chuyển sang chờ xác nhận
+        document.getElementById("evidence-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const taskId = document.getElementById("evidence-task-id").value;
+            const title = document.getElementById("evidence-title").value.trim();
+            const url = document.getElementById("evidence-url").value.trim();
+            const desc = document.getElementById("evidence-desc").value.trim();
+
+            try {
+                const btn = document.getElementById("btnSaveEvidence");
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+                btn.disabled = true;
+
+                // 1. Thêm minh chứng vào database
+                const payloadEvidence = {
+                    "cong-viec-id": taskId,
+                    "ma-giang-vien": currentAccount["ma-giang-vien"],
+                    "tieu-de": title,
+                    "url": url,
+                    "mo-ta": desc || null
+                };
+                const { error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung").insert(payloadEvidence);
+                if (evErr) throw evErr;
+
+                // 2. Chuyển trạng thái công việc thành Chờ xác nhận
+                const { error: tErr } = await window.supabaseClient.from("cong-viec").update({
+                    "trang-thai": "cho-xac-nhan"
+                }).eq("id", taskId);
+                if (tErr) throw tErr;
+
+                closeModal("submit-evidence-modal");
+                await syncPlanProgress(); 
+
+                btn.innerHTML = '<i class="fas fa-check"></i> Xác nhận hoàn thành';
+                btn.disabled = false;
+            } catch (error) { 
+                showError(error.message); 
+                document.getElementById("btnSaveEvidence").disabled = false;
+                document.getElementById("btnSaveEvidence").innerHTML = '<i class="fas fa-check"></i> Xác nhận hoàn thành';
+            }
+        });
 
         async function approveTaskCompletion(taskId) {
             if (!isApprover()) return;
@@ -941,7 +1016,7 @@
                     return `
                         <div class="evidence-item">
                             <a href="${escapeHtml(item.url)}" target="_blank"><i class="fas fa-external-link-alt"></i> ${escapeHtml(item["tieu-de"])}</a>
-                            ${item["mo-ta"] ? `<div style="font-size:0.85rem; margin-top:5px; color:var(--text-dark);">${escapeHtml(item["mo-ta"])}</div>` : ''}
+                            ${item["mo-ta"] ? `<div style="font-size:0.85rem; margin-top:5px; color:var(--text-dark);">${linkify(escapeHtml(item["mo-ta"]))}</div>` : ''}
                             <div class="evidence-meta">
                                 Gửi bởi: <b>${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])}</b> lúc ${new Date(item["created-at"]).toLocaleString("vi-VN")}
                             </div>
@@ -1134,7 +1209,7 @@
            HÀM BỔ TRỢ & SỰ KIỆN CƠ BẢN
         ========================================================= */
         function setupEvents() {
-            // Lắng nghe sự kiện click ở window để đóng menu 3 chấm khi ấn ra ngoài
+            // Đóng menu thả xuống khi click ra ngoài
             window.addEventListener('click', function(e) {
                 if (!e.target.closest('.dropdown-container')) {
                     document.querySelectorAll('.dropdown-menu.show').forEach(el => el.classList.remove('show'));
