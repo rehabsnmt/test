@@ -329,7 +329,7 @@
                 <div class="modal-body">
                     <input id="evidence-task-id" type="hidden">
                     <div class="form-group full">
-                        <label class="form-label">Nội dung / Đường dẫn minh chứng <span style="color:var(--accent)">*</span></label>
+                        <label class="form-label">Nhập minh chứng <span style="color:var(--accent)">*</span></label>
                         <textarea id="evidence-content" class="custom-textarea" rows="4" placeholder="Nhập báo cáo công việc hoặc dán đường dẫn (link) tài liệu..." required></textarea>
                     </div>
                 </div>
@@ -451,8 +451,11 @@
                 setupEvents(); 
             } catch (error) {
                 showError(error.message);
-                document.getElementById('plan-detail-container').innerHTML = `<div class="empty text-danger">Bạn không có quyền truy cập hoặc lỗi kết nối.</div>`;
+                document.getElementById('plan-detail-container').innerHTML = `<div class="empty text-danger" style="padding: 60px 20px;"><i class="fas fa-lock" style="font-size: 2rem; margin-bottom: 15px; display: block; color: #ef4444;"></i> ${escapeHtml(error.message)}</div>`;
                 document.getElementById('task-list-container').innerHTML = ``;
+                
+                const sectionHeader = document.querySelector('.section-header');
+                if (sectionHeader) sectionHeader.style.display = 'none';
             }
         }
 
@@ -471,7 +474,6 @@
             if (!account["trang-thai"]) throw new Error("Tài khoản hiện không hoạt động.");
 
             currentAccount = account;
-            applyRoleUI();
         }
 
         function isAdmin() { return ["superadmin", "head", "admin"].includes(currentAccount?.role); }
@@ -479,10 +481,12 @@
 
         function applyRoleUI() {
             const btn = document.getElementById("btn-create-task");
-            if (isAdmin() || canEditPlan(currentPlanData)) { 
-                btn.style.display = "inline-flex"; 
-            } else { 
-                btn.style.display = "none"; 
+            if (btn) {
+                if (isAdmin() || canEditPlan(currentPlanData)) { 
+                    btn.style.display = "inline-flex"; 
+                } else { 
+                    btn.style.display = "none"; 
+                }
             }
         }
 
@@ -492,6 +496,7 @@
                 if (error) throw error;
                 lecturers = data || [];
                 
+                // Đổ danh sách vào Modal Sửa kế hoạch
                 const planManagerSelect = document.getElementById("plan-manager");
                 if (planManagerSelect) {
                     planManagerSelect.innerHTML = `<option value="">-- Chọn người phụ trách --</option>`;
@@ -510,20 +515,21 @@
                 document.getElementById("task-list-container").innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang làm mới dữ liệu...</div>`;
             }
             try {
+                // 1. Tải Kế hoạch
                 const { data: plan, error: pErr } = await window.supabaseClient.from("tien-do-ke-hoach").select("*").eq("id", currentPlanId).single();
                 if (pErr || !plan) throw new Error("Không tìm thấy kế hoạch này trong hệ thống.");
                 currentPlanData = plan;
 
-                // Update UI roles just in case
-                applyRoleUI();
-
+                // 2. Tải toàn bộ Tasks
                 const { data: tasks, error: tErr } = await window.supabaseClient.from("cong-viec").select("*").eq("ke-hoach-id", currentPlanId);
                 if (tErr) throw tErr;
 
+                // 3. Tải Minh chứng
                 let evidences = [];
                 const { data: evRes, error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung").select("cong-viec-id, ma-giang-vien").limit(5000);
                 if (!evErr && evRes) evidences = evRes;
 
+                // 4. Tải Phân công
                 const taskIds = (tasks || []).map(task => task.id);
                 let assignments = [];
                 if (taskIds.length) {
@@ -531,6 +537,20 @@
                     if (!assignmentError && data) assignments = data;
                 }
 
+                // --- KIỂM TRA QUYỀN TRUY CẬP (BẢO MẬT) ---
+                const isSuperAdminOrHead = ["superadmin", "head"].includes(currentAccount?.role);
+                const isCreator = plan["created-by-ma-gv"] === currentAccount?.["ma-giang-vien"];
+                const isManager = plan["nguoi-phu-trach-ma-gv"] === currentAccount?.["ma-giang-vien"];
+                const isAssignedToTask = assignments.some(a => a["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
+
+                if (!isSuperAdminOrHead && !isCreator && !isManager && !isAssignedToTask) {
+                    throw new Error("Truy cập bị từ chối: Chỉ quản trị viên hoặc giảng viên có liên quan đến kế hoạch/công việc này mới được xem chi tiết.");
+                }
+
+                // Nếu có quyền, hiển thị nút tạo công việc cho phép
+                applyRoleUI();
+
+                // Sắp xếp Task
                 (tasks || []).sort((a, b) => {
                     if (!a["han-hoan-thanh"]) return 1;
                     if (!b["han-hoan-thanh"]) return -1;
@@ -540,8 +560,14 @@
                 renderPlanOverview();
                 renderTasksInPlan(tasks || [], assignments, evidences);
             } catch (error) {
-                document.getElementById('plan-detail-container').innerHTML = `<div class="empty text-danger">${escapeHtml(error.message)}</div>`;
+                document.getElementById('plan-detail-container').innerHTML = `<div class="empty text-danger" style="padding: 60px 20px;"><i class="fas fa-lock" style="font-size: 2rem; margin-bottom: 15px; display: block; color: #ef4444;"></i> ${escapeHtml(error.message)}</div>`;
                 document.getElementById('task-list-container').innerHTML = ``;
+                
+                const sectionHeader = document.querySelector('.section-header');
+                if (sectionHeader) sectionHeader.style.display = 'none';
+                
+                const btnTask = document.getElementById("btn-create-task");
+                if (btnTask) btnTask.style.display = 'none';
             }
         }
 
@@ -560,6 +586,7 @@
             }
         }
 
+        // Tự động nhận diện URL thành thẻ a có css thu gọn (ellipsis)
         function linkify(text) {
             if (!text) return "";
             const urlRegex = /(https?:\/\/[^\s"'<>]+)/g;
@@ -681,6 +708,8 @@
                 processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTaskCompletion('${task.id}')"><i class="fas fa-check-double"></i> Duyệt hoàn thành</button>`;
             } else if (task["trang-thai"] !== "hoan-thanh") {
                 let canComplete = false;
+                
+                // Quy tắc xét duyệt quyền Hoàn thành
                 if (staff.length > 0) {
                     if (isAssigned) canComplete = true;
                 } else {
@@ -908,7 +937,7 @@
             } catch (error) { showError(error.message); }
         }
 
-        // Mở popup nộp minh chứng (Gồm 1 ô text area)
+        // Mở popup nộp minh chứng (Gồm 1 ô text area, không bắt buộc là link)
         function openSubmitEvidenceModal(taskId) {
             document.getElementById("evidence-form").reset();
             document.getElementById("evidence-task-id").value = taskId;
@@ -926,12 +955,12 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
                 btn.disabled = true;
 
-                // 1. Thêm minh chứng vào database
+                // 1. Thêm minh chứng vào database (Lưu vào cột minh-chung)
                 const payloadEvidence = {
                     "cong-viec-id": taskId,
                     "ma-giang-vien": currentAccount["ma-giang-vien"],
                     "tieu-de": "Minh chứng hoàn thành",
-                    "url": content, // vẫn lưu vào đây nhưng ở dạng free text
+                    "minh-chung": content, 
                     "mo-ta": null
                 };
                 const { error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung").insert(payloadEvidence);
@@ -989,9 +1018,13 @@
 
                 container.innerHTML = data.map(item => {
                     const gv = findLecturer(item["ma-giang-vien"]);
+                    
+                    // Fallback cho dữ liệu cũ lỡ đang nằm ở cột url
+                    const evidenceContent = item["minh-chung"] || item["url"] || "";
+                    
                     return `
                         <div class="evidence-item">
-                            <div style="margin-bottom: 8px; font-size: 0.95rem; color: var(--text-dark); white-space: pre-wrap; word-break: break-word;">${linkify(escapeHtml(item.url))}</div>
+                            <div style="margin-bottom: 8px; font-size: 0.95rem; color: var(--text-dark); white-space: pre-wrap; word-break: break-word;">${linkify(escapeHtml(evidenceContent))}</div>
                             <div class="evidence-meta">
                                 Gửi bởi: <b>${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])}</b> lúc ${new Date(item["created-at"]).toLocaleString("vi-VN")}
                             </div>
