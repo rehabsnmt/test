@@ -122,13 +122,11 @@
             background: white; border: 1px solid var(--border); 
             border-radius: 999px; padding: 5px 12px; font-size: 13px; color: var(--text-dark); font-weight: 500;
         }
-        .staff-chip.has-evidence { background: #e0f2fe; border-color: #bae6fd; }
         .staff-chip.is-completed { background: #dcfce7; border-color: #bbf7d0; }
         .staff-status-text { font-size: 0.75rem; font-weight: bold; margin-left: 4px; }
-        .staff-status-text.evidence { color: var(--primary); }
         .staff-status-text.completed { color: #15803d; }
 
-        /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
+        /* Cảnh báo đếm ngược nổi bật */
         @keyframes pulse-critical {
             0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
             70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
@@ -322,7 +320,7 @@
     <div id="submit-evidence-modal" class="custom-modal-backdrop">
         <div class="custom-modal" style="max-width: 500px;">
             <div class="modal-header">
-                <h2 class="modal-title">Minh chứng hoàn thành</h2>
+                <h2 class="modal-title">Hoàn thành công việc</h2>
                 <button class="modal-close" onclick="closeModal('submit-evidence-modal')">×</button>
             </div>
             <form id="evidence-form">
@@ -526,9 +524,9 @@
                 const { data: tasks, error: tErr } = await window.supabaseClient.from("cong-viec").select("*").eq("ke-hoach-id", currentPlanId);
                 if (tErr) throw tErr;
 
-                // 3. Tải Minh chứng
+                // 3. Tải Minh chứng (Cập nhật Select để không bị lỗi Missing Column)
                 let evidences = [];
-                const { data: evRes, error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung").select("id, cong-viec-id, ma-giang-vien, minh-chung, url, created_at").limit(5000);
+                const { data: evRes, error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung").select("*").limit(5000);
                 if (!evErr && evRes) evidences = evRes;
 
                 // 4. Tải Phân công
@@ -775,12 +773,10 @@
             let statusHtml = "";
             let bgClass = "";
 
+            // CHỈ AI NỘP MINH CHỨNG MỚI ĐƯỢC TÔ XANH
             if (taskEvidences.some(e => e["ma-giang-vien"] === item["ma-giang-vien"])) {
                 statusHtml = `<span class="staff-status-text completed"><i class="fas fa-check"></i> Đã nộp MC</span>`;
                 bgClass = "is-completed"; // Xanh lá
-            } else if (taskStatus === "hoan-thanh") {
-                statusHtml = `<span class="staff-status-text completed"><i class="fas fa-check-circle"></i> Đã xong</span>`;
-                bgClass = "is-completed"; 
             }
 
             return `
@@ -984,7 +980,7 @@
                     if (evErr) throw evErr;
                 }
 
-                // 2. Chuyển trạng thái công việc THẲNG thành Hoàn thành
+                // Chuyển trạng thái công việc THẲNG thành Hoàn thành
                 const { error: tErr } = await window.supabaseClient.from("cong-viec").update({
                     "trang-thai": "hoan-thanh"
                 }).eq("id", taskId);
@@ -1015,7 +1011,7 @@
 
                 if (error) throw error;
 
-                // JS Sort để an toàn không lỗi tên cột database
+                // JS Sort để an toàn không bị lỗi khi column name đổi
                 let evList = data || [];
                 evList.sort((a, b) => {
                     const d1 = new Date(a.created_at || a["created-at"] || 0);
@@ -1031,7 +1027,7 @@
                 container.innerHTML = evList.map(item => {
                     const gv = findLecturer(item["ma-giang-vien"]);
                     
-                    // Fallback cho dữ liệu cũ lỡ đang nằm ở cột url, ưu tiên hiển thị cột minh-chung
+                    // Fallback cho dữ liệu cũ lỡ đang nằm ở cột url
                     const evidenceContent = item["minh-chung"] || item["url"] || "";
                     
                     const canDelete = isAdmin() || currentAccount?.["ma-giang-vien"] === item["ma-giang-vien"];
