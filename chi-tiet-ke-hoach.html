@@ -23,13 +23,6 @@
     <style>
         .app-container { max-width: 1400px; margin: 0 auto; padding: 24px 0; background: transparent; }
 
-        .page-header { 
-            display: flex; justify-content: flex-start; align-items: center; gap: 20px; margin-bottom: 24px; 
-            position: static !important; 
-            z-index: 1 !important; 
-        }
-        .page-title { margin: 0; font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 12px;}
-
         /* Nút bấm Nền đặc (Solid Colors) */
         .btn-custom {
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -73,7 +66,7 @@
             padding: 10px 14px; background: transparent; border: none; width: 100%; text-align: left;
             cursor: pointer; font-size: 0.9rem; color: var(--text-dark); display: flex; align-items: center; gap: 10px;
             transition: 0.15s; font-family: inherit; font-weight: 500;
-            white-space: nowrap; /* Không ngắt dòng */
+            white-space: nowrap;
         }
         .dropdown-item:hover { background: var(--bg-page); color: var(--primary); }
         .dropdown-item.text-danger { color: #dc2626; }
@@ -92,7 +85,7 @@
         /* Thẻ Kế hoạch chính */
         .plan-overview-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 30px; }
         .plan-title-large { font-size: 24px; font-weight: 700; color: var(--text-dark); margin: 0; }
-        .plan-description { margin: 0; color: var(--text-muted); font-size: 15px; white-space: pre-line; line-height: 1.6; }
+        .plan-description { margin: 0; color: var(--text-muted); font-size: 15px; white-space: pre-line; line-height: 1.6; word-break: break-word; }
         .plan-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 0; }
         .meta-item { display: flex; flex-direction: column; gap: 6px; font-size: 14px;}
         .meta-label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;}
@@ -120,7 +113,7 @@
         .task-card:hover { border-color: var(--primary-light); }
         .task-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start;}
         .task-title { font-weight: 700; margin: 0 0 8px; color: var(--text-dark); font-size: 17px; }
-        .task-description { color: var(--text-muted); font-size: 14px; white-space: pre-line; margin: 0 0 12px; line-height: 1.5;}
+        .task-description { color: var(--text-muted); font-size: 14px; white-space: pre-line; margin: 0 0 12px; line-height: 1.5; word-break: break-word;}
         .task-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px;}
 
         .staff-list { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px; background: var(--bg-page); border-radius: 8px; margin-bottom: 15px;}
@@ -200,25 +193,19 @@
         .temp-staff-item:last-child { border-bottom: none; }
         
         /* Chống tràn link */
-        .evidence-item { background: #f8fafc; border: 1px solid var(--border); padding: 14px; border-radius: 8px; margin-bottom: 10px; }
-        .evidence-item a { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.95rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .evidence-item a:hover { text-decoration: underline; }
-        .evidence-meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 6px; }
+        .evidence-item { background: #f8fafc; border: 1px solid var(--border); padding: 14px; border-radius: 8px; margin-bottom: 10px; word-break: break-word;}
         .truncate-link { color: var(--primary); text-decoration: underline; display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
 
         @media (max-width: 768px) {
             .app-container { padding: 12px; }
-            .page-header { align-items: flex-start; flex-direction: column; gap: 12px;}
             .plan-overview-card { padding: 16px; }
             .plan-meta-grid { grid-template-columns: 1fr; gap: 12px; border-bottom: none; padding-bottom: 0;}
+            .plan-progress-container { max-width: 100%; margin-top: 15px; border-top: 1px solid var(--border-light); padding-top: 15px;}
             .task-top { flex-direction: column; }
-            .task-actions { justify-content: flex-start; margin-top: 5px; width: 100%;}
-            .task-actions .btn-custom { flex: 1; text-align: center; }
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full { grid-column: auto; }
             .modal-footer { flex-direction: column-reverse; gap: 10px; align-items: stretch; }
             .modal-footer > div { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-            
             .section-title { font-size: 1.15rem; }
             .section-header .btn-custom { font-size: 0.8rem; padding: 6px 10px; }
         }
@@ -230,13 +217,6 @@
 
     <main style="opacity: 0; transition: opacity 0.3s ease;">
         <div class="app-container">
-
-            <header class="page-header">
-                <a href="quan-ly-bo-mon.html" class="btn-custom" style="padding: 10px 16px; border-radius: 10px; font-size: 0.95rem; border: 1px solid var(--border);" title="Quay lại danh sách">
-                    <i class="fas fa-arrow-left"></i> Quay lại
-                </a>
-                <h1 class="page-title">Chi tiết Kế hoạch</h1>
-            </header>
 
             <div id="error-box" class="error-msg"></div>
 
@@ -342,15 +322,15 @@
     <div id="submit-evidence-modal" class="custom-modal-backdrop">
         <div class="custom-modal" style="max-width: 500px;">
             <div class="modal-header">
-                <h2 class="modal-title">Gửi Minh chứng & Hoàn thành</h2>
+                <h2 class="modal-title">Hoàn thành công việc</h2>
                 <button class="modal-close" onclick="closeModal('submit-evidence-modal')">×</button>
             </div>
             <form id="evidence-form">
                 <div class="modal-body">
                     <input id="evidence-task-id" type="hidden">
                     <div class="form-group full">
-                        <label class="form-label">Đường dẫn minh chứng (URL) <span style="color:var(--accent)">*</span></label>
-                        <input id="evidence-url" type="url" class="custom-input" placeholder="https://..." required>
+                        <label class="form-label">Nội dung / Đường dẫn minh chứng <span style="color:var(--accent)">*</span></label>
+                        <textarea id="evidence-content" class="custom-textarea" rows="4" placeholder="Nhập báo cáo công việc hoặc dán đường dẫn (link) tài liệu..." required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -372,14 +352,14 @@
                 <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 1rem; flex-direction: column;">
                     <div class="form-group" style="width: 100%;">
                         <label class="form-label">Vai trò phân công</label>
-                        <select id="staff-role-select" class="custom-select">
+                        <select id="staff-role-select" class="custom-select" onchange="toggleSelectAllStaffReset()">
                             <option value="phu-trach">Phụ trách (Chỉ 1 người)</option>
                             <option value="phoi-hop" selected>Phối hợp (Nhiều người)</option>
                         </select>
                     </div>
 
                     <div class="form-group" style="width: 100%;">
-                        <label class="form-label">Chọn Giảng viên</label>
+                        <label class="form-label">Chọn Giảng viên (Tích chọn để thêm)</label>
                         <div class="custom-multi-select" id="staff-multi-select">
                             <div class="checkbox-item" style="border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px; font-weight: bold;">
                                 <input type="checkbox" id="selectAllStaff" onclick="toggleSelectAllStaff(this)">
@@ -393,7 +373,7 @@
                 </div>
 
                 <div style="background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; padding: 12px;">
-                    <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 12px; color: var(--text-dark);">Danh sách nhân sự sẽ thực hiện:</div>
+                    <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 12px; color: var(--text-dark);">Danh sách nhân sự đã chọn:</div>
                     <div id="temp-staff-list">
                         <!-- JS tự render danh sách tạm -->
                     </div>
@@ -499,7 +479,11 @@
 
         function applyRoleUI() {
             const btn = document.getElementById("btn-create-task");
-            if (isAdmin()) { btn.style.display = "inline-flex"; } else { btn.style.display = "none"; }
+            if (isAdmin() || canEditPlan(currentPlanData)) { 
+                btn.style.display = "inline-flex"; 
+            } else { 
+                btn.style.display = "none"; 
+            }
         }
 
         async function loadLecturers() {
@@ -529,6 +513,9 @@
                 const { data: plan, error: pErr } = await window.supabaseClient.from("tien-do-ke-hoach").select("*").eq("id", currentPlanId).single();
                 if (pErr || !plan) throw new Error("Không tìm thấy kế hoạch này trong hệ thống.");
                 currentPlanData = plan;
+
+                // Update UI roles just in case
+                applyRoleUI();
 
                 const { data: tasks, error: tErr } = await window.supabaseClient.from("cong-viec").select("*").eq("ke-hoach-id", currentPlanId);
                 if (tErr) throw tErr;
@@ -573,7 +560,6 @@
             }
         }
 
-        // Tự động nhận diện URL thành thẻ a có css thu gọn (ellipsis)
         function linkify(text) {
             if (!text) return "";
             const urlRegex = /(https?:\/\/[^\s"'<>]+)/g;
@@ -596,7 +582,7 @@
             const html = `
                 <div class="plan-overview-card">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                        <h2 class="plan-title-large">${escapeHtml(plan.ten)}</h2>
+                        <h2 class="plan-title-large" style="margin: 0;">${escapeHtml(plan.ten)}</h2>
                         
                         <!-- Nút Dropdown Menu Kế Hoạch -->
                         ${(canEditPlan(plan) || (isApprover() && plan["trang-thai-duyet"] === "cho-duyet")) ? `
@@ -621,29 +607,31 @@
                             </span>
                         </div>
                         
-                        <div class="meta-item" style="grid-column: 1 / -1;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
-                                <span class="meta-label" style="margin:0; white-space: nowrap;">Tiến độ chung</span>
-                                <div class="progress-track" style="flex: 1; margin: 0; max-width: 300px;">
+                        <div class="meta-item" style="grid-column: 1 / -1; margin-bottom: 10px;">
+                            <div class="plan-progress-container" style="margin: 0; max-width: 100%;">
+                                <div class="progress-header">
+                                    <span class="meta-label" style="color:var(--text-muted); font-size:12px;">Tiến độ hoàn thành chung</span>
+                                    <span class="progress-value">${formatProgress(progress)}</span>
+                                </div>
+                                <div class="progress-track" style="margin-top: 4px;">
                                     <div class="progress-bar" style="width:${Math.min(100, Math.max(0, progress))}%;"></div>
                                 </div>
-                                <span class="progress-value" style="font-size: 13px;">${formatProgress(progress)}</span>
                             </div>
                         </div>
 
-                        <div class="meta-item" style="margin-top: 10px;">
+                        <div class="meta-item">
                             <span class="meta-label">Người phụ trách</span>
                             <span class="meta-value"><i class="fas fa-user-tie" style="color:var(--text-muted);"></i> ${escapeHtml(manager?.["ho-ten"] || "Chưa phân công")}</span>
                         </div>
-                        <div class="meta-item" style="margin-top: 10px;">
+                        <div class="meta-item">
                             <span class="meta-label">Trạng thái</span>
                             <span class="meta-value">${statusBadge(plan["trang-thai"])}</span>
                         </div>
-                        <div class="meta-item" style="margin-top: 10px;">
+                        <div class="meta-item">
                             <span class="meta-label">Phê duyệt</span>
                             <span class="meta-value">${approvalBadge(plan["trang-thai-duyet"])}</span>
                         </div>
-                        <div class="meta-item" style="margin-top: 10px;">
+                        <div class="meta-item">
                             <span class="meta-label">Người tạo</span>
                             <span class="meta-value"><i class="fas fa-user-edit" style="color:var(--text-muted);"></i> ${escapeHtml(creator?.["ho-ten"] || "Hệ thống")}</span>
                         </div>
@@ -682,14 +670,26 @@
 
             const taskEvidences = evidences.filter(e => e['cong-viec-id'] === task.id);
 
-            let processButtons = "";
+            let processButtonsLeft = "";
+            let processButtonsRight = "";
+
             if (['cho-xac-nhan', 'hoan-thanh'].includes(task["trang-thai"])) {
-                processButtons += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
+                processButtonsLeft += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
             }
+            
             if (task["trang-thai"] === "cho-xac-nhan" && isApprover()) {
-                processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTaskCompletion('${task.id}')"><i class="fas fa-check-double"></i> Duyệt hoàn thành</button>`;
-            } else if (task["trang-thai"] !== "hoan-thanh" && (canEdit || isAssigned || isApprover())) {
-                processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
+                processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTaskCompletion('${task.id}')"><i class="fas fa-check-double"></i> Duyệt hoàn thành</button>`;
+            } else if (task["trang-thai"] !== "hoan-thanh") {
+                let canComplete = false;
+                if (staff.length > 0) {
+                    if (isAssigned) canComplete = true;
+                } else {
+                    if (canEdit || isApprover()) canComplete = true;
+                }
+
+                if (canComplete) {
+                    processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
+                }
             }
 
             return `
@@ -730,13 +730,18 @@
                         <div style="margin-bottom: 15px;"><span class="status-badge badge-gray"><i class="fas fa-exclamation-circle"></i> Chưa phân công</span></div>
                     `}
 
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--border-light); padding-top: 12px;">
-                        ${isAdmin() ? `
-                            <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}')">
-                                <i class="fas fa-user-plus"></i> Phân công
-                            </button>
-                        ` : ""}
-                        ${processButtons}
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-light); padding-top: 12px; gap: 8px; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            ${isAdmin() || canEditPlan(currentPlanData) ? `
+                                <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}')">
+                                    <i class="fas fa-user-plus"></i> Phân công
+                                </button>
+                            ` : ""}
+                            ${processButtonsLeft}
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto;">
+                            ${processButtonsRight}
+                        </div>
                     </div>
                 </div>
             `;
@@ -903,7 +908,7 @@
             } catch (error) { showError(error.message); }
         }
 
-        // Mở popup nộp minh chứng (Gồm 1 ô nhập URL duy nhất)
+        // Mở popup nộp minh chứng (Gồm 1 ô text area)
         function openSubmitEvidenceModal(taskId) {
             document.getElementById("evidence-form").reset();
             document.getElementById("evidence-task-id").value = taskId;
@@ -914,7 +919,7 @@
         document.getElementById("evidence-form").addEventListener("submit", async (event) => {
             event.preventDefault();
             const taskId = document.getElementById("evidence-task-id").value;
-            const url = document.getElementById("evidence-url").value.trim();
+            const content = document.getElementById("evidence-content").value.trim();
 
             try {
                 const btn = document.getElementById("btnSaveEvidence");
@@ -925,8 +930,8 @@
                 const payloadEvidence = {
                     "cong-viec-id": taskId,
                     "ma-giang-vien": currentAccount["ma-giang-vien"],
-                    "tieu-de": "Link minh chứng",
-                    "url": url,
+                    "tieu-de": "Minh chứng hoàn thành",
+                    "url": content, // vẫn lưu vào đây nhưng ở dạng free text
                     "mo-ta": null
                 };
                 const { error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung").insert(payloadEvidence);
@@ -986,7 +991,7 @@
                     const gv = findLecturer(item["ma-giang-vien"]);
                     return `
                         <div class="evidence-item">
-                            ${linkify(escapeHtml(item.url))}
+                            <div style="margin-bottom: 8px; font-size: 0.95rem; color: var(--text-dark); white-space: pre-wrap; word-break: break-word;">${linkify(escapeHtml(item.url))}</div>
                             <div class="evidence-meta">
                                 Gửi bởi: <b>${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])}</b> lúc ${new Date(item["created-at"]).toLocaleString("vi-VN")}
                             </div>
@@ -1059,6 +1064,13 @@
             openModal("staff-modal");
         }
 
+        function toggleSelectAllStaffReset() {
+            const role = document.getElementById("staff-role-select").value;
+            if (role === "phu-trach") {
+                document.getElementById("selectAllStaff").checked = false;
+            }
+        }
+
         function renderStaffCheckboxes() {
             const list = document.getElementById("staff-checkbox-list");
             list.innerHTML = "";
@@ -1074,7 +1086,6 @@
             });
         }
 
-        // Tự động đẩy vào mảng khi tick chọn
         function handleStaffCheck(chk) {
             const gv = chk.value;
             const role = document.getElementById("staff-role-select").value;
