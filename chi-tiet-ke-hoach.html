@@ -73,6 +73,7 @@
             padding: 10px 14px; background: transparent; border: none; width: 100%; text-align: left;
             cursor: pointer; font-size: 0.9rem; color: var(--text-dark); display: flex; align-items: center; gap: 10px;
             transition: 0.15s; font-family: inherit; font-weight: 500;
+            white-space: nowrap; /* Không ngắt dòng */
         }
         .dropdown-item:hover { background: var(--bg-page); color: var(--primary); }
         .dropdown-item.text-danger { color: #dc2626; }
@@ -92,16 +93,12 @@
         .plan-overview-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 30px; }
         .plan-title-large { font-size: 24px; font-weight: 700; color: var(--text-dark); margin: 0; }
         .plan-description { margin: 0; color: var(--text-muted); font-size: 15px; white-space: pre-line; line-height: 1.6; }
-        .plan-description a { color: var(--primary); text-decoration: underline; }
         .plan-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 0; }
         .meta-item { display: flex; flex-direction: column; gap: 6px; font-size: 14px;}
         .meta-label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;}
         .meta-value { color: var(--text-dark); font-weight: 600; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;}
 
         /* THANH TIẾN ĐỘ THU NHỎ */
-        .plan-progress-container { width: 100%; max-width: 400px; margin-top: 4px; }
-        .progress-header { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: var(--text-muted); font-weight: 600;}
-        .progress-value { font-weight: 700; color: var(--text-dark); }
         .progress-track { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--primary); border-radius: 99px; transition: width 0.4s ease; }
 
@@ -124,7 +121,6 @@
         .task-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start;}
         .task-title { font-weight: 700; margin: 0 0 8px; color: var(--text-dark); font-size: 17px; }
         .task-description { color: var(--text-muted); font-size: 14px; white-space: pre-line; margin: 0 0 12px; line-height: 1.5;}
-        .task-description a { color: var(--primary); text-decoration: underline; }
         .task-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px;}
 
         .staff-list { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px; background: var(--bg-page); border-radius: 8px; margin-bottom: 15px;}
@@ -203,17 +199,18 @@
         .temp-staff-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px dashed var(--border); font-size: 0.95rem; }
         .temp-staff-item:last-child { border-bottom: none; }
         
+        /* Chống tràn link */
         .evidence-item { background: #f8fafc; border: 1px solid var(--border); padding: 14px; border-radius: 8px; margin-bottom: 10px; }
-        .evidence-item a { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.95rem;}
+        .evidence-item a { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.95rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .evidence-item a:hover { text-decoration: underline; }
         .evidence-meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 6px; }
+        .truncate-link { color: var(--primary); text-decoration: underline; display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
 
         @media (max-width: 768px) {
             .app-container { padding: 12px; }
             .page-header { align-items: flex-start; flex-direction: column; gap: 12px;}
             .plan-overview-card { padding: 16px; }
             .plan-meta-grid { grid-template-columns: 1fr; gap: 12px; border-bottom: none; padding-bottom: 0;}
-            .plan-progress-container { max-width: 100%; margin-top: 15px; border-top: 1px solid var(--border-light); padding-top: 15px;}
             .task-top { flex-direction: column; }
             .task-actions { justify-content: flex-start; margin-top: 5px; width: 100%;}
             .task-actions .btn-custom { flex: 1; text-align: center; }
@@ -351,17 +348,9 @@
             <form id="evidence-form">
                 <div class="modal-body">
                     <input id="evidence-task-id" type="hidden">
-                    <div class="form-group full" style="margin-bottom: 12px;">
-                        <label class="form-label">Tên minh chứng <span style="color:var(--accent)">*</span></label>
-                        <input id="evidence-title" class="custom-input" placeholder="Ví dụ: Link Google Drive báo cáo..." required>
-                    </div>
-                    <div class="form-group full" style="margin-bottom: 12px;">
-                        <label class="form-label">Đường dẫn (URL) <span style="color:var(--accent)">*</span></label>
-                        <input id="evidence-url" type="url" class="custom-input" placeholder="https://..." required>
-                    </div>
                     <div class="form-group full">
-                        <label class="form-label">Ghi chú thêm</label>
-                        <textarea id="evidence-desc" class="custom-textarea" rows="3" placeholder="Ghi chú về minh chứng (nếu có)"></textarea>
+                        <label class="form-label">Đường dẫn minh chứng (URL) <span style="color:var(--accent)">*</span></label>
+                        <input id="evidence-url" type="url" class="custom-input" placeholder="https://..." required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -381,7 +370,6 @@
             </div>
             <div class="modal-body">
                 <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 1rem; flex-direction: column;">
-                    
                     <div class="form-group" style="width: 100%;">
                         <label class="form-label">Vai trò phân công</label>
                         <select id="staff-role-select" class="custom-select">
@@ -402,12 +390,6 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <div style="width: 100%; text-align: right; margin-bottom: 10px;">
-                        <button type="button" class="btn-custom btn-custom-success" onclick="addTempStaff()">
-                            <i class="fas fa-plus"></i> Đưa vào danh sách
-                        </button>
-                    </div>
                 </div>
 
                 <div style="background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; padding: 12px;">
@@ -418,7 +400,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-custom" onclick="closeModal('staff-modal')">Đóng</button>
+                <button type="button" class="btn-custom" onclick="closeModal('staff-modal')">Hủy</button>
                 <button type="button" class="btn-custom btn-custom-primary" id="btnSaveStaff" onclick="saveStaffAssignment(event)"><i class="fas fa-save"></i> Lưu phân công</button>
             </div>
         </div>
@@ -526,7 +508,6 @@
                 if (error) throw error;
                 lecturers = data || [];
                 
-                // Đổ danh sách vào Modal Sửa kế hoạch
                 const planManagerSelect = document.getElementById("plan-manager");
                 if (planManagerSelect) {
                     planManagerSelect.innerHTML = `<option value="">-- Chọn người phụ trách --</option>`;
@@ -545,21 +526,17 @@
                 document.getElementById("task-list-container").innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang làm mới dữ liệu...</div>`;
             }
             try {
-                // 1. Tải Kế hoạch
                 const { data: plan, error: pErr } = await window.supabaseClient.from("tien-do-ke-hoach").select("*").eq("id", currentPlanId).single();
                 if (pErr || !plan) throw new Error("Không tìm thấy kế hoạch này trong hệ thống.");
                 currentPlanData = plan;
 
-                // 2. Tải toàn bộ Tasks
                 const { data: tasks, error: tErr } = await window.supabaseClient.from("cong-viec").select("*").eq("ke-hoach-id", currentPlanId);
                 if (tErr) throw tErr;
 
-                // 3. Tải Minh chứng
                 let evidences = [];
                 const { data: evRes, error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung").select("cong-viec-id, ma-giang-vien").limit(5000);
                 if (!evErr && evRes) evidences = evRes;
 
-                // 4. Tải Phân công
                 const taskIds = (tasks || []).map(task => task.id);
                 let assignments = [];
                 if (taskIds.length) {
@@ -567,7 +544,6 @@
                     if (!assignmentError && data) assignments = data;
                 }
 
-                // Sắp xếp Task
                 (tasks || []).sort((a, b) => {
                     if (!a["han-hoan-thanh"]) return 1;
                     if (!b["han-hoan-thanh"]) return -1;
@@ -597,12 +573,12 @@
             }
         }
 
+        // Tự động nhận diện URL thành thẻ a có css thu gọn (ellipsis)
         function linkify(text) {
             if (!text) return "";
-            // Tìm các đoạn văn bản bắt đầu bằng http:// hoặc https:// và biến nó thành thẻ a
             const urlRegex = /(https?:\/\/[^\s"'<>]+)/g;
             return text.replace(urlRegex, function(url) {
-                return '<a href="' + url + '" target="_blank" title="Nhấn để mở link">' + url + '</a>';
+                return '<a href="' + url + '" class="truncate-link" target="_blank" title="' + url + '">' + url + '</a>';
             });
         }
 
@@ -620,7 +596,7 @@
             const html = `
                 <div class="plan-overview-card">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                        <h2 class="plan-title-large" style="margin: 0;">${escapeHtml(plan.ten)}</h2>
+                        <h2 class="plan-title-large">${escapeHtml(plan.ten)}</h2>
                         
                         <!-- Nút Dropdown Menu Kế Hoạch -->
                         ${(canEditPlan(plan) || (isApprover() && plan["trang-thai-duyet"] === "cho-duyet")) ? `
@@ -629,8 +605,8 @@
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                             <div id="plan-menu" class="dropdown-menu">
-                                ${canEditPlan(plan) ? `<button class="dropdown-item" onclick="editPlan('${plan.id}')"><i class="fas fa-pen"></i> Sửa thông tin</button>` : ""}
-                                ${isApprover() && plan["trang-thai-duyet"] === "cho-duyet" ? `<button class="dropdown-item" style="color: #15803d;" onclick="approvePlan('${plan.id}')"><i class="fas fa-check"></i> Phê duyệt</button>` : ""}
+                                ${canEditPlan(plan) ? `<button class="dropdown-item" onclick="editPlan('${plan.id}')">Sửa thông tin</button>` : ""}
+                                ${isApprover() && plan["trang-thai-duyet"] === "cho-duyet" ? `<button class="dropdown-item" style="color: #15803d;" onclick="approvePlan('${plan.id}')">Phê duyệt</button>` : ""}
                             </div>
                         </div>
                         ` : ""}
@@ -645,31 +621,29 @@
                             </span>
                         </div>
                         
-                        <div class="meta-item" style="grid-column: 1 / -1; margin-bottom: 10px;">
-                            <div class="plan-progress-container" style="margin: 0; max-width: 100%;">
-                                <div class="progress-header">
-                                    <span class="meta-label" style="color:var(--text-muted); font-size:12px;">Tiến độ hoàn thành chung</span>
-                                    <span class="progress-value">${formatProgress(progress)}</span>
-                                </div>
-                                <div class="progress-track" style="margin-top: 6px; height: 6px;">
+                        <div class="meta-item" style="grid-column: 1 / -1;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                                <span class="meta-label" style="margin:0; white-space: nowrap;">Tiến độ chung</span>
+                                <div class="progress-track" style="flex: 1; margin: 0; max-width: 300px;">
                                     <div class="progress-bar" style="width:${Math.min(100, Math.max(0, progress))}%;"></div>
                                 </div>
+                                <span class="progress-value" style="font-size: 13px;">${formatProgress(progress)}</span>
                             </div>
                         </div>
 
-                        <div class="meta-item">
+                        <div class="meta-item" style="margin-top: 10px;">
                             <span class="meta-label">Người phụ trách</span>
                             <span class="meta-value"><i class="fas fa-user-tie" style="color:var(--text-muted);"></i> ${escapeHtml(manager?.["ho-ten"] || "Chưa phân công")}</span>
                         </div>
-                        <div class="meta-item">
+                        <div class="meta-item" style="margin-top: 10px;">
                             <span class="meta-label">Trạng thái</span>
                             <span class="meta-value">${statusBadge(plan["trang-thai"])}</span>
                         </div>
-                        <div class="meta-item">
+                        <div class="meta-item" style="margin-top: 10px;">
                             <span class="meta-label">Phê duyệt</span>
                             <span class="meta-value">${approvalBadge(plan["trang-thai-duyet"])}</span>
                         </div>
-                        <div class="meta-item">
+                        <div class="meta-item" style="margin-top: 10px;">
                             <span class="meta-label">Người tạo</span>
                             <span class="meta-value"><i class="fas fa-user-edit" style="color:var(--text-muted);"></i> ${escapeHtml(creator?.["ho-ten"] || "Hệ thống")}</span>
                         </div>
@@ -715,7 +689,6 @@
             if (task["trang-thai"] === "cho-xac-nhan" && isApprover()) {
                 processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTaskCompletion('${task.id}')"><i class="fas fa-check-double"></i> Duyệt hoàn thành</button>`;
             } else if (task["trang-thai"] !== "hoan-thanh" && (canEdit || isAssigned || isApprover())) {
-                // Thay vì chuyển ngay thành Hoàn thành, giờ sẽ mở Modal nộp minh chứng
                 processButtons += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
             }
 
@@ -734,8 +707,8 @@
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                             <div id="task-menu-${task.id}" class="dropdown-menu">
-                                <button class="dropdown-item" onclick="editTask('${task.id}')"><i class="fas fa-pen"></i> Sửa công việc</button>
-                                <button class="dropdown-item text-danger" onclick="deleteTask('${task.id}')"><i class="fas fa-trash-alt"></i> Xóa công việc</button>
+                                <button class="dropdown-item" onclick="editTask('${task.id}')">Sửa công việc</button>
+                                <button class="dropdown-item text-danger" onclick="deleteTask('${task.id}')">Xóa công việc</button>
                             </div>
                         </div>
                         ` : ""}
@@ -866,7 +839,7 @@
         }
 
         /* =========================================================
-           CÁC HÀM XỬ LÝ TASK & MINH CHỨNG
+           CÁC HÀM XỬ LÝ TASK
         ========================================================= */
         function openCreateTask() {
             document.getElementById("task-form").reset();
@@ -930,7 +903,7 @@
             } catch (error) { showError(error.message); }
         }
 
-        // Mở popup nộp minh chứng
+        // Mở popup nộp minh chứng (Gồm 1 ô nhập URL duy nhất)
         function openSubmitEvidenceModal(taskId) {
             document.getElementById("evidence-form").reset();
             document.getElementById("evidence-task-id").value = taskId;
@@ -941,9 +914,7 @@
         document.getElementById("evidence-form").addEventListener("submit", async (event) => {
             event.preventDefault();
             const taskId = document.getElementById("evidence-task-id").value;
-            const title = document.getElementById("evidence-title").value.trim();
             const url = document.getElementById("evidence-url").value.trim();
-            const desc = document.getElementById("evidence-desc").value.trim();
 
             try {
                 const btn = document.getElementById("btnSaveEvidence");
@@ -954,9 +925,9 @@
                 const payloadEvidence = {
                     "cong-viec-id": taskId,
                     "ma-giang-vien": currentAccount["ma-giang-vien"],
-                    "tieu-de": title,
+                    "tieu-de": "Link minh chứng",
                     "url": url,
-                    "mo-ta": desc || null
+                    "mo-ta": null
                 };
                 const { error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung").insert(payloadEvidence);
                 if (evErr) throw evErr;
@@ -1015,8 +986,7 @@
                     const gv = findLecturer(item["ma-giang-vien"]);
                     return `
                         <div class="evidence-item">
-                            <a href="${escapeHtml(item.url)}" target="_blank"><i class="fas fa-external-link-alt"></i> ${escapeHtml(item["tieu-de"])}</a>
-                            ${item["mo-ta"] ? `<div style="font-size:0.85rem; margin-top:5px; color:var(--text-dark);">${linkify(escapeHtml(item["mo-ta"]))}</div>` : ''}
+                            ${linkify(escapeHtml(item.url))}
                             <div class="evidence-meta">
                                 Gửi bởi: <b>${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])}</b> lúc ${new Date(item["created-at"]).toLocaleString("vi-VN")}
                             </div>
@@ -1070,7 +1040,7 @@
         }
 
         /* =========================================================
-           PHÂN CÔNG NHÂN SỰ
+           PHÂN CÔNG NHÂN SỰ MỚI
         ========================================================= */
         async function manageStaff(taskId) {
             currentManageTaskId = taskId;
@@ -1094,25 +1064,64 @@
             list.innerHTML = "";
             lecturers.forEach(gv => {
                 const name = gv["ho-ten"] ? gv["ho-ten"] : gv["ma-giang-vien"];
+                const isChecked = currentTempStaff.some(s => s["ma-giang-vien"] === gv["ma-giang-vien"]) ? "checked" : "";
                 list.innerHTML += `
                     <div class="checkbox-item">
-                        <input type="checkbox" id="chk-${gv["ma-giang-vien"]}" value="${gv["ma-giang-vien"]}" class="staff-chk">
+                        <input type="checkbox" id="chk-${gv["ma-giang-vien"]}" value="${gv["ma-giang-vien"]}" class="staff-chk" onchange="handleStaffCheck(this)" ${isChecked}>
                         <label for="chk-${gv["ma-giang-vien"]}">${name}</label>
                     </div>
                 `;
             });
         }
 
+        // Tự động đẩy vào mảng khi tick chọn
+        function handleStaffCheck(chk) {
+            const gv = chk.value;
+            const role = document.getElementById("staff-role-select").value;
+
+            if (chk.checked) {
+                if (role === "phu-trach") {
+                    const currentPhuTrachCount = currentTempStaff.filter(s => s["vai-tro"] === "phu-trach").length;
+                    if (currentPhuTrachCount > 0) {
+                        alert("Chỉ được phép có 1 người phụ trách. Hãy đổi sang Phối hợp.");
+                        chk.checked = false;
+                        return;
+                    }
+                }
+                if (!currentTempStaff.some(s => s["ma-giang-vien"] === gv)) {
+                    currentTempStaff.push({
+                        "cong-viec-id": currentManageTaskId,
+                        "ma-giang-vien": gv,
+                        "vai-tro": role
+                    });
+                }
+            } else {
+                currentTempStaff = currentTempStaff.filter(s => s["ma-giang-vien"] !== gv);
+            }
+            renderTempStaff();
+        }
+
         function toggleSelectAllStaff(source) {
             const checkboxes = document.querySelectorAll(".staff-chk");
-            checkboxes.forEach(chk => chk.checked = source.checked);
+            const role = document.getElementById("staff-role-select").value;
+
+            if (source.checked && role === "phu-trach") {
+                alert("Không thể chọn tất cả làm Phụ trách. Hãy đổi sang Phối hợp.");
+                source.checked = false;
+                return;
+            }
+
+            checkboxes.forEach(chk => {
+                chk.checked = source.checked;
+                handleStaffCheck(chk);
+            });
         }
 
         function renderTempStaff() {
             const list = document.getElementById("temp-staff-list");
             list.innerHTML = "";
             if (currentTempStaff.length === 0) {
-                list.innerHTML = "<div class='text-muted' style='font-style:italic; font-size:14px;'>Chưa có nhân sự nào được phân công.</div>";
+                list.innerHTML = "<div class='text-muted' style='font-style:italic; font-size:14px;'>Chưa có nhân sự nào được chọn.</div>";
                 return;
             }
             currentTempStaff.forEach((item, index) => {
@@ -1131,50 +1140,14 @@
             });
         }
 
-        function addTempStaff() {
-            const checkboxes = document.querySelectorAll(".staff-chk:checked");
-            const role = document.getElementById("staff-role-select").value;
-            
-            if (checkboxes.length === 0) {
-                alert("Vui lòng tích chọn ít nhất một Giảng viên!");
-                return;
-            }
-
-            if (role === "phu-trach") {
-                const currentPhuTrachCount = currentTempStaff.filter(s => s["vai-tro"] === "phu-trach").length;
-                if (currentPhuTrachCount > 0 || checkboxes.length > 1) {
-                    alert("Mỗi công việc chỉ được phép có 1 người phụ trách chính. Vui lòng chỉ chọn 1 người hoặc đổi vai trò thành Phối hợp.");
-                    return;
-                }
-            }
-
-            let addedCount = 0;
-            checkboxes.forEach(chk => {
-                const gv = chk.value;
-                if (!currentTempStaff.some(s => s["ma-giang-vien"] === gv)) {
-                    currentTempStaff.push({
-                        "cong-viec-id": currentManageTaskId,
-                        "ma-giang-vien": gv,
-                        "vai-tro": role
-                    });
-                    addedCount++;
-                }
-            });
-
-            if (addedCount === 0) {
-                alert("Các giảng viên được chọn đã có trong danh sách phân công.");
-                return;
-            }
-
-            renderTempStaff();
-            document.querySelectorAll(".staff-chk").forEach(c => c.checked = false);
-            const selectAll = document.getElementById("selectAllStaff");
-            if(selectAll) selectAll.checked = false;
-        }
-
         function removeTempStaff(index) {
+            const removedGv = currentTempStaff[index]["ma-giang-vien"];
             currentTempStaff.splice(index, 1);
             renderTempStaff();
+            
+            const chk = document.getElementById("chk-" + removedGv);
+            if (chk) chk.checked = false;
+            document.getElementById("selectAllStaff").checked = false;
         }
 
         async function saveStaffAssignment(event) {
