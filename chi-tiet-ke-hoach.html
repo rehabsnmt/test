@@ -23,13 +23,6 @@
     <style>
         .app-container { max-width: 1400px; margin: 0 auto; padding: 24px 0; background: transparent; }
 
-        .page-header { 
-            display: flex; justify-content: flex-start; align-items: center; gap: 20px; margin-bottom: 24px; 
-            position: static !important; 
-            z-index: 1 !important; 
-        }
-        .page-title { margin: 0; font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 12px;}
-
         /* Nút bấm Nền đặc (Solid Colors) */
         .btn-custom {
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -707,11 +700,11 @@
             let processButtonsLeft = "";
             let processButtonsRight = "";
 
-            if (['cho-xac-nhan', 'hoan-thanh'].includes(task["trang-thai"])) {
+            if (['cho-kiem-tra', 'hoan-thanh'].includes(task["trang-thai"])) {
                 processButtonsLeft += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
             }
             
-            if (task["trang-thai"] === "cho-xac-nhan" && isApprover()) {
+            if (task["trang-thai"] === "cho-kiem-tra" && isApprover()) {
                 processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="approveTaskCompletion('${task.id}')"><i class="fas fa-check-double"></i> Duyệt hoàn thành</button>`;
             } else if (task["trang-thai"] !== "hoan-thanh") {
                 let canComplete = false;
@@ -968,12 +961,13 @@
                     "ma-giang-vien": currentAccount["ma-giang-vien"],
                     "minh-chung": content
                 };
+                
                 const { error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung").insert(payloadEvidence);
                 if (evErr) throw evErr;
 
-                // 2. Chuyển trạng thái công việc thành Chờ xác nhận
+                // 2. Chuyển trạng thái công việc thành Chờ kiểm tra
                 const { error: tErr } = await window.supabaseClient.from("cong-viec").update({
-                    "trang-thai": "cho-xac-nhan"
+                    "trang-thai": "cho-kiem-tra"
                 }).eq("id", taskId);
                 if (tErr) throw tErr;
 
@@ -991,7 +985,7 @@
 
         async function approveTaskCompletion(taskId) {
             if (!isApprover()) return;
-            if (!confirm("Xác nhận công việc này đã HOÀN THÀNH?")) return;
+            if (!confirm("Xác nhận duyệt hoàn thành công việc này?")) return;
             try {
                 const { error } = await window.supabaseClient.from("cong-viec").update({
                     "trang-thai": "hoan-thanh"
@@ -1053,7 +1047,7 @@
                 const completed = tasks.filter(t => t["trang-thai"] === "hoan-thanh").length;
                 
                 let progress = 0;
-                let autoStatus = "dang-thuc-hien";
+                let autoStatus = "dang-thuc-hien"; 
 
                 if (total > 0) {
                     progress = (completed / total) * 100;
@@ -1286,10 +1280,8 @@
 
         function statusBadge(status) {
             const map = {
-                "chua-bat-dau": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "chua-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "cho-xac-nhan": ["Chờ xác nhận", "orange", "fa-clock"],
+                "cho-kiem-tra": ["Chờ kiểm tra", "orange", "fa-clock"],
                 "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
                 "tam-dung": ["Đang kẹt", "red", "fa-exclamation-triangle"]
             };
@@ -1299,9 +1291,8 @@
 
         function taskStatusBadge(status) {
             const map = {
-                "chua-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "cho-xac-nhan": ["Chờ xác nhận", "orange", "fa-clock"],
+                "cho-kiem-tra": ["Chờ kiểm tra", "orange", "fa-clock"],
                 "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
                 "tam-dung": ["Đang kẹt", "red", "fa-exclamation-triangle"]
             };
