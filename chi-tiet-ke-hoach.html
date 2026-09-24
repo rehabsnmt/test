@@ -126,7 +126,7 @@
         .staff-status-text { font-size: 0.75rem; font-weight: bold; margin-left: 4px; }
         .staff-status-text.completed { color: #15803d; }
 
-        /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
+        /* Cảnh báo đếm ngược nổi bật */
         @keyframes pulse-critical {
             0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
             70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
@@ -320,7 +320,7 @@
     <div id="submit-evidence-modal" class="custom-modal-backdrop">
         <div class="custom-modal" style="max-width: 500px;">
             <div class="modal-header">
-                <h2 class="modal-title">Hoàn thành công việc</h2>
+                <h2 class="modal-title">Nộp minh chứng</h2>
                 <button class="modal-close" onclick="closeModal('submit-evidence-modal')">×</button>
             </div>
             <form id="evidence-form">
@@ -334,7 +334,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-custom" onclick="closeModal('submit-evidence-modal')">Hủy</button>
-                    <button type="submit" class="btn-custom btn-custom-success" id="btnSaveEvidence"><i class="fas fa-check"></i> Xác nhận hoàn thành</button>
+                    <button type="submit" class="btn-custom btn-custom-success" id="btnSaveEvidence"><i class="fas fa-save"></i> Lưu minh chứng</button>
                 </div>
             </form>
         </div>
@@ -524,7 +524,7 @@
                 const { data: tasks, error: tErr } = await window.supabaseClient.from("cong-viec").select("*").eq("ke-hoach-id", currentPlanId);
                 if (tErr) throw tErr;
 
-                // 3. Tải Minh chứng (Lấy tất cả các cột đúng cấu trúc database mới)
+                // 3. Tải Minh chứng (Lấy tất cả các cột bằng dấu * để tránh lỗi lệch cấu trúc DB)
                 let evidences = [];
                 const { data: evRes, error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung").select("*").limit(5000);
                 if (!evErr && evRes) evidences = evRes;
@@ -693,22 +693,21 @@
                 processButtonsLeft += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
             }
             
-            // Xử lý nút Hoàn thành/Sửa minh chứng
-            if (task["trang-thai"] !== "hoan-thanh") {
-                let canComplete = false;
-                if (staff.length > 0) {
-                    if (isAssigned) canComplete = true;
-                } else {
-                    if (canEdit || isApprover()) canComplete = true;
-                }
+            // Xử lý quyền Hoàn thành / Sửa minh chứng cho bản thân
+            let canComplete = false;
+            if (staff.length > 0) {
+                if (isAssigned) canComplete = true;
+            } else {
+                // Nếu không ai được phân công, người có quyền sửa (admin/creator) mới được phép hoàn thành
+                if (canEdit || isApprover()) canComplete = true;
+            }
 
-                if (canComplete) {
-                    const myEvidence = taskEvidences.find(e => e["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
-                    if (myEvidence) {
-                        processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-warning" onclick="openSubmitEvidenceModal('${task.id}', '${myEvidence.id}')"><i class="fas fa-edit"></i> Sửa minh chứng</button>`;
-                    } else {
-                        processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
-                    }
+            if (canComplete) {
+                const myEvidence = taskEvidences.find(e => e["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
+                if (myEvidence) {
+                    processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-warning" onclick="openSubmitEvidenceModal('${task.id}', '${myEvidence.id}')"><i class="fas fa-edit"></i> Sửa minh chứng</button>`;
+                } else {
+                    processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
                 }
             }
 
@@ -925,6 +924,39 @@
             } catch (error) { showError(error.message); }
         }
 
+        // TỰ ĐỘNG ĐÁNH GIÁ TRẠNG THÁI CÔNG VIỆC DỰA TRÊN NGƯỜI NỘP
+        async function syncTaskStatus(taskId) {
+            try {
+                // Tải danh sách phân công của task
+                const { data: staff } = await window.supabaseClient.from("nhan-su-cong-viec").select("ma-giang-vien").eq("cong-viec-id", taskId);
+                // Tải danh sách minh chứng của task
+                const { data: evs } = await window.supabaseClient.from("cong-viec-minh-chung").select("ma-giang-vien").eq("cong-viec-id", taskId);
+                
+                let newStatus = "dang-thuc-hien";
+                
+                if (staff && staff.length > 0) {
+                    // Lọc ra các mã giảng viên đã nộp minh chứng
+                    const submittedSet = new Set((evs || []).map(e => e["ma-giang-vien"]));
+                    
+                    // Nếu 100% staff được phân công đều đã có trong danh sách nộp minh chứng
+                    const allSubmitted = staff.every(s => submittedSet.has(s["ma-giang-vien"]));
+                    if (allSubmitted) {
+                        newStatus = "hoan-thanh";
+                    }
+                } else {
+                    // Nếu công việc không phân công cho ai, nhưng lại có minh chứng được nộp (bởi admin/creator)
+                    if (evs && evs.length > 0) {
+                        newStatus = "hoan-thanh";
+                    }
+                }
+                
+                // Cập nhật lại db
+                await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
+            } catch (e) {
+                console.error("Lỗi đồng bộ trạng thái task: ", e);
+            }
+        }
+
         // Mở popup nộp / sửa minh chứng
         async function openSubmitEvidenceModal(taskId, evidenceId = '') {
             document.getElementById("evidence-form").reset();
@@ -933,7 +965,6 @@
             
             if (evidenceId) {
                 const btn = document.getElementById("btnSaveEvidence");
-                const ogHTML = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
                 
                 openModal("submit-evidence-modal");
@@ -946,13 +977,13 @@
                 } catch(e) {
                     console.warn(e);
                 }
-                btn.innerHTML = '<i class="fas fa-check"></i> Xác nhận hoàn thành';
+                btn.innerHTML = '<i class="fas fa-save"></i> Lưu minh chứng';
             } else {
                 openModal("submit-evidence-modal");
             }
         }
 
-        // Xử lý Gửi minh chứng & Chuyển sang Hoàn thành
+        // Xử lý Gửi minh chứng
         document.getElementById("evidence-form").addEventListener("submit", async (event) => {
             event.preventDefault();
             const taskId = document.getElementById("evidence-task-id").value;
@@ -965,13 +996,13 @@
                 btn.disabled = true;
 
                 if (evidenceId) {
-                    // Update
+                    // Cập nhật minh chứng
                     const { error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung")
                         .update({ "minh-chung": content })
                         .eq("id", evidenceId);
                     if (evErr) throw evErr;
                 } else {
-                    // Insert
+                    // Thêm mới minh chứng
                     const payloadEvidence = {
                         "cong-viec-id": taskId,
                         "ma-giang-vien": currentAccount["ma-giang-vien"],
@@ -981,21 +1012,18 @@
                     if (evErr) throw evErr;
                 }
 
-                // Chuyển trạng thái công việc THẲNG thành Hoàn thành
-                const { error: tErr } = await window.supabaseClient.from("cong-viec").update({
-                    "trang-thai": "hoan-thanh"
-                }).eq("id", taskId);
-                if (tErr) throw tErr;
+                // Cập nhật trạng thái công việc (Đếm xem đủ người nộp chưa)
+                await syncTaskStatus(taskId);
 
                 closeModal("submit-evidence-modal");
                 await syncPlanProgress(); 
 
-                btn.innerHTML = '<i class="fas fa-check"></i> Xác nhận hoàn thành';
+                btn.innerHTML = '<i class="fas fa-save"></i> Lưu minh chứng';
                 btn.disabled = false;
             } catch (error) { 
                 showError(error.message); 
                 document.getElementById("btnSaveEvidence").disabled = false;
-                document.getElementById("btnSaveEvidence").innerHTML = '<i class="fas fa-check"></i> Xác nhận hoàn thành';
+                document.getElementById("btnSaveEvidence").innerHTML = '<i class="fas fa-save"></i> Lưu minh chứng';
             }
         });
 
@@ -1015,8 +1043,8 @@
                 // JS Sort
                 let evList = data || [];
                 evList.sort((a, b) => {
-                    const d1 = new Date(a["created-at"] || 0);
-                    const d2 = new Date(b["created-at"] || 0);
+                    const d1 = new Date(a["created-at"] || a.created_at || 0);
+                    const d2 = new Date(b["created-at"] || b.created_at || 0);
                     return d2 - d1;
                 });
 
@@ -1033,7 +1061,7 @@
                     const canDelete = isAdmin() || currentAccount?.["ma-giang-vien"] === item["ma-giang-vien"];
                     const deleteBtn = canDelete ? `<button class="btn-custom btn-custom-small btn-custom-danger" style="padding: 2px 8px; font-size: 12px; margin-top: 5px;" onclick="deleteEvidence('${item.id}', '${taskId}')"><i class="fas fa-trash-alt"></i> Xóa</button>` : "";
 
-                    const timeStr = item["created-at"] || "";
+                    const timeStr = item["created-at"] || item.created_at || "";
                     const displayTime = timeStr ? new Date(timeStr).toLocaleString("vi-VN") : "";
 
                     return `
@@ -1054,19 +1082,14 @@
         async function deleteEvidence(evidenceId, taskId) {
             if (!confirm("Bạn có chắc chắn muốn xóa minh chứng này?")) return;
             try {
+                // Xóa minh chứng
                 const { error } = await window.supabaseClient.from("cong-viec-minh-chung").delete().eq("id", evidenceId);
                 if (error) throw error;
 
-                const { data, error: countErr } = await window.supabaseClient.from("cong-viec-minh-chung").select("id").eq("cong-viec-id", taskId);
-                if (countErr) throw countErr;
+                // Tự động quét cập nhật lại trạng thái công việc
+                await syncTaskStatus(taskId);
 
-                if (!data || data.length === 0) {
-                    const { error: updateErr } = await window.supabaseClient.from("cong-viec").update({
-                        "trang-thai": "dang-thuc-hien"
-                    }).eq("id", taskId);
-                    if (updateErr) throw updateErr;
-                }
-
+                // Cập nhật tiến độ tổng & UI
                 await syncPlanProgress();
                 viewEvidence(taskId); 
             } catch (err) {
@@ -1092,9 +1115,6 @@
                     progress = (completed / total) * 100;
                     if (completed === total) {
                         autoStatus = "hoan-thanh";
-                    } else {
-                        const hasStarted = tasks.some(t => ["dang-thuc-hien", "hoan-thanh"].includes(t["trang-thai"]));
-                        if (hasStarted) autoStatus = "dang-thuc-hien";
                     }
                 }
 
@@ -1252,6 +1272,8 @@
                     if (insertError) throw insertError;
                 }
                 
+                // Khi thay đổi nhân sự, cập nhật lại trạng thái công việc
+                await syncTaskStatus(currentManageTaskId);
                 await loadPlanDetails(true); 
             } catch (err) {
                 showError("Cập nhật nhân sự thất bại: " + err.message);
@@ -1321,6 +1343,7 @@
         function statusBadge(status) {
             const map = {
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
+                "cho-kiem-tra": ["Chờ kiểm tra", "orange", "fa-clock"],
                 "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
                 "tam-dung": ["Đang kẹt", "red", "fa-exclamation-triangle"]
             };
@@ -1331,6 +1354,7 @@
         function taskStatusBadge(status) {
             const map = {
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
+                "cho-kiem-tra": ["Chờ kiểm tra", "orange", "fa-clock"],
                 "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
                 "tam-dung": ["Đang kẹt", "red", "fa-exclamation-triangle"]
             };
