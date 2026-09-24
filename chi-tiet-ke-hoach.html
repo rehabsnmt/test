@@ -126,7 +126,7 @@
         .staff-status-text { font-size: 0.75rem; font-weight: bold; margin-left: 4px; }
         .staff-status-text.completed { color: #15803d; }
 
-        /* Cảnh báo đếm ngược nổi bật */
+        /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
         @keyframes pulse-critical {
             0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
             70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
@@ -562,6 +562,42 @@
         }
 
         /* =========================================================
+           HÀM XỬ LÝ TRẠNG THÁI TASK TỰ ĐỘNG
+        ========================================================= */
+        async function syncTaskStatus(taskId) {
+            try {
+                // Lấy danh sách phân công
+                const { data: staff } = await window.supabaseClient.from("nhan-su-cong-viec").select("ma-giang-vien").eq("cong-viec-id", taskId);
+                // Lấy danh sách minh chứng
+                const { data: evs } = await window.supabaseClient.from("cong-viec-minh-chung").select("ma-giang-vien").eq("cong-viec-id", taskId);
+                
+                let newStatus = "dang-thuc-hien";
+                
+                if (staff && staff.length > 0) {
+                    // Tập hợp các ma-giang-vien ĐÃ NỘP minh chứng
+                    const submittedSet = new Set((evs || []).map(e => e["ma-giang-vien"]));
+                    
+                    // Kiểm tra xem tất cả staff được phân công đã nộp chưa?
+                    const allSubmitted = staff.every(s => submittedSet.has(s["ma-giang-vien"]));
+                    
+                    if (allSubmitted && evs.length > 0) {
+                        newStatus = "hoan-thanh";
+                    }
+                } else {
+                    // Nếu không phân công ai cả, nhưng quản lý tạo minh chứng -> Xong
+                    if (evs && evs.length > 0) {
+                        newStatus = "hoan-thanh";
+                    }
+                }
+                
+                await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
+            } catch (e) {
+                console.error("Lỗi đồng bộ trạng thái task: ", e);
+            }
+        }
+
+
+        /* =========================================================
            HÀM XỬ LÝ MENU 3 CHẤM VÀ CÁC TIỆN ÍCH
         ========================================================= */
         function toggleDropdown(id, event) {
@@ -698,7 +734,6 @@
             if (staff.length > 0) {
                 if (isAssigned) canComplete = true;
             } else {
-                // Nếu không ai được phân công, người có quyền sửa (admin/creator) mới được phép hoàn thành
                 if (canEdit || isApprover()) canComplete = true;
             }
 
@@ -774,6 +809,7 @@
             let statusHtml = "";
             let bgClass = "";
 
+            // CHỈ AI NỘP MINH CHỨNG MỚI ĐƯỢC TÔ XANH
             if (taskEvidences.some(e => e["ma-giang-vien"] === item["ma-giang-vien"])) {
                 statusHtml = `<span class="staff-status-text completed"><i class="fas fa-check"></i> Đã nộp MC</span>`;
                 bgClass = "is-completed"; // Xanh lá
@@ -924,39 +960,6 @@
             } catch (error) { showError(error.message); }
         }
 
-        // TỰ ĐỘNG ĐÁNH GIÁ TRẠNG THÁI CÔNG VIỆC DỰA TRÊN NGƯỜI NỘP
-        async function syncTaskStatus(taskId) {
-            try {
-                // Tải danh sách phân công của task
-                const { data: staff } = await window.supabaseClient.from("nhan-su-cong-viec").select("ma-giang-vien").eq("cong-viec-id", taskId);
-                // Tải danh sách minh chứng của task
-                const { data: evs } = await window.supabaseClient.from("cong-viec-minh-chung").select("ma-giang-vien").eq("cong-viec-id", taskId);
-                
-                let newStatus = "dang-thuc-hien";
-                
-                if (staff && staff.length > 0) {
-                    // Lọc ra các mã giảng viên đã nộp minh chứng
-                    const submittedSet = new Set((evs || []).map(e => e["ma-giang-vien"]));
-                    
-                    // Nếu 100% staff được phân công đều đã có trong danh sách nộp minh chứng
-                    const allSubmitted = staff.every(s => submittedSet.has(s["ma-giang-vien"]));
-                    if (allSubmitted) {
-                        newStatus = "hoan-thanh";
-                    }
-                } else {
-                    // Nếu công việc không phân công cho ai, nhưng lại có minh chứng được nộp (bởi admin/creator)
-                    if (evs && evs.length > 0) {
-                        newStatus = "hoan-thanh";
-                    }
-                }
-                
-                // Cập nhật lại db
-                await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
-            } catch (e) {
-                console.error("Lỗi đồng bộ trạng thái task: ", e);
-            }
-        }
-
         // Mở popup nộp / sửa minh chứng
         async function openSubmitEvidenceModal(taskId, evidenceId = '') {
             document.getElementById("evidence-form").reset();
@@ -965,6 +968,7 @@
             
             if (evidenceId) {
                 const btn = document.getElementById("btnSaveEvidence");
+                const ogHTML = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
                 
                 openModal("submit-evidence-modal");
@@ -996,13 +1000,16 @@
                 btn.disabled = true;
 
                 if (evidenceId) {
-                    // Cập nhật minh chứng
+                    // Update kèm cập nhật thời gian
                     const { error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung")
-                        .update({ "minh-chung": content })
+                        .update({ 
+                            "minh-chung": content,
+                            "created-at": new Date().toISOString()
+                        })
                         .eq("id", evidenceId);
                     if (evErr) throw evErr;
                 } else {
-                    // Thêm mới minh chứng
+                    // Insert
                     const payloadEvidence = {
                         "cong-viec-id": taskId,
                         "ma-giang-vien": currentAccount["ma-giang-vien"],
@@ -1012,7 +1019,7 @@
                     if (evErr) throw evErr;
                 }
 
-                // Cập nhật trạng thái công việc (Đếm xem đủ người nộp chưa)
+                // Tự động kiểm đếm người nộp và cập nhật trạng thái Task (hoàn thành hay đang làm)
                 await syncTaskStatus(taskId);
 
                 closeModal("submit-evidence-modal");
@@ -1086,7 +1093,7 @@
                 const { error } = await window.supabaseClient.from("cong-viec-minh-chung").delete().eq("id", evidenceId);
                 if (error) throw error;
 
-                // Tự động quét cập nhật lại trạng thái công việc
+                // Tự động quét cập nhật lại trạng thái công việc (sẽ lùi về dang-thuc-hien nếu thiếu minh chứng)
                 await syncTaskStatus(taskId);
 
                 // Cập nhật tiến độ tổng & UI
@@ -1343,7 +1350,6 @@
         function statusBadge(status) {
             const map = {
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "cho-kiem-tra": ["Chờ kiểm tra", "orange", "fa-clock"],
                 "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
                 "tam-dung": ["Đang kẹt", "red", "fa-exclamation-triangle"]
             };
@@ -1354,7 +1360,6 @@
         function taskStatusBadge(status) {
             const map = {
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "cho-kiem-tra": ["Chờ kiểm tra", "orange", "fa-clock"],
                 "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
                 "tam-dung": ["Đang kẹt", "red", "fa-exclamation-triangle"]
             };
