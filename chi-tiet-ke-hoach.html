@@ -150,10 +150,13 @@
         .badge-warning-medium { background: #f59e0b; color: white; border: none; }
         .badge-warning-low { background: #3b82f6; color: white; border: none; }
 
+        /* Đồng bộ màu các badge cơ bản */
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
-        .badge-blue { background: var(--primary-light); color: var(--primary-hover); }
+        .badge-blue { background: #e0f2fe; color: #0284c7; }
         .badge-green { background: #dcfce7; color: #15803d; }
         .badge-yellow { background: #fef3c7; color: #b45309; }
+        .badge-red { background: #fee2e2; color: #b91c1c; }
+        .badge-orange { background: #ffedd5; color: #c2410c; }
 
         /* Modals */
         .custom-modal-backdrop {
@@ -442,7 +445,7 @@
                 await loadCurrentUser();
                 await loadLecturers();
                 await loadPlanDetails();
-                setupEvents();
+                setupEvents(); // Khởi tạo các sự kiện click
             } catch (error) {
                 showError(error.message);
                 document.getElementById('plan-detail-container').innerHTML = `<div class="empty text-danger">Bạn không có quyền truy cập hoặc lỗi kết nối.</div>`;
@@ -482,7 +485,7 @@
                 if (error) throw error;
                 lecturers = data || [];
                 
-                // Đổ danh sách vào Modal Sửa kế hoạch (Tránh lỗi form)
+                // Đổ danh sách vào Modal Sửa kế hoạch
                 const planManagerSelect = document.getElementById("plan-manager");
                 if (planManagerSelect) {
                     planManagerSelect.innerHTML = `<option value="">-- Chọn người phụ trách --</option>`;
@@ -771,7 +774,7 @@
                 }
                 
                 closeModal("plan-modal");
-                await syncPlanProgress(); // Trigger reload
+                await syncPlanProgress(); 
             } catch (error) { 
                 showError(error.message); 
                 document.getElementById("btnSavePlan").disabled = false;
@@ -788,7 +791,7 @@
                     "duyet-luc": new Date().toISOString()
                 }).eq("id", planId);
                 if (error) throw error;
-                await syncPlanProgress(); // Trigger reload
+                await syncPlanProgress(); 
             } catch (error) { showError(error.message); }
         }
 
@@ -836,7 +839,7 @@
                     if (error) throw error;
                 } else {
                     payload["created-by-ma-gv"] = currentAccount["ma-giang-vien"];
-                    payload["trang-thai"] = "chua-thuc-hien";
+                    payload["trang-thai"] = "dang-thuc-hien"; // Bỏ trạng thái chưa thực hiện, đổi luôn thành đang thực hiện
                     const { error } = await window.supabaseClient.from("cong-viec").insert(payload);
                     if (error) throw error;
                 }
@@ -930,19 +933,17 @@
                 const completed = tasks.filter(t => t["trang-thai"] === "hoan-thanh").length;
                 
                 let progress = 0;
-                let autoStatus = "chua-bat-dau";
+                let autoStatus = "dang-thuc-hien"; // Khởi tạo mặc định mới
 
                 if (total > 0) {
                     progress = (completed / total) * 100;
                     if (completed === total) {
                         autoStatus = "hoan-thanh";
                     } else {
-                        const hasStarted = tasks.some(t => ["dang-thuc-hien", "cho-xac-nhan", "hoan-thanh"].includes(t["trang-thai"]));
-                        if (hasStarted) autoStatus = "dang-thuc-hien";
+                        autoStatus = "dang-thuc-hien";
                     }
                 }
 
-                // Nếu kế hoạch đang tạm dừng thì giữ nguyên trạng thái
                 if (currentPlanData && currentPlanData["trang-thai"] === "tam-dung") {
                     autoStatus = "tam-dung";
                 }
@@ -1089,7 +1090,7 @@
                     if (insertError) throw insertError;
                 }
                 
-                await loadPlanDetails(true); // Reload để hiện staff
+                await loadPlanDetails(true); 
             } catch (err) {
                 showError("Cập nhật nhân sự thất bại: " + err.message);
             } finally {
@@ -1102,11 +1103,7 @@
            HÀM BỔ TRỢ & SỰ KIỆN CƠ BẢN
         ========================================================= */
         function setupEvents() {
-            document.querySelectorAll(".custom-modal-backdrop").forEach(modal => {
-                modal.addEventListener("click", event => {
-                    if (event.target === modal) modal.classList.remove("show");
-                });
-            });
+            // Loại bỏ sự kiện click đóng Modal
         }
 
         function openModal(id) { document.getElementById(id).classList.add("show"); }
@@ -1156,12 +1153,12 @@
 
         function statusBadge(status) {
             const map = {
-                "chua-bat-dau": ["Chưa bắt đầu", "gray", "fa-circle"],
-                "chua-thuc-hien": ["Chưa thực hiện", "gray", "fa-circle"],
+                "chua-bat-dau": ["Đang thực hiện", "blue", "fa-play-circle"],
+                "chua-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
                 "cho-xac-nhan": ["Chờ xác nhận", "orange", "fa-clock"],
                 "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
-                "tam-dung": ["Tạm dừng", "yellow", "fa-pause-circle"]
+                "tam-dung": ["Đang kẹt", "red", "fa-exclamation-triangle"]
             };
             const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
             return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
@@ -1169,11 +1166,11 @@
 
         function taskStatusBadge(status) {
             const map = {
-                "chua-thuc-hien": ["Chưa thực hiện", "gray", "fa-circle"],
+                "chua-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
                 "cho-xac-nhan": ["Chờ xác nhận", "orange", "fa-clock"],
                 "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
-                "tam-dung": ["Tạm dừng", "yellow", "fa-pause-circle"]
+                "tam-dung": ["Đang kẹt", "red", "fa-exclamation-triangle"]
             };
             const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
             return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
