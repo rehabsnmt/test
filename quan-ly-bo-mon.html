@@ -580,7 +580,7 @@
         }
 
         function getDeadlineWarning(dateStr, status) {
-            if (!dateStr || status === 'hoan-thanh' || status === 'tam-dung') return "";
+            if (!dateStr || status === 'hoan-thanh') return "";
             try {
                 const today = new Date();
                 today.setHours(0,0,0,0);
@@ -737,7 +737,7 @@
                     if (error) throw error;
                 } else {
                     payload["created-by-ma-gv"] = currentAccount["ma-giang-vien"];
-                    payload["trang-thai"] = "dang-thuc-hien"; // Loại bỏ trạng thái "Chưa bắt đầu"
+                    payload["trang-thai"] = "dang-thuc-hien"; 
                     payload["trang-thai-duyet"] = currentAccount.role === "admin" ? "cho-duyet" : "da-duyet";
                     const { error } = await window.supabaseClient.from("ke-hoach").insert(payload);
                     if (error) throw error;
@@ -832,12 +832,10 @@
 
         function statusBadge(status) {
             const map = {
-                "chua-bat-dau": ["Đang thực hiện", "blue", "fa-play-circle"], // Ánh xạ data cũ sang Đang thực hiện
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
-                "tam-dung": ["Tạm dừng", "yellow", "fa-pause-circle"]
+                "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"]
             };
-            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
+            const [label, color, icon] = map[status] || ["Đang thực hiện", "blue", "fa-play-circle"];
             return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
         }
 
