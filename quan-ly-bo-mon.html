@@ -19,6 +19,9 @@
     <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tích hợp Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         .app-container { max-width: 1400px; margin: 0 auto; padding: 24px 0; background: transparent; }
@@ -31,7 +34,7 @@
         .page-title { margin: 0; font-size: 28px; font-weight: 700; }
         .page-subtitle { margin: 6px 0 0; color: var(--text-muted); font-size: 14px; }
 
-        /* Nút bấm Nền đặc (Solid Colors) */
+        /* Nút bấm */
         .btn-custom {
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
             border: none; background: #e2e8f0; color: #334155;
@@ -49,16 +52,13 @@
         .btn-custom-success { background: #10b981; color: white; }
         .btn-custom-success:hover { background: #059669; }
 
-        .btn-custom-warning { background: #f59e0b; color: white; }
-        .btn-custom-warning:hover { background: #d97706; }
-
         .btn-custom-small { padding: 6px 12px; font-size: 0.8rem; }
 
-        /* Dashboard tương tác - Flat Design */
-        .interactive-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        /* Dashboard tương tác - 3 thẻ */
+        .interactive-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .dashboard-card { 
-            background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px; 
-            display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; user-select: none;
+            background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px; 
+            display: flex; align-items: center; gap: 18px; cursor: pointer; transition: 0.2s; user-select: none;
         }
         .dashboard-card:hover { border-color: var(--primary); }
         .dashboard-card.active { border: 2px solid var(--primary); background: var(--primary-light); }
@@ -70,6 +70,14 @@
         .db-title { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
         .db-value { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
         
+        /* Container Biểu đồ */
+        .chart-wrapper {
+            background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 25px;
+        }
+        .chart-container {
+            position: relative; height: 350px; width: 100%;
+        }
+
         .search-bar-container { position: relative; margin-bottom: 20px; display: flex; gap: 10px;}
         .search-bar-wrapper { position: relative; flex: 1;}
         .search-bar-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
@@ -89,9 +97,9 @@
             display: flex; align-items: center; gap: 8px;
         }
         .status-section-title.pending { color: #b45309; border-bottom: 2px solid #fef3c7; }
-        .status-section-title.approved { color: #15803d; border-bottom: 2px solid #dcfce7; margin-top: 30px; }
+        .status-section-title.approved { color: #1d4ed8; border-bottom: 2px solid #bfdbfe; }
+        .status-section-title.completed { color: #15803d; border-bottom: 2px solid #dcfce7; }
 
-        /* Plan List - Flat Design */
         .plan-list { display: grid; gap: 14px; }
         .plan-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px; transition: border-color .15s ease; }
         .plan-card:hover { border-color: var(--primary-light); }
@@ -112,7 +120,6 @@
         .plan-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-light); flex-wrap: wrap;}
         .plan-actions { display: flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
 
-        /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
         @keyframes pulse-critical {
             0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
             70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
@@ -126,7 +133,7 @@
         
         .status-badge {
             display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-            border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 600; white-space: nowrap;
+            border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; white-space: nowrap;
         }
 
         .badge-warning-critical { background: #dc2626; color: white; border: none; animation: pulse-critical 1.5s infinite; font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.3px;}
@@ -137,7 +144,7 @@
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
         .badge-blue { background: var(--primary-light); color: var(--primary-hover); }
         .badge-green { background: #dcfce7; color: #15803d; }
-        .badge-yellow { background: #fef3c7; color: #a16207; }
+        .badge-yellow { background: #fef3c7; color: #b45309; }
 
         .custom-modal-backdrop {
             position: fixed; inset: 0; background: rgba(15, 23, 42, .6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
@@ -176,7 +183,9 @@
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full { grid-column: auto; }
             .search-bar-container { flex-direction: column; }
-            .interactive-dashboard { grid-template-columns: 1fr 1fr; }
+            .chart-wrapper { padding: 16px; }
+            .chart-container { height: 280px; }
+            .interactive-dashboard { grid-template-columns: 1fr; }
             .db-icon { font-size: 1.8rem; }
             .db-value { font-size: 1.4rem; }
             .modal-footer { flex-direction: column-reverse; gap: 10px; align-items: stretch; }
@@ -203,13 +212,13 @@
 
             <div id="error-box" class="error-msg"></div>
 
-            <!-- DASHBOARD TRỰC QUAN -->
+            <!-- DASHBOARD TRỰC QUAN - 3 THẺ -->
             <div class="interactive-dashboard">
-                <div class="dashboard-card active" data-filter="all" onclick="setDashboardFilter('all')">
-                    <div class="db-icon"><i class="fas fa-layer-group"></i></div>
+                <div class="dashboard-card active" data-filter="da-duyet" onclick="setDashboardFilter('da-duyet')">
+                    <div class="db-icon text-primary"><i class="fas fa-clipboard-check"></i></div>
                     <div class="db-info">
-                        <div class="db-title">Tất cả</div>
-                        <div class="db-value" id="count-all">0</div>
+                        <div class="db-title">Đang thực hiện</div>
+                        <div class="db-value" id="count-approved">0</div>
                     </div>
                 </div>
                 <div class="dashboard-card" data-filter="cho-duyet" onclick="setDashboardFilter('cho-duyet')">
@@ -219,19 +228,22 @@
                         <div class="db-value" id="count-pending">0</div>
                     </div>
                 </div>
-                <div class="dashboard-card" data-filter="dang-thuc-hien" onclick="setDashboardFilter('dang-thuc-hien')">
-                    <div class="db-icon text-primary"><i class="fas fa-play-circle"></i></div>
-                    <div class="db-info">
-                        <div class="db-title">Đang làm</div>
-                        <div class="db-value" id="count-active">0</div>
-                    </div>
-                </div>
                 <div class="dashboard-card" data-filter="hoan-thanh" onclick="setDashboardFilter('hoan-thanh')">
                     <div class="db-icon text-success"><i class="fas fa-check-circle"></i></div>
                     <div class="db-info">
                         <div class="db-title">Hoàn thành</div>
                         <div class="db-value" id="count-completed">0</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- BIỂU ĐỒ KHỐI LƯỢNG CÔNG VIỆC -->
+            <div class="chart-wrapper">
+                <h3 style="margin-top: 0; font-size: 1.15rem; color: var(--text-dark); margin-bottom: 20px; font-weight: 700;">
+                    <i class="fas fa-chart-bar" style="color: var(--primary);"></i> Thống kê Khối lượng công việc
+                </h3>
+                <div class="chart-container">
+                    <canvas id="workloadChart"></canvas>
                 </div>
             </div>
 
@@ -292,16 +304,12 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <!-- Khu vực nút chức năng bổ sung (Tạm dừng/Xóa) sẽ hiện khi ở chế độ Sửa -->
+                    <!-- Khu vực chức năng xóa -->
                     <div id="plan-modal-extra-actions" style="display: none; gap: 8px; flex: 1;">
-                        <button type="button" class="btn-custom btn-custom-warning" id="btnPausePlanModal" onclick="handlePauseFromModal()">
-                            <i class="fas fa-pause"></i> Tạm dừng
-                        </button>
                         <button type="button" class="btn-custom btn-custom-danger" id="btnDeletePlanModal" onclick="handleDeleteFromModal()">
                             <i class="fas fa-trash-alt"></i> Xóa
                         </button>
                     </div>
-                    <!-- Khu vực Lưu/Hủy -->
                     <div style="display: flex; gap: 8px; margin-left: auto;">
                         <button type="button" class="btn-custom" onclick="closeModal('plan-modal')">Hủy</button>
                         <button type="submit" class="btn-custom btn-custom-primary" id="btnSavePlan"><i class="fas fa-save"></i> Lưu kế hoạch</button>
@@ -338,13 +346,16 @@
         let currentUser = null;
         let currentAccount = null;
         let plans = [];
+        let allAssignments = [];
         let lecturers = [];
+        let workloadChartInstance = null;
 
         let currentPlanId = null; 
         let planToDeleteId = null;
         let deleteRandomCode = "";
 
-        let activeFilter = 'all'; 
+        // Bộ lọc mặc định khi tải trang là "Đã duyệt"
+        let activeFilter = 'da-duyet'; 
 
         document.addEventListener("DOMContentLoaded", () => {
             let attempts = 0;
@@ -422,15 +433,107 @@
 
         async function loadPlans() {
             try {
-                const { data, error } = await window.supabaseClient.from("tien-do-ke-hoach").select("*");
-                if (error) throw error;
-                plans = data || [];
+                // Tải song song cả tiến độ kế hoạch và danh sách phân công để vẽ biểu đồ
+                const [planRes, assignRes] = await Promise.all([
+                    window.supabaseClient.from("tien-do-ke-hoach").select("*"),
+                    window.supabaseClient.from("nhan-su-cong-viec").select("ma-giang-vien")
+                ]);
+
+                if (planRes.error) throw planRes.error;
+                if (assignRes.error) throw assignRes.error;
+
+                plans = planRes.data || [];
+                allAssignments = assignRes.data || [];
+
                 updateDashboardCounts();
+                renderChart();
                 renderPlans();
             } catch (err) {
                 console.error(err);
-                throw new Error("Lỗi khi tải danh sách kế hoạch.");
+                throw new Error("Lỗi khi tải dữ liệu hệ thống.");
             }
+        }
+
+        /* =========================================================
+           VẼ BIỂU ĐỒ CHART.JS
+        ========================================================= */
+        function renderChart() {
+            const ctx = document.getElementById('workloadChart');
+            if (!ctx) return;
+
+            const labels = [];
+            const planData = [];
+            const taskData = [];
+
+            lecturers.forEach(gv => {
+                const maGV = gv["ma-giang-vien"];
+                const name = gv["ho-ten"] || maGV;
+                
+                // Đếm số lượng kế hoạch phụ trách
+                const pCount = plans.filter(p => p["nguoi-phu-trach-ma-gv"] === maGV).length;
+                // Đếm số lượng công việc được phân công tham gia
+                const tCount = allAssignments.filter(a => a["ma-giang-vien"] === maGV).length;
+
+                // Chỉ hiển thị những giảng viên có ít nhất 1 kế hoạch hoặc 1 công việc
+                if (pCount > 0 || tCount > 0) {
+                    // Cắt lấy 2 chữ cuối của tên để biểu đồ trên mobile không bị tràn chữ
+                    const shortName = name.split(" ").slice(-2).join(" ");
+                    labels.push(shortName);
+                    planData.push(pCount);
+                    taskData.push(tCount);
+                }
+            });
+
+            if (workloadChartInstance) {
+                workloadChartInstance.destroy();
+            }
+
+            Chart.defaults.font.family = "'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+            Chart.defaults.color = '#64748b';
+
+            workloadChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Kế hoạch phụ trách',
+                            data: planData,
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Công việc được giao',
+                            data: taskData,
+                            backgroundColor: '#10b981',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { stepSize: 1 } 
+                        },
+                        x: { 
+                            grid: { display: false } 
+                        }
+                    },
+                    plugins: {
+                        legend: { 
+                            position: 'top',
+                            labels: { usePointStyle: true, boxWidth: 8 }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
         }
 
         function setDashboardFilter(type) {
@@ -441,9 +544,8 @@
         }
 
         function updateDashboardCounts() {
-            document.getElementById('count-all').textContent = plans.length;
+            document.getElementById('count-approved').textContent = plans.filter(p => p["trang-thai-duyet"] === "da-duyet" && p["trang-thai"] !== "hoan-thanh").length;
             document.getElementById('count-pending').textContent = plans.filter(p => p["trang-thai-duyet"] === "cho-duyet").length;
-            document.getElementById('count-active').textContent = plans.filter(p => p["trang-thai"] === "dang-thuc-hien").length;
             document.getElementById('count-completed').textContent = plans.filter(p => p["trang-thai"] === "hoan-thanh").length;
         }
 
@@ -479,15 +581,22 @@
                 const matchManager = !managerFilter || plan["nguoi-phu-trach-ma-gv"] === managerFilter;
                 
                 let matchType = true;
-                if (activeFilter === 'cho-duyet') matchType = plan["trang-thai-duyet"] === "cho-duyet";
-                if (activeFilter === 'dang-thuc-hien') matchType = plan["trang-thai"] === "dang-thuc-hien";
-                if (activeFilter === 'hoan-thanh') matchType = plan["trang-thai"] === "hoan-thanh";
+                // Nếu đang chọn mục "Đã duyệt" -> Lọc những kế hoạch đã được phê duyệt nhưng chưa hoàn thành
+                if (activeFilter === 'da-duyet') {
+                    matchType = plan["trang-thai-duyet"] === "da-duyet" && plan["trang-thai"] !== "hoan-thanh";
+                }
+                if (activeFilter === 'cho-duyet') {
+                    matchType = plan["trang-thai-duyet"] === "cho-duyet";
+                }
+                if (activeFilter === 'hoan-thanh') {
+                    matchType = plan["trang-thai"] === "hoan-thanh";
+                }
                 
                 return matchKeyword && matchManager && matchType;
             });
 
             if (!filtered.length) {
-                container.innerHTML = `<div class="empty">Không có kế hoạch phù hợp với bộ lọc.</div>`;
+                container.innerHTML = `<div class="empty">Không có kế hoạch phù hợp với bộ lọc hiện tại.</div>`;
                 return;
             }
 
@@ -499,22 +608,24 @@
             });
 
             const pendingPlans = filtered.filter(p => p["trang-thai-duyet"] === "cho-duyet");
-            const approvedPlans = filtered.filter(p => p["trang-thai-duyet"] === "da-duyet");
+            const approvedPlans = filtered.filter(p => p["trang-thai-duyet"] === "da-duyet" && p["trang-thai"] !== "hoan-thanh");
+            const completedPlans = filtered.filter(p => p["trang-thai"] === "hoan-thanh");
 
             let htmlStr = "";
             
-            if (pendingPlans.length > 0) {
-                htmlStr += `<h3 class="status-section-title pending"><i class="fas fa-hourglass-half"></i> Đang chờ duyệt (${pendingPlans.length})</h3>`;
-                htmlStr += `<div class="plan-list">`;
-                htmlStr += pendingPlans.map(renderPlanCard).join("");
-                htmlStr += `</div>`;
+            if (activeFilter === 'cho-duyet' && pendingPlans.length > 0) {
+                htmlStr += `<h3 class="status-section-title pending"><i class="fas fa-hourglass-half"></i> Danh sách chờ duyệt (${pendingPlans.length})</h3>`;
+                htmlStr += `<div class="plan-list">` + pendingPlans.map(renderPlanCard).join("") + `</div>`;
             }
 
-            if (approvedPlans.length > 0) {
-                htmlStr += `<h3 class="status-section-title approved"><i class="fas fa-clipboard-check"></i> Đã phê duyệt (${approvedPlans.length})</h3>`;
-                htmlStr += `<div class="plan-list">`;
-                htmlStr += approvedPlans.map(renderPlanCard).join("");
-                htmlStr += `</div>`;
+            if (activeFilter === 'da-duyet' && approvedPlans.length > 0) {
+                htmlStr += `<h3 class="status-section-title approved"><i class="fas fa-play-circle"></i> Danh sách đang thực hiện (${approvedPlans.length})</h3>`;
+                htmlStr += `<div class="plan-list">` + approvedPlans.map(renderPlanCard).join("") + `</div>`;
+            }
+            
+            if (activeFilter === 'hoan-thanh' && completedPlans.length > 0) {
+                htmlStr += `<h3 class="status-section-title completed"><i class="fas fa-check-circle"></i> Danh sách hoàn thành (${completedPlans.length})</h3>`;
+                htmlStr += `<div class="plan-list">` + completedPlans.map(renderPlanCard).join("") + `</div>`;
             }
 
             container.innerHTML = htmlStr;
@@ -596,14 +707,7 @@
 
             const extraActions = document.getElementById("plan-modal-extra-actions");
             extraActions.style.display = "flex";
-            const btnPause = document.getElementById("btnPausePlanModal");
-            const isPaused = plan["trang-thai"] === 'tam-dung';
-            if(isPaused) {
-                btnPause.innerHTML = '<i class="fas fa-play"></i> Tiếp tục';
-            } else {
-                btnPause.innerHTML = '<i class="fas fa-pause"></i> Tạm dừng';
-            }
-
+            
             openModal("plan-modal");
         }
 
@@ -645,27 +749,6 @@
                 document.getElementById("btnSavePlan").innerHTML = '<i class="fas fa-save"></i> Lưu kế hoạch';
             }
         });
-
-        /* =========================================================
-           TẠM DỪNG VÀ XÓA TỪ MODAL SỬA
-        ========================================================= */
-        async function handlePauseFromModal() {
-            if(!currentPlanId) return;
-            const plan = plans.find(p => p.id === currentPlanId);
-            if(!plan) return;
-            
-            const isPaused = plan["trang-thai"] === 'tam-dung';
-            if (!confirm(isPaused ? "Bạn muốn tiếp tục kế hoạch này?" : "Bạn muốn tạm dừng kế hoạch này?")) return;
-            
-            const newStatus = isPaused ? 'dang-thuc-hien' : 'tam-dung';
-            try {
-                const { error } = await window.supabaseClient.from("ke-hoach").update({"trang-thai": newStatus}).eq("id", currentPlanId);
-                if (error) throw error;
-                
-                closeModal('plan-modal');
-                await loadPlans();
-            } catch (error) { showError("Lỗi cập nhật trạng thái: " + error.message); }
-        }
 
         function handleDeleteFromModal() {
             if(!currentPlanId) return;
