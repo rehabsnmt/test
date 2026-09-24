@@ -65,7 +65,7 @@
         }
         .dashboard-card:hover { border-color: var(--primary); }
         .dashboard-card.active { border: 2px solid var(--primary); background: var(--primary-light); }
-        .dashboard-card.active .db-icon { color: var(--primary); } /* Nổi bật icon khi active */
+        .dashboard-card.active .db-icon { color: var(--primary); }
         
         .db-icon { font-size: 2.2rem; color: var(--text-muted); transition: 0.2s; }
         .db-info { display: flex; flex-direction: column; }
@@ -125,7 +125,6 @@
             border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 600; white-space: nowrap;
         }
 
-        /* Đồng bộ màu các badge cơ bản */
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
         .badge-blue { background: #e0f2fe; color: #0284c7; }
         .badge-green { background: #dcfce7; color: #15803d; }
@@ -223,9 +222,17 @@
 
             <!-- BIỂU ĐỒ KHỐI LƯỢNG CÔNG VIỆC -->
             <div class="chart-wrapper">
-                <h3 style="margin-top: 0; font-size: 1.15rem; color: var(--text-dark); margin-bottom: 20px; font-weight: 700;">
-                    <i class="fas fa-chart-bar" style="color: var(--text-muted);"></i> Thống kê Khối lượng công việc
-                </h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-dark); font-weight: 700;">
+                        <i class="fas fa-chart-bar" style="color: var(--text-muted);"></i> Khối lượng công việc
+                    </h3>
+                    <!-- Bộ lọc biểu đồ -->
+                    <select id="chart-status-filter" class="custom-select" style="max-width: 250px; font-size: 0.85rem; padding: 6px 10px; height: auto;" onchange="renderChart()">
+                        <option value="active" selected>Đang thực hiện (Chưa xong)</option>
+                        <option value="completed">Đã hoàn thành</option>
+                        <option value="all">Tất cả</option>
+                    </select>
+                </div>
                 <div class="chart-container">
                     <canvas id="workloadChart"></canvas>
                 </div>
@@ -331,6 +338,7 @@
         let currentAccount = null;
         let plans = [];
         let allAssignments = [];
+        let allTasks = [];
         let lecturers = [];
         let workloadChartInstance = null;
 
@@ -417,17 +425,26 @@
 
         async function loadPlans() {
             try {
-                // Tải song song cả tiến độ kế hoạch và danh sách phân công để vẽ biểu đồ
-                const [planRes, assignRes] = await Promise.all([
+                // Tải Kế hoạch, Phân công và toàn bộ Trạng thái công việc
+                const [planRes, assignRes, taskRes] = await Promise.all([
                     window.supabaseClient.from("tien-do-ke-hoach").select("*"),
-                    window.supabaseClient.from("nhan-su-cong-viec").select("ma-giang-vien")
+                    window.supabaseClient.from("nhan-su-cong-viec").select("cong-viec-id, ma-giang-vien"),
+                    window.supabaseClient.from("cong-viec").select("id, trang-thai")
                 ]);
 
                 if (planRes.error) throw planRes.error;
                 if (assignRes.error) throw assignRes.error;
+                if (taskRes.error) throw taskRes.error;
 
                 plans = planRes.data || [];
                 allAssignments = assignRes.data || [];
+                allTasks = taskRes.data || [];
+
+                // Gắn trạng thái công việc vào từng phân công để dễ lọc
+                allAssignments.forEach(a => {
+                    const task = allTasks.find(t => t.id === a["cong-viec-id"]);
+                    a["trang-thai"] = task ? task["trang-thai"] : "chua-thuc-hien";
+                });
 
                 updateDashboardCounts();
                 renderChart();
@@ -439,11 +456,14 @@
         }
 
         /* =========================================================
-           VẼ BIỂU ĐỒ CHART.JS - TỐI GIẢN MÀU SẮC & FULL HỌ TÊN
+           VẼ BIỂU ĐỒ CHART.JS KÈM LỌC TRẠNG THÁI
         ========================================================= */
         function renderChart() {
             const ctx = document.getElementById('workloadChart');
             if (!ctx) return;
+
+            const filterSelect = document.getElementById('chart-status-filter');
+            const filterVal = filterSelect ? filterSelect.value : 'active';
 
             const labels = [];
             const planData = [];
@@ -453,11 +473,26 @@
                 const maGV = gv["ma-giang-vien"];
                 const name = gv["ho-ten"] || maGV;
                 
-                const pCount = plans.filter(p => p["nguoi-phu-trach-ma-gv"] === maGV).length;
-                const tCount = allAssignments.filter(a => a["ma-giang-vien"] === maGV).length;
+                let pCount = 0;
+                let tCount = 0;
+
+                const gvPlans = plans.filter(p => p["nguoi-phu-trach-ma-gv"] === maGV);
+                const gvTasks = allAssignments.filter(a => a["ma-giang-vien"] === maGV);
+
+                if (filterVal === 'all') {
+                    pCount = gvPlans.length;
+                    tCount = gvTasks.length;
+                } else if (filterVal === 'completed') {
+                    pCount = gvPlans.filter(p => p["trang-thai"] === "hoan-thanh").length;
+                    tCount = gvTasks.filter(a => a["trang-thai"] === "hoan-thanh").length;
+                } else if (filterVal === 'active') {
+                    // Mặc định đang làm: Bao gồm Chưa làm, Đang làm, Chờ xác nhận, Tạm dừng... Miễn là KHÔNG phải hoàn thành
+                    pCount = gvPlans.filter(p => p["trang-thai"] !== "hoan-thanh").length;
+                    tCount = gvTasks.filter(a => a["trang-thai"] !== "hoan-thanh").length;
+                }
 
                 if (pCount > 0 || tCount > 0) {
-                    labels.push(name); // Dùng full tên
+                    labels.push(name); 
                     planData.push(pCount);
                     taskData.push(tCount);
                 }
@@ -482,7 +517,7 @@
                             borderRadius: 4
                         },
                         {
-                            label: 'Công việc được giao',
+                            label: 'Công việc tham gia',
                             data: taskData,
                             backgroundColor: '#94a3b8', // Gray Slate Color (Neutral)
                             borderRadius: 4
@@ -528,8 +563,8 @@
             document.getElementById('count-completed').textContent = plans.filter(p => p["trang-thai"] === "hoan-thanh").length;
         }
 
-        function getDeadlineWarning(dateStr, status) {
-            if (!dateStr || status === 'hoan-thanh' || status === 'tam-dung') return "";
+        function getDeadlineWarning(dateStr) {
+            if (!dateStr) return "";
             try {
                 const today = new Date();
                 today.setHours(0,0,0,0);
@@ -540,12 +575,9 @@
                 const diffTime = target - today;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-                if (diffDays < 0) return `<span class="status-badge badge-red"><i class="fas fa-exclamation-triangle"></i> Quá hạn ${Math.abs(diffDays)} ngày</span>`;
-                if (diffDays === 0) return `<span class="status-badge badge-red"><i class="fas fa-exclamation-circle"></i> Hết hạn hôm nay!</span>`;
-                if (diffDays <= 1) return `<span class="status-badge badge-red"><i class="fas fa-exclamation-circle"></i> Còn 1 ngày!</span>`;
-                if (diffDays <= 3) return `<span class="status-badge badge-yellow"><i class="fas fa-exclamation-circle"></i> Còn ${diffDays} ngày</span>`;
-                if (diffDays <= 7) return `<span class="status-badge badge-yellow"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
-                if (diffDays <= 10) return `<span class="status-badge badge-blue"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
+                if (diffDays < 0) return `<span class="status-badge badge-red"><i class="fas fa-exclamation-triangle"></i> Quá hạn</span>`;
+                if (diffDays === 0) return `<span class="status-badge badge-red"><i class="fas fa-exclamation-circle"></i> Hôm nay</span>`;
+                if (diffDays <= 3) return `<span class="status-badge badge-yellow"><i class="fas fa-exclamation-circle"></i> Sắp hạn</span>`;
             } catch (e) { return ""; }
             return "";
         }
@@ -612,7 +644,12 @@
         function renderPlanCard(plan) {
             const progress = Number(plan["tien-do"] || 0);
             const manager = findLecturer(plan["nguoi-phu-trach-ma-gv"]);
-            const warningBadge = getDeadlineWarning(plan["ngay-ket-thuc"], plan["trang-thai"]);
+            
+            // Xử lý warning riêng cho trang danh sách (chỉ hiện text nhỏ)
+            let warningText = "";
+            if (plan["trang-thai"] !== "hoan-thanh" && plan["trang-thai"] !== "tam-dung") {
+               warningText = getDeadlineWarning(plan["ngay-ket-thuc"]);
+            }
 
             return `
                 <div class="plan-card" id="plan-card-${plan.id}">
@@ -621,7 +658,7 @@
                             <h3 class="plan-title">${escapeHtml(plan.ten)}</h3>
                             <div class="plan-meta">
                                 <span><i class="far fa-calendar-alt"></i> Hạn: ${formatDate(plan["ngay-ket-thuc"])}</span>
-                                ${warningBadge}
+                                ${warningText}
                                 <span><i class="fas fa-user-tie"></i> Phụ trách: ${escapeHtml(manager?.["ho-ten"] || "Chưa phân công")}</span>
                             </div>
                         </div>
@@ -647,11 +684,6 @@
                             <button class="btn-custom btn-custom-small btn-custom-primary" onclick="window.location.href='chi-tiet-ke-hoach.html?id=${plan.id}'">
                                 <i class="fas fa-arrow-right"></i> Xem chi tiết
                             </button>
-                            ${isApprover() && plan["trang-thai-duyet"] === "cho-duyet" ? `
-                                <button class="btn-custom btn-custom-small btn-custom-success" onclick="approvePlan('${plan.id}')">
-                                    <i class="fas fa-check"></i> Duyệt
-                                </button>
-                            ` : ""}
                         </div>
                     </div>
                 </div>
@@ -749,21 +781,6 @@
             } catch (error) { showError(error.message); }
         }
 
-        /* =========================================================
-           DUYỆT
-        ========================================================= */
-        async function approvePlan(planId) {
-            if (!isApprover()) return;
-            try {
-                const { error } = await window.supabaseClient.from("ke-hoach").update({
-                    "trang-thai-duyet": "da-duyet",
-                    "duyet-boi-ma-gv": currentAccount["ma-giang-vien"],
-                    "duyet-luc": new Date().toISOString()
-                }).eq("id", planId);
-                if (error) throw error;
-                await loadPlans();
-            } catch (error) { showError(error.message); }
-        }
 
         /* =========================================================
            SỰ KIỆN FILTER BẢNG ĐIỀU KHIỂN & VÔ HIỆU HÓA CLICK NGOÀI MODAL
@@ -771,9 +788,8 @@
         function setupEvents() {
             document.getElementById("search-input").addEventListener("input", renderPlans);
             document.getElementById("manager-filter").addEventListener("change", renderPlans);
-
-            // Bỏ tính năng click ra vùng tối để tắt Modal (yêu cầu tắt bằng nút X)
-            // document.querySelectorAll(".custom-modal-backdrop").forEach(modal => { ... });
+            
+            // Xóa sự kiện tắt popup khi click ra ngoài
         }
 
         function openModal(id) { document.getElementById(id).classList.add("show"); }
@@ -807,7 +823,7 @@
                 "chua-bat-dau": ["Chưa bắt đầu", "gray", "fa-circle"],
                 "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
                 "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
-                "tam-dung": ["Đang kẹt", "red", "fa-exclamation-triangle"]
+                "tam-dung": ["Tạm dừng", "yellow", "fa-pause-circle"]
             };
             const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
             return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
