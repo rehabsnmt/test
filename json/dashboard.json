@@ -1,9 +1,9 @@
 [
   {
-    "title": "Quản lý Bộ môn",
+    "title": "Quản lý công việc",
     "description": "Theo dõi tiến độ thực hiện các kế hoạch, công việc.",
     "icon": "fas fa-chalkboard-teacher",
-    "link": "quan-ly-bo-mon.html"
+    "link": "quan-ly-cong-viec.html"
   },
   {
     "title": "Quản lý Sinh viên",
