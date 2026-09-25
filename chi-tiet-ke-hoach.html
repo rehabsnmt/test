@@ -168,6 +168,8 @@
         .badge-warning-medium { background: #f59e0b; color: white; border: none; }
         .badge-warning-low { background: #3b82f6; color: white; border: none; }
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
+        .badge-blue { background: #e0f2fe; color: #0284c7; }
+        .badge-green { background: #dcfce7; color: #15803d; }
 
         /* Modals */
         .custom-modal-backdrop {
@@ -689,6 +691,31 @@
         }
 
         /* =========================================================
+           HÀM TÍNH NGÀY CẢNH BÁO
+        ========================================================= */
+        function getDeadlineWarning(dateStr, status) {
+            if (!dateStr || status === 'hoan-thanh' || status === 'tam-dung') return "";
+            try {
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const target = new Date(dateStr);
+                if (isNaN(target)) return "";
+                target.setHours(0,0,0,0);
+                
+                const diffTime = target - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays < 0) return `<span class="status-badge badge-warning-critical"><i class="fas fa-exclamation-triangle"></i> Quá hạn ${Math.abs(diffDays)} ngày</span>`;
+                if (diffDays === 0) return `<span class="status-badge badge-warning-critical"><i class="fas fa-exclamation-circle"></i> Hết hạn hôm nay!</span>`;
+                if (diffDays <= 1) return `<span class="status-badge badge-warning-critical"><i class="fas fa-exclamation-circle"></i> Còn 1 ngày!</span>`;
+                if (diffDays <= 3) return `<span class="status-badge badge-warning-high"><i class="fas fa-exclamation-circle"></i> Còn ${diffDays} ngày</span>`;
+                if (diffDays <= 7) return `<span class="status-badge badge-warning-medium"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
+                if (diffDays <= 10) return `<span class="status-badge badge-warning-low"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
+            } catch (e) { return ""; }
+            return "";
+        }
+
+        /* =========================================================
            RENDER GIAO DIỆN CHÍNH
         ========================================================= */
 
@@ -756,6 +783,7 @@
             document.getElementById('plan-detail-container').innerHTML = html;
         }
 
+        // TÁCH HÀM RENDER RIÊNG ĐỂ FILTER TỨC THỜI
         function renderTasks() {
             // Cập nhật bộ đếm cá nhân cho giảng viên trước khi render danh sách
             updatePersonalCounter();
