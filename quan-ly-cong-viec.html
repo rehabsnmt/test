@@ -142,11 +142,11 @@
         .badge-warning-high { background: #ea580c; color: white; border: none; animation: pulse-high 1.5s infinite; font-weight: 700; letter-spacing: 0.3px;}
         .badge-warning-medium { background: #f59e0b; color: white; border: none; }
         .badge-warning-low { background: #3b82f6; color: white; border: none; }
-
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
         .badge-blue { background: #e0f2fe; color: #0284c7; }
         .badge-green { background: #dcfce7; color: #15803d; }
 
+        /* Modals */
         .custom-modal-backdrop {
             position: fixed; inset: 0; background: rgba(15, 23, 42, .6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
             display: none; align-items: center; justify-content: center; padding: 20px; z-index: 2000;
@@ -180,7 +180,7 @@
             .plan-meta { flex-direction: column; align-items: flex-start; gap: 5px; }
             .plan-progress { width: 75px; }
             
-            .plan-bottom { flex-direction: row; justify-content: flex-end; }
+            .plan-bottom { flex-direction: row; justify-content: space-between; align-items: center; }
             .plan-actions .btn-custom { padding: 6px 12px; font-size: 0.8rem; white-space: nowrap; }
             
             .form-grid { grid-template-columns: 1fr; }
@@ -223,7 +223,7 @@
 
             <div id="error-box" class="error-msg"></div>
 
-            <!-- DASHBOARD TRỰC QUAN - CHỈ HIỆN VỚI SUPERADMIN/HEAD -->
+            <!-- DASHBOARD TRỰC QUAN -->
             <div class="interactive-dashboard" id="main-dashboard" style="display: none;">
                 <div class="dashboard-card active" data-filter="dang-thuc-hien" onclick="setDashboardFilter('dang-thuc-hien')">
                     <div class="db-icon"><i class="fas fa-play-circle"></i></div>
@@ -248,9 +248,8 @@
                 </div>
             </div>
 
-            <!-- BIỂU ĐỒ - CHỈ HIỆN VỚI SUPERADMIN/HEAD -->
+            <!-- BIỂU ĐỒ -->
             <div class="charts-grid" id="main-charts" style="display: none;">
-                <!-- Biểu đồ Khối lượng công việc -->
                 <div class="chart-wrapper" style="margin-bottom: 0;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                         <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-dark); font-weight: 700;">
@@ -268,7 +267,6 @@
                     </div>
                 </div>
                 
-                <!-- Biểu đồ Tốc độ hoàn thành -->
                 <div class="chart-wrapper" style="margin-bottom: 0;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                         <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-dark); font-weight: 700;">
@@ -281,7 +279,6 @@
                 </div>
             </div>
 
-            <!-- THANH TÌM KIẾM VÀ LỌC -->
             <div class="search-bar-container">
                 <div class="search-bar-wrapper">
                     <i class="fas fa-search"></i>
@@ -292,7 +289,6 @@
                 </select>
             </div>
 
-            <!-- VÙNG HIỂN THỊ DANH SÁCH -->
             <div id="plan-list-container">
                 <div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>
             </div>
@@ -302,7 +298,7 @@
 
     <div id="footer-placeholder"></div>
 
-    <!-- MODAL TẠO / SỬA KẾ HOẠCH -->
+    <!-- MODALS -->
     <div id="plan-modal" class="custom-modal-backdrop">
         <div class="custom-modal">
             <div class="modal-header">
@@ -338,7 +334,6 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <!-- Khu vực chức năng xóa -->
                     <div id="plan-modal-extra-actions" style="display: none; gap: 8px; flex: 1;">
                         <button type="button" class="btn-custom btn-custom-danger" id="btnDeletePlanModal" onclick="handleDeleteFromModal()">
                             <i class="fas fa-trash-alt"></i> Xóa
@@ -353,7 +348,6 @@
         </div>
     </div>
 
-    <!-- MODAL XÓA KẾ HOẠCH BẰNG MÃ XÁC NHẬN -->
     <div id="delete-plan-modal" class="custom-modal-backdrop">
         <div class="custom-modal" style="max-width: 450px;">
             <div class="modal-header">
@@ -392,7 +386,6 @@
         let planToDeleteId = null;
         let deleteRandomCode = "";
 
-        // Bộ lọc mặc định khi tải trang là "Đang thực hiện"
         let activeFilter = 'dang-thuc-hien'; 
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -454,7 +447,6 @@
                 if (subtitle) subtitle.innerText = "Quản lý kế hoạch và công việc cá nhân.";
             }
             
-            // Xử lý hiển thị Dashboard chỉ cho Superadmin và Head
             const dash = document.getElementById("main-dashboard");
             const chartsGrid = document.getElementById("main-charts");
             
@@ -491,9 +483,8 @@
 
         async function loadPlans() {
             try {
-                // Tải Kế hoạch, Phân công, Công việc và Minh chứng
                 const [planRes, assignRes, taskRes, evRes] = await Promise.all([
-                    window.supabaseClient.from("tien-do-ke-hoach").select("*"),
+                    window.supabaseClient.from("ke-hoach").select("*"), // SCHEMA MỚI
                     window.supabaseClient.from("nhan-su-cong-viec").select("cong-viec-id, ma-giang-vien"),
                     window.supabaseClient.from("cong-viec").select("id, trang-thai, ke-hoach-id, han-hoan-thanh"),
                     window.supabaseClient.from("cong-viec-minh-chung").select("cong-viec-id, ma-giang-vien")
@@ -512,18 +503,23 @@
                 // LỌC KẾ HOẠCH DÀNH CHO ADMIN VÀ GIẢNG VIÊN THÔNG THƯỜNG
                 if (!isApprover()) {
                     const myMaGV = currentAccount["ma-giang-vien"];
-                    // Lấy các task mình được phân công
                     const myTaskIds = allAssignments.filter(a => a["ma-giang-vien"] === myMaGV).map(a => a["cong-viec-id"]);
-                    // Lấy các kế hoạch chứa các task đó
                     const myPlanIds = allTasksData.filter(t => myTaskIds.includes(t.id)).map(t => t["ke-hoach-id"]);
                     
-                    // Lọc kế hoạch: mình tạo, mình phụ trách, hoặc có chứa task của mình
                     allPlans = allPlans.filter(p => 
                         p["created-by-ma-gv"] === myMaGV || 
                         p["nguoi-phu-trach-ma-gv"] === myMaGV || 
                         myPlanIds.includes(p.id)
                     );
                 }
+
+                // TÍNH TOÁN TIẾN ĐỘ VÀ TRẠNG THÁI
+                allPlans.forEach(p => {
+                    const pTasks = allTasksData.filter(t => t["ke-hoach-id"] === p.id);
+                    const tTotal = pTasks.length;
+                    const tComp = pTasks.filter(t => t["trang-thai"] === "hoan-thanh").length;
+                    p["tien-do"] = tTotal > 0 ? (tComp / tTotal) * 100 : 0;
+                });
 
                 plans = allPlans;
 
@@ -547,9 +543,6 @@
             }
         }
 
-        /* =========================================================
-           VẼ BIỂU ĐỒ 1: KHỐI LƯỢNG CÔNG VIỆC
-        ========================================================= */
         function renderChart() {
             const ctx = document.getElementById('workloadChart');
             if (!ctx) return;
@@ -618,13 +611,13 @@
                         {
                             label: 'Kế hoạch phụ trách',
                             data: planData,
-                            backgroundColor: '#0284c7', // Primary Color
+                            backgroundColor: '#0284c7', 
                             borderRadius: 4
                         },
                         {
                             label: 'Công việc tham gia',
                             data: taskData,
-                            backgroundColor: '#94a3b8', // Gray Slate Color (Neutral)
+                            backgroundColor: '#94a3b8', 
                             borderRadius: 4
                         }
                     ]
@@ -633,33 +626,17 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { 
-                            stacked: true, // Gộp thành 1 cột
-                            grid: { display: false } 
-                        },
-                        y: { 
-                            stacked: true, // Gộp thành 1 cột
-                            beginAtZero: true, 
-                            ticks: { stepSize: 1 } 
-                        }
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } }
                     },
                     plugins: {
-                        legend: { 
-                            position: 'top',
-                            labels: { usePointStyle: true, boxWidth: 8 }
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false
-                        }
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
+                        tooltip: { mode: 'index', intersect: false }
                     }
                 }
             });
         }
 
-        /* =========================================================
-           VẼ BIỂU ĐỒ 2: TỐC ĐỘ HOÀN THÀNH (% THEO THÁNG)
-        ========================================================= */
         function renderTrendChart() {
             const ctx = document.getElementById('completionTrendChart');
             if (!ctx) return;
@@ -667,14 +644,12 @@
             const labels = [];
             const dataRates = [];
 
-            // Lấy 6 tháng gần nhất (Bao gồm tháng hiện tại)
             const today = new Date();
             for (let i = 5; i >= 0; i--) {
                 const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
                 const monthStr = `${d.getMonth() + 1}/${d.getFullYear()}`;
                 labels.push(monthStr);
 
-                // Lọc các công việc có hạn chót nằm trong tháng này
                 const monthTasks = allTasksData.filter(t => {
                     if (!t["han-hoan-thanh"]) return false;
                     const td = new Date(t["han-hoan-thanh"]);
@@ -701,7 +676,7 @@
                     datasets: [{
                         label: '% Tỷ lệ Hoàn thành',
                         data: dataRates,
-                        borderColor: '#10b981', // Màu xanh Success
+                        borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.15)',
                         fill: true,
                         tension: 0.3,
@@ -716,21 +691,15 @@
                         y: {
                             beginAtZero: true,
                             max: 100,
-                            ticks: {
-                                callback: function(value) { return value + '%' }
-                            }
+                            ticks: { callback: function(value) { return value + '%' } }
                         },
-                        x: {
-                            grid: { display: false }
-                        }
+                        x: { grid: { display: false } }
                     },
                     plugins: {
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
-                                    return context.parsed.y + '%';
-                                }
+                                label: function(context) { return context.parsed.y + '%'; }
                             }
                         }
                     }
@@ -821,7 +790,6 @@
                 return;
             }
 
-            // Sắp xếp kế hoạch theo ngày kết thúc (tăng dần - gần nhất lên đầu)
             filtered.sort((a, b) => {
                 if (!a["ngay-ket-thuc"]) return 1;
                 if (!b["ngay-ket-thuc"]) return -1;
@@ -840,7 +808,6 @@
 
             let htmlStr = "";
             
-            // Render phân loại cho admin/gv (những người không có tab filter)
             if (!isApprover()) {
                 const normalActivePlans = activePlans.filter(p => !overduePlans.includes(p));
 
@@ -857,7 +824,6 @@
                     htmlStr += `<div class="plan-list">` + completedPlans.map(renderPlanCard).join("") + `</div>`;
                 }
             } else {
-                // Hiển thị theo Tab đối với người có quyền duyệt
                 if (activeFilter === 'tre-han' && filtered.length > 0) {
                     htmlStr += `<h3 class="status-section-title pending" style="color: #dc2626; border-color: #fca5a5;"><i class="fas fa-exclamation-triangle"></i> Danh sách trễ hạn (${filtered.length})</h3>`;
                     htmlStr += `<div class="plan-list">` + filtered.map(renderPlanCard).join("") + `</div>`;
@@ -880,7 +846,6 @@
             const manager = findLecturer(plan["nguoi-phu-trach-ma-gv"]);
             const warningBadge = getDeadlineWarning(plan["ngay-ket-thuc"], plan["trang-thai"]);
 
-            // Tính toán thẻ Tiến độ cá nhân
             let personalCounterHtml = "";
             if (currentAccount) {
                 const myMaGV = currentAccount["ma-giang-vien"];
@@ -970,7 +935,6 @@
                 } else {
                     payload["created-by-ma-gv"] = currentAccount["ma-giang-vien"];
                     payload["trang-thai"] = "dang-thuc-hien"; 
-                    payload["trang-thai-duyet"] = currentAccount.role === "admin" ? "cho-duyet" : "da-duyet";
                     const { error } = await window.supabaseClient.from("ke-hoach").insert(payload);
                     if (error) throw error;
                 }
@@ -1027,10 +991,6 @@
             } catch (error) { showError(error.message); }
         }
 
-
-        /* =========================================================
-           SỰ KIỆN FILTER BẢNG ĐIỀU KHIỂN & VÔ HIỆU HÓA CLICK NGOÀI MODAL
-        ========================================================= */
         function setupEvents() {
             document.getElementById("search-input").addEventListener("input", renderPlans);
             document.getElementById("manager-filter").addEventListener("change", renderPlans);
@@ -1039,9 +999,6 @@
         function openModal(id) { document.getElementById(id).classList.add("show"); }
         function closeModal(id) { document.getElementById(id).classList.remove("show"); }
 
-        /* =========================================================
-           HÀM RENDER BADGES FORMAT VÀ HIỂN THỊ
-        ========================================================= */
         function findLecturer(maGV) {
             if (!maGV) return null;
             return lecturers.find(gv => gv["ma-giang-vien"] === maGV);
