@@ -142,11 +142,11 @@
         .badge-warning-high { background: #ea580c; color: white; border: none; animation: pulse-high 1.5s infinite; font-weight: 700; letter-spacing: 0.3px;}
         .badge-warning-medium { background: #f59e0b; color: white; border: none; }
         .badge-warning-low { background: #3b82f6; color: white; border: none; }
+
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
         .badge-blue { background: #e0f2fe; color: #0284c7; }
         .badge-green { background: #dcfce7; color: #15803d; }
 
-        /* Modals */
         .custom-modal-backdrop {
             position: fixed; inset: 0; background: rgba(15, 23, 42, .6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
             display: none; align-items: center; justify-content: center; padding: 20px; z-index: 2000;
@@ -483,8 +483,9 @@
 
         async function loadPlans() {
             try {
+                // Lấy từ VIEW để có cột tien-do
                 const [planRes, assignRes, taskRes, evRes] = await Promise.all([
-                    window.supabaseClient.from("ke-hoach").select("*"), // SCHEMA MỚI
+                    window.supabaseClient.from("tien-do-ke-hoach").select("*"),
                     window.supabaseClient.from("nhan-su-cong-viec").select("cong-viec-id, ma-giang-vien"),
                     window.supabaseClient.from("cong-viec").select("id, trang-thai, ke-hoach-id, han-hoan-thanh"),
                     window.supabaseClient.from("cong-viec-minh-chung").select("cong-viec-id, ma-giang-vien")
@@ -512,14 +513,6 @@
                         myPlanIds.includes(p.id)
                     );
                 }
-
-                // TÍNH TOÁN TIẾN ĐỘ VÀ TRẠNG THÁI
-                allPlans.forEach(p => {
-                    const pTasks = allTasksData.filter(t => t["ke-hoach-id"] === p.id);
-                    const tTotal = pTasks.length;
-                    const tComp = pTasks.filter(t => t["trang-thai"] === "hoan-thanh").length;
-                    p["tien-do"] = tTotal > 0 ? (tComp / tTotal) * 100 : 0;
-                });
 
                 plans = allPlans;
 
