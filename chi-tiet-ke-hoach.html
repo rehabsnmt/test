@@ -95,17 +95,20 @@
         .progress-track { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--primary); border-radius: 99px; transition: width 0.4s ease; }
 
-        /* Tiêu đề khu vực công việc ép trên 1 dòng ngang */
-        .section-header { 
+        /* Tiêu đề khu vực công việc */
+        .task-section-header { 
             display: flex; justify-content: space-between; align-items: center; 
             margin-top: 30px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--primary-light);
-            flex-wrap: nowrap; gap: 10px;
+            flex-wrap: wrap; gap: 10px;
         }
+        .task-header-title { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
         .section-title { 
             margin: 0; font-size: 20px; color: var(--text-dark); font-weight: 700; text-align: left; 
-            flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
         }
-        .section-header .btn-custom { flex-shrink: 0; white-space: nowrap; }
+        .task-filter-container { display: flex; gap: 10px; align-items: center; }
+        .task-filter-container .custom-select { width: auto; padding: 6px 12px; font-size: 0.85rem; height: 36px; }
+        .task-filter-container .btn-custom { height: 36px; }
 
         /* Danh sách Công việc */
         .task-list { display: grid; gap: 14px; }
@@ -214,14 +217,19 @@
             .plan-overview-card { padding: 16px; }
             .plan-meta-grid { grid-template-columns: 1fr; gap: 12px; border-bottom: none; padding-bottom: 0;}
             .plan-progress-container { max-width: 100%; margin-top: 15px; border-top: 1px solid var(--border-light); padding-top: 15px;}
-            /* Giữ menu 3 chấm trên cùng dòng */
+            
+            /* Dàn đều các nút filter & add task trên Mobile */
+            .task-section-header { flex-direction: column; align-items: stretch; gap: 12px; border-bottom: none; padding-bottom: 0; }
+            .task-header-title { justify-content: space-between; border-bottom: 2px solid var(--primary-light); padding-bottom: 10px; width: 100%;}
+            .task-filter-container { width: 100%; display: flex; }
+            .task-filter-container .custom-select { flex: 1; width: 100%; min-width: 0; }
+            .task-filter-container .btn-custom { flex: 1; width: 100%; justify-content: center; }
+
             .task-top { flex-direction: row; flex-wrap: nowrap; } 
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full { grid-column: auto; }
             .modal-footer { flex-direction: column-reverse; gap: 10px; align-items: stretch; }
             .modal-footer > div { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-            .section-title { font-size: 1.15rem; flex: none; }
-            .section-header .btn-custom { font-size: 0.8rem; padding: 6px 10px; }
         }
     </style>
 </head>
@@ -240,13 +248,13 @@
             </div>
 
             <!-- VÙNG HIỂN THỊ DANH SÁCH CÔNG VIỆC CÓ KÈM BỘ LỌC -->
-            <div class="section-header" style="flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="task-section-header">
+                <div class="task-header-title">
                     <h2 class="section-title">Công việc</h2>
                     <div id="personal-counter" class="status-badge badge-blue" style="display: none; font-size: 0.8rem; padding: 4px 10px;"></div>
                 </div>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                    <select id="task-filter" class="custom-select" style="width: auto; padding: 6px 12px; font-size: 0.85rem; height: auto;" onchange="renderTasks()">
+                <div class="task-filter-container">
+                    <select id="task-filter" class="custom-select" onchange="renderTasks()">
                         <option value="all">Tất cả công việc</option>
                         <option value="active" selected>Đang thực hiện</option>
                         <option value="completed">Hoàn thành</option>
@@ -643,7 +651,7 @@
             const counterEl = document.getElementById("personal-counter");
             if (counterEl) {
                 if (totalAssigned > 0) {
-                    counterEl.innerHTML = `<i class="fas fa-clipboard-list"></i> Cá nhân: ${completedAssigned}/${totalAssigned}`;
+                    counterEl.innerHTML = `<i class="fas fa-clipboard-list"></i> Cá nhân đã hoàn thành: ${completedAssigned}/${totalAssigned}`;
                     counterEl.style.display = "inline-flex";
                     if (completedAssigned === totalAssigned) {
                         counterEl.className = "status-badge badge-green";
