@@ -39,11 +39,12 @@
             padding: 0 20px;
         }
         .banner-image-wrapper img {
+            width: 100%;
             max-width: 100%;
-            height: auto;
+            aspect-ratio: 21 / 9; /* Ép tỷ lệ ảnh 21:9 */
+            object-fit: cover; /* Cắt cúp vừa khung không bị méo */
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-            object-fit: cover;
             display: block;
             margin: 0 auto;
         }
@@ -71,7 +72,7 @@
             <p>Trường Điều dưỡng - Kỹ thuật Y học<span class="desktop-comma">, </span><br class="mobile-break">Đại học Y Dược Thành phố Hồ Chí Minh</p>
         </div>
 
-        <!-- ẢNH BANNER TRANG CHỦ -->
+        <!-- ẢNH BANNER TRANG CHỦ TỶ LỆ 21:9 -->
         <div class="banner-image-wrapper">
             <img src="images/index.jpg" alt="Tập thể Bộ môn Phục hồi chức năng">
         </div>
