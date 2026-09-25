@@ -116,7 +116,27 @@
         .task-description { color: var(--text-muted); font-size: 14px; white-space: pre-line; margin: 0 0 12px; line-height: 1.5; word-break: break-word;}
         .task-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px;}
 
-        .staff-list { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px; background: var(--bg-page); border-radius: 8px; margin-bottom: 15px;}
+        /* Bố cục Thanh hành động bên dưới (Fix Mobile) */
+        .task-bottom-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-light);
+            padding-top: 12px;
+            gap: 8px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox */
+        }
+        .task-bottom-bar::-webkit-scrollbar { display: none; /* Safari/Chrome */ }
+        .task-action-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: nowrap;
+            align-items: center;
+        }
+        .task-action-group .btn-custom { white-space: nowrap; flex-shrink: 0; }
+
         .staff-chip { 
             display: inline-flex; align-items: center; gap: 6px; 
             background: white; border: 1px solid var(--border); 
@@ -200,7 +220,7 @@
             .plan-meta-grid { grid-template-columns: 1fr; gap: 12px; border-bottom: none; padding-bottom: 0;}
             .plan-progress-container { max-width: 100%; margin-top: 15px; border-top: 1px solid var(--border-light); padding-top: 15px;}
             /* Giữ menu 3 chấm trên cùng dòng */
-            .task-top { flex-direction: row; }
+            .task-top { flex-direction: row; flex-wrap: nowrap; } 
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full { grid-column: auto; }
             .modal-footer { flex-direction: column-reverse; gap: 10px; align-items: stretch; }
@@ -419,7 +439,7 @@
                 </div>
                 <div class="modal-footer" style="justify-content: flex-end;">
                     <button type="button" class="btn-custom" onclick="closeModal('delete-confirm-modal')">Hủy</button>
-                    <button type="submit" class="btn-custom btn-custom-danger" id="btnGenericConfirmDelete"><i class="fas fa-trash-alt"></i> Xóa Vĩnh Viễn</button>
+                    <button type="submit" class="btn-custom btn-custom-danger" id="btnGenericConfirmDelete"><i class="fas fa-trash-alt"></i> Xác Nhận Xóa</button>
                 </div>
             </form>
         </div>
@@ -438,7 +458,7 @@
         
         let currentManageTaskId = null;
         let currentTempStaff = [];
-        let originalStaffList = []; // Lưu lại trạng thái ban đầu để so sánh (Delta Update)
+        let originalStaffList = [];
 
         // Trạng thái cho Xóa
         let pendingDeleteAction = null;
@@ -589,6 +609,18 @@
         }
 
         /* =========================================================
+           HÀM BẬT TẮT KHUNG DANH SÁCH NHÂN SỰ
+        ========================================================= */
+        function toggleStaffList(taskId) {
+            const el = document.getElementById(`task-staff-${taskId}`);
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+
+        /* =========================================================
            HÀM XỬ LÝ MENU 3 CHẤM VÀ CÁC TIỆN ÍCH
         ========================================================= */
         function toggleDropdown(id, event) {
@@ -715,9 +747,12 @@
             let processButtonsLeft = "";
             let processButtonsRight = "";
 
-            // Luôn hiện nút xem nếu có minh chứng
+            // Nút Mở rộng xem Nhân sự
+            processButtonsLeft += `<button class="btn-custom btn-custom-small" onclick="toggleStaffList('${task.id}')"><i class="fas fa-users"></i> Nhân sự (${staff.length})</button>`;
+
+            // Nút xem minh chứng
             if (taskEvidences.length > 0) {
-                processButtonsLeft += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
+                processButtonsLeft += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Minh chứng</button>`;
             }
             
             // Xử lý quyền Hoàn thành / Sửa minh chứng cho bản thân
@@ -731,7 +766,7 @@
             if (canComplete) {
                 const myEvidence = taskEvidences.find(e => e["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
                 if (myEvidence) {
-                    processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-warning" onclick="openSubmitEvidenceModal('${task.id}', '${myEvidence.id}')"><i class="fas fa-edit"></i> Sửa minh chứng</button>`;
+                    processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-warning" onclick="openSubmitEvidenceModal('${task.id}', '${myEvidence.id}')"><i class="fas fa-edit"></i> Sửa MC</button>`;
                 } else {
                     processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
                 }
@@ -739,7 +774,7 @@
 
             return `
                 <div class="task-card">
-                    <div class="task-top">
+                    <div class="task-top" style="flex-wrap: nowrap;">
                         <div style="flex:1; padding-right: 15px; min-width: 0;">
                             <div class="task-title">${escapeHtml(task["tieu-de"])}</div>
                             ${task["mo-ta"] ? `<div class="task-description">${linkify(escapeHtml(task["mo-ta"]))}</div>` : ""}
@@ -767,24 +802,31 @@
                         ` : ""}
                     </div>
 
-                    ${staff.length ? `
-                        <div class="staff-list">
-                            ${staff.map(s => renderStaffChip(s, task["trang-thai"], taskEvidences)).join("")}
-                        </div>
-                    ` : `
-                        <div style="margin-bottom: 15px;"><span class="status-badge badge-gray"><i class="fas fa-exclamation-circle"></i> Chưa phân công</span></div>
-                    `}
-
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-light); padding-top: 12px; gap: 8px; flex-wrap: wrap;">
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <!-- DANH SÁCH NHÂN SỰ ẨN (BẤM ĐỂ MỞ) -->
+                    <div id="task-staff-${task.id}" style="display: none; background: var(--bg-page); border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-light);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Danh sách nhân sự:</span>
                             ${isAdmin() || canEditPlan(currentPlanData) ? `
-                                <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}')">
-                                    <i class="fas fa-user-plus"></i> Phân công
+                                <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}')" style="background: white; border-color: var(--border);">
+                                    <i class="fas fa-user-edit"></i> Phân công
                                 </button>
                             ` : ""}
+                        </div>
+                        ${staff.length ? `
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                ${staff.map(s => renderStaffChip(s, task["trang-thai"], taskEvidences)).join("")}
+                            </div>
+                        ` : `
+                            <div style="font-size: 0.85rem; color: var(--text-muted); font-style: italic;">Chưa có nhân sự nào được phân công.</div>
+                        `}
+                    </div>
+
+                    <!-- THANH CÔNG CỤ DƯỚI CÙNG -->
+                    <div class="task-bottom-bar">
+                        <div class="task-action-group">
                             ${processButtonsLeft}
                         </div>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto;">
+                        <div class="task-action-group" style="margin-left: auto;">
                             ${processButtonsRight}
                         </div>
                     </div>
@@ -829,7 +871,7 @@
         }
 
         /* =========================================================
-           HÀM XÁC NHẬN XÓA (YÊU CẦU 4 SỐ NGẪU NHIÊN)
+           HÀM XÁC NHẬN XÓA CHUNG (YÊU CẦU 4 SỐ NGẪU NHIÊN)
         ========================================================= */
         function openDeleteConfirm(message, actionCallback) {
             genericDeleteCode = Math.floor(1000 + Math.random() * 9000).toString();
@@ -908,19 +950,6 @@
                 document.getElementById("btnSavePlan").innerHTML = '<i class="fas fa-save"></i> Lưu kế hoạch';
             }
         });
-
-        async function approvePlan(planId) {
-            if (!isApprover()) return;
-            try {
-                const { error } = await window.supabaseClient.from("ke-hoach").update({
-                    "trang-thai-duyet": "da-duyet",
-                    "duyet-boi-ma-gv": currentAccount["ma-giang-vien"],
-                    "duyet-luc": new Date().toISOString()
-                }).eq("id", planId);
-                if (error) throw error;
-                await syncPlanProgress(); 
-            } catch (error) { showError(error.message); }
-        }
 
         /* =========================================================
            CÁC HÀM XỬ LÝ TASK
