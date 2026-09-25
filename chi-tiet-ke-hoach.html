@@ -167,14 +167,7 @@
         .badge-warning-high { background: #ea580c; color: white; border: none; animation: pulse-high 1.5s infinite; font-weight: 700; letter-spacing: 0.3px;}
         .badge-warning-medium { background: #f59e0b; color: white; border: none; }
         .badge-warning-low { background: #3b82f6; color: white; border: none; }
-
-        /* Đồng bộ màu các badge cơ bản */
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
-        .badge-blue { background: #e0f2fe; color: #0284c7; }
-        .badge-green { background: #dcfce7; color: #15803d; }
-        .badge-yellow { background: #fef3c7; color: #b45309; }
-        .badge-red { background: #fee2e2; color: #b91c1c; }
-        .badge-orange { background: #ffedd5; color: #c2410c; }
 
         /* Modals */
         .custom-modal-backdrop {
@@ -244,12 +237,20 @@
                 <div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu kế hoạch...</div>
             </div>
 
-            <!-- VÙNG HIỂN THỊ DANH SÁCH CÔNG VIỆC -->
-            <div class="section-header">
+            <!-- VÙNG HIỂN THỊ DANH SÁCH CÔNG VIỆC CÓ KÈM BỘ LỌC -->
+            <div class="section-header" style="flex-wrap: wrap;">
                 <h2 class="section-title">Công việc</h2>
-                <button id="btn-create-task" class="btn-custom btn-custom-primary" style="display: none;" onclick="openCreateTask()">
-                    <i class="fas fa-plus"></i> Thêm công việc
-                </button>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    <select id="task-filter" class="custom-select" style="width: auto; padding: 6px 12px; font-size: 0.85rem; height: auto;" onchange="renderTasks()">
+                        <option value="all">Tất cả công việc</option>
+                        <option value="active" selected>Đang thực hiện</option>
+                        <option value="overdue">Trễ hạn</option>
+                        <option value="completed">Hoàn thành</option>
+                    </select>
+                    <button id="btn-create-task" class="btn-custom btn-custom-primary" style="display: none;" onclick="openCreateTask()">
+                        <i class="fas fa-plus"></i> Thêm công việc
+                    </button>
+                </div>
             </div>
 
             <div id="task-list-container">
@@ -456,6 +457,11 @@
         let currentPlanId = null;
         let currentPlanData = null;
         
+        // Lưu trữ danh sách cho việc render tức thời
+        let currentTasks = [];
+        let currentAssignments = [];
+        let currentEvidences = [];
+        
         let currentManageTaskId = null;
         let currentTempStaff = [];
         let originalStaffList = [];
@@ -543,7 +549,6 @@
                 if (error) throw error;
                 lecturers = data || [];
                 
-                // Đổ danh sách vào Modal Sửa kế hoạch
                 const planManagerSelect = document.getElementById("plan-manager");
                 if (planManagerSelect) {
                     planManagerSelect.innerHTML = `<option value="">-- Chọn người phụ trách --</option>`;
@@ -584,27 +589,27 @@
                     if (!assignmentError && data) assignments = data;
                 }
 
-                // Cập nhật lại UI dựa trên quyền
+                // Cập nhật lại biến Global để re-render linh hoạt
+                currentTasks = tasks || [];
+                currentAssignments = assignments || [];
+                currentEvidences = evidences || [];
+
                 applyRoleUI();
 
-                // Sắp xếp Task
-                (tasks || []).sort((a, b) => {
+                // Sắp xếp Task mới nhất/gần hạn lên đầu
+                currentTasks.sort((a, b) => {
                     if (!a["han-hoan-thanh"]) return 1;
                     if (!b["han-hoan-thanh"]) return -1;
                     return new Date(a["han-hoan-thanh"]) - new Date(b["han-hoan-thanh"]);
                 });
 
                 renderPlanOverview();
-                renderTasksInPlan(tasks || [], assignments, evidences);
+                renderTasks();
             } catch (error) {
                 document.getElementById('plan-detail-container').innerHTML = `<div class="empty text-danger" style="padding: 60px 20px;"><i class="fas fa-lock" style="font-size: 2rem; margin-bottom: 15px; display: block; color: #ef4444;"></i> ${escapeHtml(error.message)}</div>`;
                 document.getElementById('task-list-container').innerHTML = ``;
-                
                 const sectionHeader = document.querySelector('.section-header');
                 if (sectionHeader) sectionHeader.style.display = 'none';
-                
-                const btnTask = document.getElementById("btn-create-task");
-                if (btnTask) btnTask.style.display = 'none';
             }
         }
 
@@ -635,7 +640,6 @@
             }
         }
 
-        // Tự động nhận diện URL thành thẻ a
         function linkify(text) {
             if (!text) return "";
             const urlRegex = /(https?:\/\/[^\s"'<>]+)/g;
@@ -692,18 +696,9 @@
                                 ${warningBadge}
                             </span>
                         </div>
-
                         <div class="meta-item">
                             <span class="meta-label">Người phụ trách</span>
                             <span class="meta-value"><i class="fas fa-user-tie" style="color:var(--text-muted);"></i> ${escapeHtml(manager?.["ho-ten"] || "Chưa phân công")}</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">Trạng thái</span>
-                            <span class="meta-value">${statusBadge(plan["trang-thai"])}</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">Phê duyệt</span>
-                            <span class="meta-value">${approvalBadge(plan["trang-thai-duyet"])}</span>
                         </div>
                         <div class="meta-item">
                             <span class="meta-label">Người tạo</span>
@@ -722,16 +717,37 @@
             document.getElementById('plan-detail-container').innerHTML = html;
         }
 
-        function renderTasksInPlan(tasks, assignments, evidences) {
+        // TÁCH HÀM RENDER RIÊNG ĐỂ FILTER TỨC THỜI
+        function renderTasks() {
             const container = document.getElementById("task-list-container");
-            
-            if (!tasks || tasks.length === 0) {
-                container.innerHTML = `<div class="empty">Chưa có công việc nào được tạo trong kế hoạch này.</div>`;
+            const filterVal = document.getElementById("task-filter") ? document.getElementById("task-filter").value : 'all';
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            let filteredTasks = currentTasks.filter(task => {
+                if (filterVal === 'all') return true;
+                
+                const isCompleted = task["trang-thai"] === "hoan-thanh";
+                let isOverdue = false;
+                if (!isCompleted && task["han-hoan-thanh"]) {
+                    const deadline = new Date(task["han-hoan-thanh"]);
+                    deadline.setHours(0,0,0,0);
+                    if (deadline < today) isOverdue = true;
+                }
+
+                if (filterVal === 'active') return !isCompleted && !isOverdue;
+                if (filterVal === 'overdue') return isOverdue;
+                if (filterVal === 'completed') return isCompleted;
+                return true;
+            });
+
+            if (!filteredTasks || filteredTasks.length === 0) {
+                container.innerHTML = `<div class="empty">Không có công việc nào phù hợp.</div>`;
                 return;
             }
 
             let html = `<div class="task-list">`;
-            html += tasks.map(task => renderTaskCard(task, assignments, evidences)).join("");
+            html += filteredTasks.map(task => renderTaskCard(task, currentAssignments, currentEvidences)).join("");
             html += `</div>`;
             container.innerHTML = html;
         }
@@ -752,12 +768,10 @@
                 processButtonsLeft += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
             }
             
-            // Xử lý quyền Hoàn thành cho bản thân
+            // Xử lý quyền Hoàn thành (Chỉ dành cho người có trong danh sách phân công)
             let canComplete = false;
-            if (staff.length > 0) {
-                if (isAssigned) canComplete = true;
-            } else {
-                if (canEdit || isApprover()) canComplete = true;
+            if (staff.length > 0 && isAssigned) {
+                canComplete = true;
             }
 
             if (canComplete) {
@@ -765,6 +779,7 @@
                 if (!myEvidence) {
                     processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
                 }
+                // (Nút Sửa MC sẽ nằm trong Modal Xem minh chứng)
             }
 
             return `
@@ -790,7 +805,6 @@
                     </div>
 
                     <div class="task-meta">
-                        ${taskStatusBadge(task["trang-thai"])}
                         ${task["han-hoan-thanh"] ? `
                             <span class="status-badge badge-gray"><i class="far fa-clock"></i> Hạn: ${formatDate(task["han-hoan-thanh"])}</span>
                             ${warningBadge}
@@ -1034,12 +1048,8 @@
                     if (allSubmitted) {
                         newStatus = "hoan-thanh";
                     }
-                } else {
-                    // Nếu công việc không phân công cho ai, nhưng lại có minh chứng được nộp (bởi admin/creator)
-                    if (evs && evs.length > 0) {
-                        newStatus = "hoan-thanh";
-                    }
-                }
+                } 
+                // Nếu không ai phân công -> giữ nguyên dang-thuc-hien (vì không ai có thể nộp MC để kích hoạt)
                 
                 // Cập nhật lại db
                 await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
@@ -1111,7 +1121,8 @@
                 await syncTaskStatus(taskId);
 
                 closeModal("submit-evidence-modal");
-                await syncPlanProgress(); 
+                // Sử dụng hàm tải lại để Cập nhật TỨC THỜI giao diện
+                await loadPlanDetails(false); 
 
                 btn.innerHTML = '<i class="fas fa-save"></i> Lưu minh chứng';
                 btn.disabled = false;
@@ -1128,6 +1139,7 @@
             container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải minh chứng...</div>`;
 
             try {
+                // Fetch trực tiếp để lấy dữ liệu real-time
                 const { data, error } = await window.supabaseClient
                     .from("cong-viec-minh-chung")
                     .select("*")
@@ -1191,8 +1203,9 @@
                 // Tự động quét cập nhật lại trạng thái công việc (sẽ lùi về dang-thuc-hien nếu thiếu minh chứng)
                 await syncTaskStatus(taskId);
 
-                // Cập nhật tiến độ tổng & UI
-                await syncPlanProgress();
+                // Reload lại toàn bộ tiến độ ẩn bên dưới
+                await loadPlanDetails(false);
+                // Render lại modal xem MC
                 viewEvidence(taskId); 
             });
         }
@@ -1232,7 +1245,7 @@
             } catch (err) {
                 console.error("Lỗi đồng bộ tiến độ: ", err);
             } finally {
-                await loadPlanDetails(false); // Reload silent
+                await loadPlanDetails(false); // Reload silent để UI cập nhật ngay
             }
         }
 
@@ -1475,35 +1488,6 @@
                 if (diffDays <= 10) return `<span class="status-badge badge-warning-low"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
             } catch (e) { return ""; }
             return "";
-        }
-
-        function statusBadge(status) {
-            const map = {
-                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
-                "tam-dung": ["Đang kẹt", "red", "fa-exclamation-triangle"]
-            };
-            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
-            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
-        }
-
-        function taskStatusBadge(status) {
-            const map = {
-                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"],
-                "tam-dung": ["Đang kẹt", "red", "fa-exclamation-triangle"]
-            };
-            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
-            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
-        }
-
-        function approvalBadge(status) {
-            const map = {
-                "cho-duyet": ["Chờ duyệt", "yellow", "fa-hourglass-half"],
-                "da-duyet": ["Đã duyệt", "green", "fa-clipboard-check"]
-            };
-            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
-            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
         }
 
         function escapeHtml(value) {
