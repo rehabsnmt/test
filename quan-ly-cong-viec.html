@@ -57,20 +57,20 @@
 
         .btn-custom-small { padding: 6px 12px; font-size: 0.8rem; }
 
-        /* Dashboard tương tác - 4 thẻ */
-        .interactive-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        /* Dashboard tương tác - 3 thẻ thu gọn */
+        .interactive-dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
         .dashboard-card { 
-            background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px; 
-            display: flex; align-items: center; gap: 18px; cursor: pointer; transition: 0.2s; user-select: none;
+            background: white; border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; 
+            display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; user-select: none;
         }
         .dashboard-card:hover { border-color: var(--primary); }
         .dashboard-card.active { border: 2px solid var(--primary); background: var(--primary-light); }
         .dashboard-card.active .db-icon { color: var(--primary); }
         
-        .db-icon { font-size: 2.2rem; color: var(--text-muted); transition: 0.2s; }
+        .db-icon { font-size: 1.8rem; color: var(--text-muted); transition: 0.2s; }
         .db-info { display: flex; flex-direction: column; }
-        .db-title { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
-        .db-value { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
+        .db-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+        .db-value { font-size: 1.5rem; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
         
         /* Container Biểu đồ Grid */
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 25px; }
@@ -121,7 +121,7 @@
         .plan-bottom { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-light); flex-wrap: wrap;}
         .plan-actions { flex-shrink: 0; }
 
-        /* Cảnh báo đếm ngược nổi bật */
+        /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
         @keyframes pulse-critical {
             0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
             70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
@@ -180,7 +180,7 @@
             .plan-meta { flex-direction: column; align-items: flex-start; gap: 5px; }
             .plan-progress { width: 75px; }
             
-            .plan-bottom { flex-direction: row; justify-content: space-between; }
+            .plan-bottom { flex-direction: row; justify-content: flex-end; }
             .plan-actions .btn-custom { padding: 6px 12px; font-size: 0.8rem; white-space: nowrap; }
             
             .form-grid { grid-template-columns: 1fr; }
@@ -190,7 +190,15 @@
             .charts-grid { grid-template-columns: 1fr; }
             .chart-wrapper { padding: 16px; }
             .chart-container { height: 280px; }
-            .interactive-dashboard { grid-template-columns: 1fr; }
+            
+            /* Responsive Siêu thu gọn cho Dashboard Mobile */
+            .interactive-dashboard { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .dashboard-card { flex-direction: column; text-align: center; padding: 10px 4px; gap: 4px; justify-content: center; }
+            .db-icon { font-size: 1.3rem; }
+            .db-info { align-items: center; }
+            .db-title { font-size: 0.65rem; line-height: 1.2; letter-spacing: 0; word-break: break-word;}
+            .db-value { font-size: 1.1rem; }
+            
             .modal-footer { flex-direction: column-reverse; gap: 10px; align-items: stretch; }
             .modal-footer > div { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         }
@@ -217,11 +225,11 @@
 
             <!-- DASHBOARD TRỰC QUAN - CHỈ HIỆN VỚI SUPERADMIN/HEAD -->
             <div class="interactive-dashboard" id="main-dashboard" style="display: none;">
-                <div class="dashboard-card active" data-filter="da-duyet" onclick="setDashboardFilter('da-duyet')">
+                <div class="dashboard-card active" data-filter="dang-thuc-hien" onclick="setDashboardFilter('dang-thuc-hien')">
                     <div class="db-icon"><i class="fas fa-play-circle"></i></div>
                     <div class="db-info">
                         <div class="db-title">Đang thực hiện</div>
-                        <div class="db-value" id="count-approved">0</div>
+                        <div class="db-value" id="count-active">0</div>
                     </div>
                 </div>
                 <div class="dashboard-card" data-filter="tre-han" onclick="setDashboardFilter('tre-han')">
@@ -229,13 +237,6 @@
                     <div class="db-info">
                         <div class="db-title">Trễ hạn</div>
                         <div class="db-value" id="count-overdue" style="color: #ef4444;">0</div>
-                    </div>
-                </div>
-                <div class="dashboard-card" data-filter="cho-duyet" onclick="setDashboardFilter('cho-duyet')">
-                    <div class="db-icon"><i class="fas fa-hourglass-half"></i></div>
-                    <div class="db-info">
-                        <div class="db-title">Chờ duyệt</div>
-                        <div class="db-value" id="count-pending">0</div>
                     </div>
                 </div>
                 <div class="dashboard-card" data-filter="hoan-thanh" onclick="setDashboardFilter('hoan-thanh')">
@@ -391,8 +392,8 @@
         let planToDeleteId = null;
         let deleteRandomCode = "";
 
-        // Bộ lọc mặc định khi tải trang là "Đã duyệt/Đang thực hiện"
-        let activeFilter = 'da-duyet'; 
+        // Bộ lọc mặc định khi tải trang là "Đang thực hiện"
+        let activeFilter = 'dang-thuc-hien'; 
 
         document.addEventListener("DOMContentLoaded", () => {
             let attempts = 0;
@@ -748,8 +749,7 @@
             const today = new Date();
             today.setHours(0,0,0,0);
 
-            document.getElementById('count-approved').textContent = plans.filter(p => p["trang-thai-duyet"] === "da-duyet" && p["trang-thai"] !== "hoan-thanh").length;
-            document.getElementById('count-pending').textContent = plans.filter(p => p["trang-thai-duyet"] === "cho-duyet").length;
+            document.getElementById('count-active').textContent = plans.filter(p => p["trang-thai"] !== "hoan-thanh").length;
             document.getElementById('count-completed').textContent = plans.filter(p => p["trang-thai"] === "hoan-thanh").length;
             
             document.getElementById('count-overdue').textContent = plans.filter(p => {
@@ -796,11 +796,8 @@
                 
                 let matchType = true;
                 if (isApprover()) {
-                    if (activeFilter === 'da-duyet') {
-                        matchType = plan["trang-thai-duyet"] === "da-duyet" && plan["trang-thai"] !== "hoan-thanh";
-                    }
-                    if (activeFilter === 'cho-duyet') {
-                        matchType = plan["trang-thai-duyet"] === "cho-duyet";
+                    if (activeFilter === 'dang-thuc-hien') {
+                        matchType = plan["trang-thai"] !== "hoan-thanh";
                     }
                     if (activeFilter === 'hoan-thanh') {
                         matchType = plan["trang-thai"] === "hoan-thanh";
@@ -831,11 +828,10 @@
                 return new Date(a["ngay-ket-thuc"]) - new Date(b["ngay-ket-thuc"]);
             });
 
-            const pendingPlans = filtered.filter(p => p["trang-thai-duyet"] === "cho-duyet");
-            const approvedPlans = filtered.filter(p => p["trang-thai-duyet"] === "da-duyet" && p["trang-thai"] !== "hoan-thanh");
+            const activePlans = filtered.filter(p => p["trang-thai"] !== "hoan-thanh");
             const completedPlans = filtered.filter(p => p["trang-thai"] === "hoan-thanh");
             
-            const overduePlans = approvedPlans.filter(p => {
+            const overduePlans = activePlans.filter(p => {
                 if (!p["ngay-ket-thuc"]) return false;
                 const end = new Date(p["ngay-ket-thuc"]);
                 end.setHours(0,0,0,0);
@@ -846,15 +842,11 @@
             
             // Render phân loại cho admin/gv (những người không có tab filter)
             if (!isApprover()) {
-                const normalActivePlans = approvedPlans.filter(p => !overduePlans.includes(p));
+                const normalActivePlans = activePlans.filter(p => !overduePlans.includes(p));
 
                 if (overduePlans.length > 0) {
                     htmlStr += `<h3 class="status-section-title pending" style="color: #dc2626; border-color: #fca5a5;"><i class="fas fa-exclamation-triangle"></i> Kế hoạch trễ hạn (${overduePlans.length})</h3>`;
                     htmlStr += `<div class="plan-list">` + overduePlans.map(renderPlanCard).join("") + `</div>`;
-                }
-                if (pendingPlans.length > 0) {
-                    htmlStr += `<h3 class="status-section-title pending" style="margin-top: 25px;"><i class="fas fa-hourglass-half"></i> Danh sách chờ duyệt (${pendingPlans.length})</h3>`;
-                    htmlStr += `<div class="plan-list">` + pendingPlans.map(renderPlanCard).join("") + `</div>`;
                 }
                 if (normalActivePlans.length > 0) {
                     htmlStr += `<h3 class="status-section-title approved" style="margin-top: 25px;"><i class="fas fa-play-circle"></i> Danh sách đang thực hiện (${normalActivePlans.length})</h3>`;
@@ -870,13 +862,9 @@
                     htmlStr += `<h3 class="status-section-title pending" style="color: #dc2626; border-color: #fca5a5;"><i class="fas fa-exclamation-triangle"></i> Danh sách trễ hạn (${filtered.length})</h3>`;
                     htmlStr += `<div class="plan-list">` + filtered.map(renderPlanCard).join("") + `</div>`;
                 }
-                else if (activeFilter === 'cho-duyet' && pendingPlans.length > 0) {
-                    htmlStr += `<h3 class="status-section-title pending"><i class="fas fa-hourglass-half"></i> Danh sách chờ duyệt (${pendingPlans.length})</h3>`;
-                    htmlStr += `<div class="plan-list">` + pendingPlans.map(renderPlanCard).join("") + `</div>`;
-                }
-                else if (activeFilter === 'da-duyet' && approvedPlans.length > 0) {
-                    htmlStr += `<h3 class="status-section-title approved"><i class="fas fa-play-circle"></i> Danh sách đang thực hiện (${approvedPlans.length})</h3>`;
-                    htmlStr += `<div class="plan-list">` + approvedPlans.map(renderPlanCard).join("") + `</div>`;
+                else if (activeFilter === 'dang-thuc-hien' && activePlans.length > 0) {
+                    htmlStr += `<h3 class="status-section-title approved"><i class="fas fa-play-circle"></i> Danh sách đang thực hiện (${activePlans.length})</h3>`;
+                    htmlStr += `<div class="plan-list">` + activePlans.map(renderPlanCard).join("") + `</div>`;
                 }
                 else if (activeFilter === 'hoan-thanh' && completedPlans.length > 0) {
                     htmlStr += `<h3 class="status-section-title completed"><i class="fas fa-check-circle"></i> Danh sách hoàn thành (${completedPlans.length})</h3>`;
