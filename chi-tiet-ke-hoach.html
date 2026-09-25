@@ -199,8 +199,8 @@
             .plan-overview-card { padding: 16px; }
             .plan-meta-grid { grid-template-columns: 1fr; gap: 12px; border-bottom: none; padding-bottom: 0;}
             .plan-progress-container { max-width: 100%; margin-top: 15px; border-top: 1px solid var(--border-light); padding-top: 15px;}
-            /* Ở màn hình nhỏ, nút ... vẫn giữ ngang hàng với tiêu đề */
-            .task-top { flex-direction: row; } 
+            /* Giữ menu 3 chấm trên cùng dòng */
+            .task-top { flex-direction: row; }
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full { grid-column: auto; }
             .modal-footer { flex-direction: column-reverse; gap: 10px; align-items: stretch; }
@@ -438,6 +438,7 @@
         
         let currentManageTaskId = null;
         let currentTempStaff = [];
+        let originalStaffList = []; // Lưu lại trạng thái ban đầu để so sánh (Delta Update)
 
         // Trạng thái cho Xóa
         let pendingDeleteAction = null;
@@ -1026,6 +1027,7 @@
             
             if (evidenceId) {
                 const btn = document.getElementById("btnSaveEvidence");
+                const ogHTML = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
                 
                 openModal("submit-evidence-modal");
@@ -1148,7 +1150,7 @@
                 const { error } = await window.supabaseClient.from("cong-viec-minh-chung").delete().eq("id", evidenceId);
                 if (error) throw error;
 
-                // Tự động quét cập nhật lại trạng thái công việc
+                // Tự động quét cập nhật lại trạng thái công việc (sẽ lùi về dang-thuc-hien nếu thiếu minh chứng)
                 await syncTaskStatus(taskId);
 
                 // Cập nhật tiến độ tổng & UI
@@ -1197,7 +1199,7 @@
         }
 
         /* =========================================================
-           PHÂN CÔNG NHÂN SỰ MỚI
+           PHÂN CÔNG NHÂN SỰ MỚI (CHẾ ĐỘ CẬP NHẬT CHÊNH LỆCH - DELTA UPDATE)
         ========================================================= */
         async function manageStaff(taskId) {
             currentManageTaskId = taskId;
@@ -1205,7 +1207,9 @@
             const { data: existing, error } = await window.supabaseClient.from("nhan-su-cong-viec").select("*").eq("cong-viec-id", taskId);
             if (error) { showError(error.message); return; }
 
-            currentTempStaff = existing || [];
+            // Lưu lại danh sách gốc để so sánh khi bấm Lưu
+            originalStaffList = JSON.parse(JSON.stringify(existing || []));
+            currentTempStaff = JSON.parse(JSON.stringify(existing || []));
             
             document.getElementById("staff-role-select").value = "phoi-hop";
             const selectAllBtn = document.getElementById("selectAllStaff");
@@ -1252,6 +1256,7 @@
                     }
                 }
                 if (!currentTempStaff.some(s => s["ma-giang-vien"] === gv)) {
+                    // Thêm người mới vào mảng tạm (chưa có ID)
                     currentTempStaff.push({
                         "cong-viec-id": currentManageTaskId,
                         "ma-giang-vien": gv,
@@ -1259,6 +1264,7 @@
                     });
                 }
             } else {
+                // Xóa khỏi mảng tạm
                 currentTempStaff = currentTempStaff.filter(s => s["ma-giang-vien"] !== gv);
             }
             renderTempStaff();
@@ -1322,15 +1328,48 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
                 btn.disabled = true;
 
-                closeModal("staff-modal");
+                // Lọc ra các thao tác Xóa, Thêm, Cập nhật bằng cách so sánh mảng gốc và mảng hiện tại
+                const toDelete = originalStaffList.filter(orig => !currentTempStaff.some(t => t["ma-giang-vien"] === orig["ma-giang-vien"]));
+                
+                // Insert: Những người có trong danh sách mới nhưng chưa có trong danh sách cũ
+                const toInsert = currentTempStaff
+                    .filter(temp => !originalStaffList.some(orig => orig["ma-giang-vien"] === temp["ma-giang-vien"]))
+                    .map(temp => ({
+                        "cong-viec-id": temp["cong-viec-id"],
+                        "ma-giang-vien": temp["ma-giang-vien"],
+                        "vai-tro": temp["vai-tro"]
+                    })); // Không có ID để DB tự tạo
 
-                const { error: deleteError } = await window.supabaseClient.from("nhan-su-cong-viec").delete().eq("cong-viec-id", currentManageTaskId);
-                if (deleteError) throw deleteError;
+                const toUpdate = currentTempStaff.filter(temp => {
+                    const orig = originalStaffList.find(o => o["ma-giang-vien"] === temp["ma-giang-vien"]);
+                    return orig && orig["vai-tro"] !== temp["vai-tro"];
+                });
 
-                if (currentTempStaff.length > 0) {
-                    const { error: insertError } = await window.supabaseClient.from("nhan-su-cong-viec").insert(currentTempStaff);
-                    if (insertError) throw insertError;
+                // 1. Xóa người bị bỏ
+                if (toDelete.length > 0) {
+                    const deleteIds = toDelete.map(d => d.id);
+                    const { error: delErr } = await window.supabaseClient.from("nhan-su-cong-viec").delete().in("id", deleteIds);
+                    if (delErr) throw delErr;
                 }
+
+                // 2. Thêm người mới
+                if (toInsert.length > 0) {
+                    const { error: insErr } = await window.supabaseClient.from("nhan-su-cong-viec").insert(toInsert);
+                    if (insErr) throw insErr;
+                }
+
+                // 3. Cập nhật người bị thay đổi vai trò (vd: từ phối hợp lên phụ trách)
+                if (toUpdate.length > 0) {
+                    for (const item of toUpdate) {
+                        const { error: updErr } = await window.supabaseClient.from("nhan-su-cong-viec")
+                            .update({ "vai-tro": item["vai-tro"] })
+                            .eq("cong-viec-id", item["cong-viec-id"])
+                            .eq("ma-giang-vien", item["ma-giang-vien"]);
+                        if (updErr) throw updErr;
+                    }
+                }
+
+                closeModal("staff-modal");
                 
                 // Khi thay đổi nhân sự, cập nhật lại trạng thái công việc
                 await syncTaskStatus(currentManageTaskId);
