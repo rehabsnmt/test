@@ -118,10 +118,10 @@
         .progress-track { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; width: 100%; margin: 0;}
         .progress-bar { height: 100%; background: var(--primary); border-radius: 99px; transition: width 0.3s ease; }
 
-        .plan-bottom { display: flex; justify-content: flex-end; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-light);}
+        .plan-bottom { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-light); flex-wrap: wrap;}
         .plan-actions { flex-shrink: 0; }
 
-        /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
+        /* Cảnh báo đếm ngược nổi bật */
         @keyframes pulse-critical {
             0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
             70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
@@ -144,6 +144,8 @@
         .badge-warning-low { background: #3b82f6; color: white; border: none; }
 
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
+        .badge-blue { background: #e0f2fe; color: #0284c7; }
+        .badge-green { background: #dcfce7; color: #15803d; }
 
         .custom-modal-backdrop {
             position: fixed; inset: 0; background: rgba(15, 23, 42, .6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
@@ -178,7 +180,7 @@
             .plan-meta { flex-direction: column; align-items: flex-start; gap: 5px; }
             .plan-progress { width: 75px; }
             
-            .plan-bottom { flex-direction: row; justify-content: flex-end; }
+            .plan-bottom { flex-direction: row; justify-content: space-between; }
             .plan-actions .btn-custom { padding: 6px 12px; font-size: 0.8rem; white-space: nowrap; }
             
             .form-grid { grid-template-columns: 1fr; }
@@ -204,7 +206,7 @@
             <header class="page-header">
                 <div>
                     <h1 class="page-title">Quản lý công việc</h1>
-                    <p class="page-subtitle">Quản lý kế hoạch và điều phối phân công nội bộ.</p>
+                    <p id="page-subtitle" class="page-subtitle">Đang tải...</p>
                 </div>
                 <button id="btn-create-plan" class="btn-custom btn-custom-primary" style="display: none;">
                     <i class="fas fa-plus"></i> Tạo kế hoạch
@@ -379,6 +381,7 @@
         let plans = [];
         let allAssignments = [];
         let allTasksData = [];
+        let allEvidences = [];
         let lecturers = [];
         
         let workloadChartInstance = null;
@@ -440,7 +443,15 @@
 
         function applyRoleUI() {
             const btn = document.getElementById("btn-create-plan");
-            if (isAdmin()) { btn.style.display = "inline-flex"; } else { btn.style.display = "none"; }
+            const subtitle = document.getElementById("page-subtitle");
+
+            if (isApprover()) {
+                if (btn) btn.style.display = "inline-flex";
+                if (subtitle) subtitle.innerText = "Quản lý kế hoạch và điều phối phân công nội bộ.";
+            } else {
+                if (btn) btn.style.display = "none";
+                if (subtitle) subtitle.innerText = "Quản lý kế hoạch và công việc cá nhân.";
+            }
             
             // Xử lý hiển thị Dashboard chỉ cho Superadmin và Head
             const dash = document.getElementById("main-dashboard");
@@ -479,22 +490,25 @@
 
         async function loadPlans() {
             try {
-                // Tải Kế hoạch, Phân công và toàn bộ Trạng thái công việc
-                const [planRes, assignRes, taskRes] = await Promise.all([
+                // Tải Kế hoạch, Phân công, Công việc và Minh chứng
+                const [planRes, assignRes, taskRes, evRes] = await Promise.all([
                     window.supabaseClient.from("tien-do-ke-hoach").select("*"),
                     window.supabaseClient.from("nhan-su-cong-viec").select("cong-viec-id, ma-giang-vien"),
-                    window.supabaseClient.from("cong-viec").select("id, trang-thai, ke-hoach-id, han-hoan-thanh")
+                    window.supabaseClient.from("cong-viec").select("id, trang-thai, ke-hoach-id, han-hoan-thanh"),
+                    window.supabaseClient.from("cong-viec-minh-chung").select("cong-viec-id, ma-giang-vien")
                 ]);
 
                 if (planRes.error) throw planRes.error;
                 if (assignRes.error) throw assignRes.error;
                 if (taskRes.error) throw taskRes.error;
+                if (evRes.error) throw evRes.error;
 
                 let allPlans = planRes.data || [];
                 allAssignments = assignRes.data || [];
                 allTasksData = taskRes.data || [];
+                allEvidences = evRes.data || [];
 
-                // LỌC KẾ HOẠCH DÀNH CHO ADMIN VÀ GIẢNG VIÊN THÔNG THƯỜNG (Ẩn bớt kế hoạch không liên quan)
+                // LỌC KẾ HOẠCH DÀNH CHO ADMIN VÀ GIẢNG VIÊN THÔNG THƯỜNG
                 if (!isApprover()) {
                     const myMaGV = currentAccount["ma-giang-vien"];
                     // Lấy các task mình được phân công
@@ -878,6 +892,28 @@
             const manager = findLecturer(plan["nguoi-phu-trach-ma-gv"]);
             const warningBadge = getDeadlineWarning(plan["ngay-ket-thuc"], plan["trang-thai"]);
 
+            // Tính toán thẻ Tiến độ cá nhân
+            let personalCounterHtml = "";
+            if (currentAccount) {
+                const myMaGV = currentAccount["ma-giang-vien"];
+                const planTasks = allTasksData.filter(t => t["ke-hoach-id"] === plan.id);
+                const planTaskIds = planTasks.map(t => t.id);
+                
+                const myAssignments = allAssignments.filter(a => a["ma-giang-vien"] === myMaGV && planTaskIds.includes(a["cong-viec-id"]));
+                const totalAssigned = myAssignments.length;
+                
+                if (totalAssigned > 0) {
+                    let completedAssigned = 0;
+                    myAssignments.forEach(a => {
+                        const hasSubmitted = allEvidences.some(e => e["cong-viec-id"] === a["cong-viec-id"] && e["ma-giang-vien"] === myMaGV);
+                        if (hasSubmitted) completedAssigned++;
+                    });
+                    
+                    const badgeClass = completedAssigned === totalAssigned ? "badge-green" : "badge-blue";
+                    personalCounterHtml = `<div class="status-badge ${badgeClass}" style="font-size: 0.8rem; padding: 4px 10px; font-weight: 600;"><i class="fas fa-clipboard-list"></i> Cá nhân đã hoàn thành: ${completedAssigned}/${totalAssigned}</div>`;
+                }
+            }
+
             return `
                 <div class="plan-card" id="plan-card-${plan.id}">
                     <div class="plan-top">
@@ -901,7 +937,8 @@
                     </div>
 
                     <div class="plan-bottom">
-                        <div class="plan-actions">
+                        ${personalCounterHtml ? `<div style="margin-right: auto;">${personalCounterHtml}</div>` : ''}
+                        <div class="plan-actions" ${personalCounterHtml ? '' : 'style="margin-left: auto;"'}>
                             <button class="btn-custom btn-custom-small btn-custom-primary" onclick="window.location.href='chi-tiet-ke-hoach.html?id=${plan.id}'">
                                 Chi tiết <i class="fas fa-chevron-right" style="margin-left:3px; font-size:10px;"></i>
                             </button>
