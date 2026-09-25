@@ -571,7 +571,7 @@
                 const { data: tasks, error: tErr } = await window.supabaseClient.from("cong-viec").select("*").eq("ke-hoach-id", currentPlanId);
                 if (tErr) throw tErr;
 
-                // 3. Tải Minh chứng (Lấy tất cả các cột bằng dấu * để tránh lỗi lệch cấu trúc DB)
+                // 3. Tải Minh chứng
                 let evidences = [];
                 const { data: evRes, error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung").select("*").limit(5000);
                 if (!evErr && evRes) evidences = evRes;
@@ -747,15 +747,12 @@
             let processButtonsLeft = "";
             let processButtonsRight = "";
 
-            // Nút Mở rộng xem Nhân sự
-            processButtonsLeft += `<button class="btn-custom btn-custom-small" onclick="toggleStaffList('${task.id}')"><i class="fas fa-users"></i> Nhân sự (${staff.length})</button>`;
-
             // Nút xem minh chứng
             if (taskEvidences.length > 0) {
-                processButtonsLeft += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Minh chứng</button>`;
+                processButtonsLeft += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
             }
             
-            // Xử lý quyền Hoàn thành / Sửa minh chứng cho bản thân
+            // Xử lý quyền Hoàn thành cho bản thân
             let canComplete = false;
             if (staff.length > 0) {
                 if (isAssigned) canComplete = true;
@@ -765,9 +762,7 @@
 
             if (canComplete) {
                 const myEvidence = taskEvidences.find(e => e["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
-                if (myEvidence) {
-                    processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-warning" onclick="openSubmitEvidenceModal('${task.id}', '${myEvidence.id}')"><i class="fas fa-edit"></i> Sửa MC</button>`;
-                } else {
+                if (!myEvidence) {
                     processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
                 }
             }
@@ -800,12 +795,15 @@
                             <span class="status-badge badge-gray"><i class="far fa-clock"></i> Hạn: ${formatDate(task["han-hoan-thanh"])}</span>
                             ${warningBadge}
                         ` : ""}
+                        <button class="btn-custom btn-custom-small" style="padding: 4px 10px; font-size: 13px; border-radius: 999px; background: var(--bg-page); border: 1px solid var(--border);" onclick="toggleStaffList('${task.id}')" title="Xem danh sách nhân sự">
+                            <i class="fas fa-users"></i> Nhân sự (${staff.length}) <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
+                        </button>
                     </div>
 
                     <!-- DANH SÁCH NHÂN SỰ ẨN (BẤM ĐỂ MỞ) -->
-                    <div id="task-staff-${task.id}" style="display: none; background: var(--bg-page); border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-light);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Danh sách nhân sự:</span>
+                    <div id="task-staff-${task.id}" style="display: none; background: #f8fafc; border-radius: 8px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border-light);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">Danh sách nhân sự:</span>
                             ${isAdmin() || canEditPlan(currentPlanData) ? `
                                 <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}')" style="background: white; border-color: var(--border);">
                                     <i class="fas fa-user-edit"></i> Phân công
@@ -822,6 +820,7 @@
                     </div>
 
                     <!-- THANH CÔNG CỤ DƯỚI CÙNG -->
+                    ${(processButtonsLeft || processButtonsRight) ? `
                     <div class="task-bottom-bar">
                         <div class="task-action-group">
                             ${processButtonsLeft}
@@ -830,6 +829,7 @@
                             ${processButtonsRight}
                         </div>
                     </div>
+                    ` : ""}
                 </div>
             `;
         }
@@ -1150,11 +1150,20 @@
 
                 container.innerHTML = evList.map(item => {
                     const gv = findLecturer(item["ma-giang-vien"]);
-                    
                     const evidenceContent = item["minh-chung"] || "";
                     
-                    const canDelete = isAdmin() || currentAccount?.["ma-giang-vien"] === item["ma-giang-vien"];
-                    const deleteBtn = canDelete ? `<button class="btn-custom btn-custom-small btn-custom-danger" style="padding: 2px 8px; font-size: 12px; margin-top: 5px;" onclick="deleteEvidence('${item.id}', '${taskId}')"><i class="fas fa-trash-alt"></i> Xóa</button>` : "";
+                    // CHỈ CHÍNH GIẢNG VIÊN ĐÓ MỚI ĐƯỢC XÓA/SỬA MINH CHỨNG CỦA MÌNH
+                    const isOwner = currentAccount?.["ma-giang-vien"] === item["ma-giang-vien"];
+                    
+                    let actionButtons = "";
+                    if (isOwner) {
+                        actionButtons = `
+                            <div style="display: flex; gap: 6px;">
+                                <button class="btn-custom btn-custom-small btn-custom-warning" style="padding: 2px 8px; font-size: 12px;" onclick="closeModal('view-evidence-modal'); openSubmitEvidenceModal('${taskId}', '${item.id}')"><i class="fas fa-edit"></i> Sửa</button>
+                                <button class="btn-custom btn-custom-small btn-custom-danger" style="padding: 2px 8px; font-size: 12px;" onclick="deleteEvidence('${item.id}', '${taskId}')"><i class="fas fa-trash-alt"></i> Xóa</button>
+                            </div>
+                        `;
+                    }
 
                     const timeStr = item["created-at"] || item.created_at || "";
                     const displayTime = timeStr ? new Date(timeStr).toLocaleString("vi-VN") : "";
@@ -1164,7 +1173,7 @@
                             <div style="margin-bottom: 8px; font-size: 0.95rem; color: var(--text-dark); white-space: pre-wrap; word-break: break-word;">${linkify(escapeHtml(evidenceContent))}</div>
                             <div class="evidence-meta" style="display: flex; justify-content: space-between; align-items: flex-end;">
                                 <div>Gửi bởi: <b>${escapeHtml(gv?.["ho-ten"] || item["ma-giang-vien"])}</b> ${displayTime ? `lúc ${displayTime}` : ''}</div>
-                                ${deleteBtn}
+                                ${actionButtons}
                             </div>
                         </div>
                     `;
