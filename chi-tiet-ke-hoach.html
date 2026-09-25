@@ -146,7 +146,7 @@
         .staff-status-text { font-size: 0.75rem; font-weight: bold; margin-left: 4px; }
         .staff-status-text.completed { color: #15803d; }
 
-        /* Cảnh báo đếm ngược nổi bật */
+        /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
         @keyframes pulse-critical {
             0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
             70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
@@ -218,7 +218,7 @@
             .form-group.full { grid-column: auto; }
             .modal-footer { flex-direction: column-reverse; gap: 10px; align-items: stretch; }
             .modal-footer > div { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-            .section-title { font-size: 1.15rem; }
+            .section-title { font-size: 1.15rem; flex: none; }
             .section-header .btn-custom { font-size: 0.8rem; padding: 6px 10px; }
         }
     </style>
@@ -239,7 +239,10 @@
 
             <!-- VÙNG HIỂN THỊ DANH SÁCH CÔNG VIỆC CÓ KÈM BỘ LỌC -->
             <div class="section-header" style="flex-wrap: wrap;">
-                <h2 class="section-title">Công việc</h2>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <h2 class="section-title">Công việc</h2>
+                    <div id="personal-counter" class="status-badge badge-blue" style="display: none; font-size: 0.8rem; padding: 4px 10px;"></div>
+                </div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                     <select id="task-filter" class="custom-select" style="width: auto; padding: 6px 12px; font-size: 0.85rem; height: auto;" onchange="renderTasks()">
                         <option value="all">Tất cả công việc</option>
@@ -337,7 +340,7 @@
         </div>
     </div>
 
-    <!-- MODAL GỬI MINH CHỨNG & HOÀN THÀNH -->
+    <!-- MODAL GỬI MINH CHỨNG -->
     <div id="submit-evidence-modal" class="custom-modal-backdrop">
         <div class="custom-modal" style="max-width: 500px;">
             <div class="modal-header">
@@ -539,7 +542,7 @@
         function applyRoleUI() {
             const btn = document.getElementById("btn-create-task");
             if (btn) {
-                if (isAdmin() || canEditPlan(currentPlanData) || isPlanManager()) { 
+                if (["superadmin", "head"].includes(currentAccount?.role) || isPlanManager()) { 
                     btn.style.display = "inline-flex"; 
                 } else { 
                     btn.style.display = "none"; 
@@ -618,6 +621,39 @@
         }
 
         /* =========================================================
+           HÀM TÍNH TIẾN ĐỘ CÁ NHÂN CỦA GIẢNG VIÊN ĐANG ĐĂNG NHẬP
+        ========================================================= */
+        function updatePersonalCounter() {
+            if (!currentAccount) return;
+            const myMaGV = currentAccount["ma-giang-vien"];
+            const myAssignments = currentAssignments.filter(a => a["ma-giang-vien"] === myMaGV);
+            const totalAssigned = myAssignments.length;
+            
+            let completedAssigned = 0;
+            myAssignments.forEach(a => {
+                const task = currentTasks.find(t => t.id === a["cong-viec-id"]);
+                if (task && task["trang-thai"] === "hoan-thanh") {
+                    completedAssigned++;
+                }
+            });
+
+            const counterEl = document.getElementById("personal-counter");
+            if (counterEl) {
+                if (totalAssigned > 0) {
+                    counterEl.innerHTML = `<i class="fas fa-clipboard-list"></i> Cá nhân: ${completedAssigned}/${totalAssigned}`;
+                    counterEl.style.display = "inline-flex";
+                    if (completedAssigned === totalAssigned) {
+                        counterEl.className = "status-badge badge-green";
+                    } else {
+                        counterEl.className = "status-badge badge-blue";
+                    }
+                } else {
+                    counterEl.style.display = "none";
+                }
+            }
+        }
+
+        /* =========================================================
            HÀM BẬT TẮT KHUNG DANH SÁCH NHÂN SỰ
         ========================================================= */
         function toggleStaffList(taskId) {
@@ -661,6 +697,7 @@
             const progress = Number(plan["tien-do"] || 0);
             const manager = findLecturer(plan["nguoi-phu-trach-ma-gv"]);
             const creator = findLecturer(plan["created-by-ma-gv"]);
+            const warningBadge = getDeadlineWarning(plan["ngay-ket-thuc"], plan["trang-thai"]);
 
             const html = `
                 <div class="plan-overview-card">
@@ -695,6 +732,7 @@
                             <span class="meta-label">Thời hạn</span>
                             <span class="meta-value" style="gap:10px;">
                                 <span><i class="far fa-calendar-alt" style="color:var(--text-muted);"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])}</span>
+                                ${warningBadge}
                             </span>
                         </div>
                         <div class="meta-item">
@@ -718,16 +756,16 @@
             document.getElementById('plan-detail-container').innerHTML = html;
         }
 
-        // TÁCH HÀM RENDER RIÊNG ĐỂ FILTER TỨC THỜI
         function renderTasks() {
+            // Cập nhật bộ đếm cá nhân cho giảng viên trước khi render danh sách
+            updatePersonalCounter();
+
             const container = document.getElementById("task-list-container");
             const filterVal = document.getElementById("task-filter") ? document.getElementById("task-filter").value : 'all';
 
             let filteredTasks = currentTasks.filter(task => {
                 if (filterVal === 'all') return true;
-                
                 const isCompleted = task["trang-thai"] === "hoan-thanh";
-                
                 if (filterVal === 'active') return !isCompleted;
                 if (filterVal === 'completed') return isCompleted;
                 return true;
@@ -746,7 +784,8 @@
 
         function renderTaskCard(task, assignments, evidences) {
             const staff = assignments.filter(item => item["cong-viec-id"] === task.id);
-            const canEdit = canEditTask(task);
+            const canEdit = canEditTask(); 
+            const warningBadge = getDeadlineWarning(task["han-hoan-thanh"], task["trang-thai"]);
             const isAssigned = staff.some(s => s["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
 
             const taskEvidences = evidences.filter(e => e['cong-viec-id'] === task.id);
@@ -795,6 +834,7 @@
                         ${task["han-hoan-thanh"] ? `
                             <span class="status-badge badge-gray"><i class="far fa-clock"></i> Hạn: ${formatDate(task["han-hoan-thanh"])}</span>
                         ` : ""}
+                        ${warningBadge}
                         <button class="btn-custom btn-custom-small" style="padding: 4px 10px; font-size: 13px; border-radius: 999px; background: var(--bg-page); border: 1px solid var(--border);" onclick="toggleStaffList('${task.id}')" title="Xem danh sách nhân sự">
                             <i class="fas fa-users"></i> Nhân sự (${staff.length}) <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
                         </button>
@@ -804,7 +844,7 @@
                     <div id="task-staff-${task.id}" style="display: none; background: #f8fafc; border-radius: 8px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border-light);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                             <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">Danh sách nhân sự:</span>
-                            ${isAdmin() || canEditPlan(currentPlanData) || isPlanManager() ? `
+                            ${canEdit ? `
                                 <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}')" style="background: white; border-color: var(--border);">
                                     <i class="fas fa-user-edit"></i> Phân công
                                 </button>
@@ -859,14 +899,12 @@
         function canEditPlan(plan) {
             if (!currentAccount) return false;
             if (currentAccount.role === "superadmin" || currentAccount.role === "head") return true;
-            if (currentAccount.role === "admin") return (plan["created-by-ma-gv"] === currentAccount["ma-giang-vien"]);
             return false;
         }
 
-        function canEditTask(task) {
+        function canEditTask() {
             if (!currentAccount) return false;
-            if (currentAccount.role === "superadmin" || currentAccount.role === "head") return true;
-            if (currentAccount.role === "admin" && task["created-by-ma-gv"] === currentAccount["ma-giang-vien"]) return true;
+            if (["superadmin", "head"].includes(currentAccount.role)) return true;
             if (isPlanManager()) return true;
             return false;
         }
