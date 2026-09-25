@@ -733,6 +733,7 @@
             const progress = Number(plan["tien-do"] || 0);
             const manager = findLecturer(plan["nguoi-phu-trach-ma-gv"]);
             const creator = findLecturer(plan["created-by-ma-gv"]);
+            const warningBadge = getDeadlineWarning(plan["ngay-ket-thuc"], plan["trang-thai"]);
 
             const html = `
                 <div class="plan-overview-card">
@@ -767,6 +768,7 @@
                             <span class="meta-label">Thời hạn</span>
                             <span class="meta-value" style="gap:10px;">
                                 <span><i class="far fa-calendar-alt" style="color:var(--text-muted);"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])}</span>
+                                ${warningBadge}
                             </span>
                         </div>
                         <div class="meta-item">
