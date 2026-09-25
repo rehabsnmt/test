@@ -532,10 +532,15 @@
         function isAdmin() { return ["superadmin", "head", "admin"].includes(currentAccount?.role); }
         function isApprover() { return ["superadmin", "head"].includes(currentAccount?.role); }
 
+        function isPlanManager() {
+            if (!currentAccount || !currentPlanData) return false;
+            return currentPlanData["nguoi-phu-trach-ma-gv"] === currentAccount["ma-giang-vien"];
+        }
+
         function applyRoleUI() {
             const btn = document.getElementById("btn-create-task");
             if (btn) {
-                if (isAdmin() || canEditPlan(currentPlanData)) { 
+                if (isAdmin() || canEditPlan(currentPlanData) || isPlanManager()) { 
                     btn.style.display = "inline-flex"; 
                 } else { 
                     btn.style.display = "none"; 
@@ -674,14 +679,13 @@
                             </div>
 
                             <!-- Nút Dropdown Menu Kế Hoạch -->
-                            ${(canEditPlan(plan) || (isApprover() && plan["trang-thai-duyet"] === "cho-duyet")) ? `
+                            ${canEditPlan(plan) ? `
                             <div class="dropdown-container">
                                 <button class="btn-icon-only" onclick="toggleDropdown('plan-menu', event)" title="Tùy chọn">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
                                 <div id="plan-menu" class="dropdown-menu">
-                                    ${canEditPlan(plan) ? `<button class="dropdown-item" onclick="editPlan('${plan.id}')">Sửa thông tin</button>` : ""}
-                                    ${isApprover() && plan["trang-thai-duyet"] === "cho-duyet" ? `<button class="dropdown-item" style="color: #15803d;" onclick="approvePlan('${plan.id}')">Phê duyệt</button>` : ""}
+                                    <button class="dropdown-item" onclick="editPlan('${plan.id}')">Sửa thông tin</button>
                                 </div>
                             </div>
                             ` : ""}
@@ -768,18 +772,12 @@
                 processButtonsLeft += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
             }
             
-            // Xử lý quyền Hoàn thành (Chỉ dành cho người có trong danh sách phân công)
-            let canComplete = false;
+            // CHỈ NGƯỜI CÓ TRONG PHÂN CÔNG MỚI ĐƯỢC PHÉP HOÀN THÀNH / NỘP MC
             if (staff.length > 0 && isAssigned) {
-                canComplete = true;
-            }
-
-            if (canComplete) {
                 const myEvidence = taskEvidences.find(e => e["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
                 if (!myEvidence) {
                     processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
                 }
-                // (Nút Sửa MC sẽ nằm trong Modal Xem minh chứng)
             }
 
             return `
@@ -807,8 +805,8 @@
                     <div class="task-meta">
                         ${task["han-hoan-thanh"] ? `
                             <span class="status-badge badge-gray"><i class="far fa-clock"></i> Hạn: ${formatDate(task["han-hoan-thanh"])}</span>
-                            ${warningBadge}
                         ` : ""}
+                        ${warningBadge}
                         <button class="btn-custom btn-custom-small" style="padding: 4px 10px; font-size: 13px; border-radius: 999px; background: var(--bg-page); border: 1px solid var(--border);" onclick="toggleStaffList('${task.id}')" title="Xem danh sách nhân sự">
                             <i class="fas fa-users"></i> Nhân sự (${staff.length}) <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
                         </button>
@@ -818,7 +816,7 @@
                     <div id="task-staff-${task.id}" style="display: none; background: #f8fafc; border-radius: 8px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border-light);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                             <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">Danh sách nhân sự:</span>
-                            ${isAdmin() || canEditPlan(currentPlanData) ? `
+                            ${isAdmin() || canEditPlan(currentPlanData) || isPlanManager() ? `
                                 <button class="btn-custom btn-custom-small" onclick="manageStaff('${task.id}')" style="background: white; border-color: var(--border);">
                                     <i class="fas fa-user-edit"></i> Phân công
                                 </button>
@@ -880,7 +878,8 @@
         function canEditTask(task) {
             if (!currentAccount) return false;
             if (currentAccount.role === "superadmin" || currentAccount.role === "head") return true;
-            if (currentAccount.role === "admin") return (task["created-by-ma-gv"] === currentAccount["ma-giang-vien"]);
+            if (currentAccount.role === "admin" && task["created-by-ma-gv"] === currentAccount["ma-giang-vien"]) return true;
+            if (isPlanManager()) return true;
             return false;
         }
 
@@ -1043,15 +1042,14 @@
                     // Lọc ra các mã giảng viên đã nộp minh chứng
                     const submittedSet = new Set((evs || []).map(e => e["ma-giang-vien"]));
                     
-                    // Nếu 100% staff được phân công đều đã có trong danh sách nộp minh chứng
+                    // Kiểm tra xem tất cả staff được phân công đã nộp chưa? (phải có ít nhất 1 MC mới tính là allSubmitted)
                     const allSubmitted = staff.every(s => submittedSet.has(s["ma-giang-vien"]));
-                    if (allSubmitted) {
+                    
+                    if (allSubmitted && evs.length > 0) {
                         newStatus = "hoan-thanh";
                     }
-                } 
-                // Nếu không ai phân công -> giữ nguyên dang-thuc-hien (vì không ai có thể nộp MC để kích hoạt)
+                }
                 
-                // Cập nhật lại db
                 await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
             } catch (e) {
                 console.error("Lỗi đồng bộ trạng thái task: ", e);
@@ -1121,7 +1119,7 @@
                 await syncTaskStatus(taskId);
 
                 closeModal("submit-evidence-modal");
-                // Sử dụng hàm tải lại để Cập nhật TỨC THỜI giao diện
+                // Cập nhật tức thời giao diện mà không cần refresh cứng
                 await loadPlanDetails(false); 
 
                 btn.innerHTML = '<i class="fas fa-save"></i> Lưu minh chứng';
@@ -1139,7 +1137,7 @@
             container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải minh chứng...</div>`;
 
             try {
-                // Fetch trực tiếp để lấy dữ liệu real-time
+                // Fetch trực tiếp để lấy dữ liệu real-time mới nhất
                 const { data, error } = await window.supabaseClient
                     .from("cong-viec-minh-chung")
                     .select("*")
@@ -1200,12 +1198,12 @@
                 const { error } = await window.supabaseClient.from("cong-viec-minh-chung").delete().eq("id", evidenceId);
                 if (error) throw error;
 
-                // Tự động quét cập nhật lại trạng thái công việc (sẽ lùi về dang-thuc-hien nếu thiếu minh chứng)
+                // Tự động quét cập nhật lại trạng thái công việc
                 await syncTaskStatus(taskId);
 
                 // Reload lại toàn bộ tiến độ ẩn bên dưới
                 await loadPlanDetails(false);
-                // Render lại modal xem MC
+                // Render lại modal xem MC để nó trống
                 viewEvidence(taskId); 
             });
         }
@@ -1245,7 +1243,7 @@
             } catch (err) {
                 console.error("Lỗi đồng bộ tiến độ: ", err);
             } finally {
-                await loadPlanDetails(false); // Reload silent để UI cập nhật ngay
+                await loadPlanDetails(false); // Reload silent để cập nhật Global State
             }
         }
 
