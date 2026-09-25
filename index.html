@@ -31,9 +31,28 @@
         .mobile-break { display: none; }
         .desktop-comma { display: inline; }
         
+        /* CSS cho Ảnh Banner Trang Chủ */
+        .banner-image-wrapper {
+            text-align: center;
+            margin: 1.5rem auto 2.5rem auto;
+            max-width: 1100px;
+            padding: 0 20px;
+        }
+        .banner-image-wrapper img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            object-fit: cover;
+            display: block;
+            margin: 0 auto;
+        }
+
         @media (max-width: 768px) {
             .mobile-break { display: block; }
             .desktop-comma { display: none; }
+            .banner-image-wrapper { margin: 1rem auto 2rem auto; padding: 0 16px; }
+            .banner-image-wrapper img { border-radius: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); }
         }
     </style>
 </head>
@@ -50,6 +69,11 @@
             <h1>Bộ môn Phục hồi chức năng</h1>
             <div class="section-divider"></div>
             <p>Trường Điều dưỡng - Kỹ thuật Y học<span class="desktop-comma">, </span><br class="mobile-break">Đại học Y Dược Thành phố Hồ Chí Minh</p>
+        </div>
+
+        <!-- ẢNH BANNER TRANG CHỦ -->
+        <div class="banner-image-wrapper">
+            <img src="images/index.jpg" alt="Tập thể Bộ môn Phục hồi chức năng">
         </div>
 
         <!-- KHU VỰC HIỂN THỊ CÁC THẺ CARD (Lấy từ JSON) -->
