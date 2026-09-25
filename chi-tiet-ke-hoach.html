@@ -633,8 +633,9 @@
             
             let completedAssigned = 0;
             myAssignments.forEach(a => {
-                const task = currentTasks.find(t => t.id === a["cong-viec-id"]);
-                if (task && task["trang-thai"] === "hoan-thanh") {
+                // Đã nộp minh chứng => tính là hoàn thành cá nhân
+                const hasSubmitted = currentEvidences.some(e => e["cong-viec-id"] === a["cong-viec-id"] && e["ma-giang-vien"] === myMaGV);
+                if (hasSubmitted) {
                     completedAssigned++;
                 }
             });
@@ -724,7 +725,6 @@
             const progress = Number(plan["tien-do"] || 0);
             const manager = findLecturer(plan["nguoi-phu-trach-ma-gv"]);
             const creator = findLecturer(plan["created-by-ma-gv"]);
-            const warningBadge = getDeadlineWarning(plan["ngay-ket-thuc"], plan["trang-thai"]);
 
             const html = `
                 <div class="plan-overview-card">
@@ -759,7 +759,6 @@
                             <span class="meta-label">Thời hạn</span>
                             <span class="meta-value" style="gap:10px;">
                                 <span><i class="far fa-calendar-alt" style="color:var(--text-muted);"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])}</span>
-                                ${warningBadge}
                             </span>
                         </div>
                         <div class="meta-item">
@@ -783,7 +782,6 @@
             document.getElementById('plan-detail-container').innerHTML = html;
         }
 
-        // TÁCH HÀM RENDER RIÊNG ĐỂ FILTER TỨC THỜI
         function renderTasks() {
             // Cập nhật bộ đếm cá nhân cho giảng viên trước khi render danh sách
             updatePersonalCounter();
