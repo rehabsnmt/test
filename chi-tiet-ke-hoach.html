@@ -146,7 +146,7 @@
         .staff-status-text { font-size: 0.75rem; font-weight: bold; margin-left: 4px; }
         .staff-status-text.completed { color: #15803d; }
 
-        /* Cảnh báo đếm ngược nổi bật */
+        /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
         @keyframes pulse-critical {
             0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
             70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
@@ -777,6 +777,8 @@
                 const myEvidence = taskEvidences.find(e => e["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
                 if (!myEvidence) {
                     processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
+                } else {
+                    processButtonsRight += `<span style="color: #15803d; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px; padding: 6px 4px;"><i class="fas fa-check-circle"></i> Đã hoàn thành</span>`;
                 }
             }
 
@@ -989,11 +991,26 @@
         document.getElementById("task-form").addEventListener("submit", async (event) => {
             event.preventDefault();
             const id = document.getElementById("task-id").value;
+            const taskDeadline = document.getElementById("task-deadline").value;
+            const planDeadline = currentPlanData["ngay-ket-thuc"];
+
+            if (taskDeadline && planDeadline) {
+                const tDate = new Date(taskDeadline);
+                const pDate = new Date(planDeadline);
+                tDate.setHours(0,0,0,0);
+                pDate.setHours(0,0,0,0);
+
+                if (tDate > pDate) {
+                    alert("Hạn hoàn thành của công việc không được trễ hơn ngày kết thúc của kế hoạch (" + formatDate(planDeadline) + ").");
+                    return;
+                }
+            }
+
             const payload = {
                 "ke-hoach-id": currentPlanId,
                 "tieu-de": document.getElementById("task-title").value.trim(),
                 "mo-ta": document.getElementById("task-description").value.trim() || null,
-                "han-hoan-thanh": document.getElementById("task-deadline").value
+                "han-hoan-thanh": taskDeadline
             };
 
             try {
@@ -1042,14 +1059,14 @@
                     // Lọc ra các mã giảng viên đã nộp minh chứng
                     const submittedSet = new Set((evs || []).map(e => e["ma-giang-vien"]));
                     
-                    // Kiểm tra xem tất cả staff được phân công đã nộp chưa? (phải có ít nhất 1 MC mới tính là allSubmitted)
+                    // Kiểm tra xem tất cả staff được phân công đã nộp chưa?
                     const allSubmitted = staff.every(s => submittedSet.has(s["ma-giang-vien"]));
-                    
-                    if (allSubmitted && evs.length > 0) {
+                    if (allSubmitted) {
                         newStatus = "hoan-thanh";
                     }
-                }
+                } 
                 
+                // Cập nhật lại db
                 await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
             } catch (e) {
                 console.error("Lỗi đồng bộ trạng thái task: ", e);
@@ -1198,7 +1215,7 @@
                 const { error } = await window.supabaseClient.from("cong-viec-minh-chung").delete().eq("id", evidenceId);
                 if (error) throw error;
 
-                // Tự động quét cập nhật lại trạng thái công việc
+                // Tự động quét cập nhật lại trạng thái công việc (sẽ lùi về dang-thuc-hien nếu thiếu minh chứng)
                 await syncTaskStatus(taskId);
 
                 // Reload lại toàn bộ tiến độ ẩn bên dưới
