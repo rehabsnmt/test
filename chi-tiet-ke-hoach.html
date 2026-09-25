@@ -146,7 +146,7 @@
         .staff-status-text { font-size: 0.75rem; font-weight: bold; margin-left: 4px; }
         .staff-status-text.completed { color: #15803d; }
 
-        /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
+        /* Cảnh báo đếm ngược nổi bật */
         @keyframes pulse-critical {
             0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
             70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
@@ -244,7 +244,6 @@
                     <select id="task-filter" class="custom-select" style="width: auto; padding: 6px 12px; font-size: 0.85rem; height: auto;" onchange="renderTasks()">
                         <option value="all">Tất cả công việc</option>
                         <option value="active" selected>Đang thực hiện</option>
-                        <option value="overdue">Trễ hạn</option>
                         <option value="completed">Hoàn thành</option>
                     </select>
                     <button id="btn-create-task" class="btn-custom btn-custom-primary" style="display: none;" onclick="openCreateTask()">
@@ -662,7 +661,6 @@
             const progress = Number(plan["tien-do"] || 0);
             const manager = findLecturer(plan["nguoi-phu-trach-ma-gv"]);
             const creator = findLecturer(plan["created-by-ma-gv"]);
-            const warningBadge = getDeadlineWarning(plan["ngay-ket-thuc"], plan["trang-thai"]);
 
             const html = `
                 <div class="plan-overview-card">
@@ -697,7 +695,6 @@
                             <span class="meta-label">Thời hạn</span>
                             <span class="meta-value" style="gap:10px;">
                                 <span><i class="far fa-calendar-alt" style="color:var(--text-muted);"></i> ${formatDate(plan["ngay-bat-dau"])} → ${formatDate(plan["ngay-ket-thuc"])}</span>
-                                ${warningBadge}
                             </span>
                         </div>
                         <div class="meta-item">
@@ -725,22 +722,13 @@
         function renderTasks() {
             const container = document.getElementById("task-list-container");
             const filterVal = document.getElementById("task-filter") ? document.getElementById("task-filter").value : 'all';
-            const today = new Date();
-            today.setHours(0,0,0,0);
 
             let filteredTasks = currentTasks.filter(task => {
                 if (filterVal === 'all') return true;
                 
                 const isCompleted = task["trang-thai"] === "hoan-thanh";
-                let isOverdue = false;
-                if (!isCompleted && task["han-hoan-thanh"]) {
-                    const deadline = new Date(task["han-hoan-thanh"]);
-                    deadline.setHours(0,0,0,0);
-                    if (deadline < today) isOverdue = true;
-                }
-
-                if (filterVal === 'active') return !isCompleted && !isOverdue;
-                if (filterVal === 'overdue') return isOverdue;
+                
+                if (filterVal === 'active') return !isCompleted;
                 if (filterVal === 'completed') return isCompleted;
                 return true;
             });
@@ -759,7 +747,6 @@
         function renderTaskCard(task, assignments, evidences) {
             const staff = assignments.filter(item => item["cong-viec-id"] === task.id);
             const canEdit = canEditTask(task);
-            const warningBadge = getDeadlineWarning(task["han-hoan-thanh"], task["trang-thai"]);
             const isAssigned = staff.some(s => s["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
 
             const taskEvidences = evidences.filter(e => e['cong-viec-id'] === task.id);
@@ -772,11 +759,11 @@
                 processButtonsLeft += `<button class="btn-custom btn-custom-small" onclick="viewEvidence('${task.id}')"><i class="fas fa-link"></i> Xem minh chứng</button>`;
             }
             
-            // CHỈ NGƯỜI CÓ TRONG PHÂN CÔNG MỚI ĐƯỢC PHÉP HOÀN THÀNH / NỘP MC
+            // CHỈ NGƯỜI CÓ TRONG PHÂN CÔNG MỚI ĐƯỢC PHÉP NỘP MC / THẤY NÚT
             if (staff.length > 0 && isAssigned) {
                 const myEvidence = taskEvidences.find(e => e["ma-giang-vien"] === currentAccount?.["ma-giang-vien"]);
                 if (!myEvidence) {
-                    processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-check"></i> Hoàn thành</button>`;
+                    processButtonsRight += `<button class="btn-custom btn-custom-small btn-custom-success" onclick="openSubmitEvidenceModal('${task.id}')"><i class="fas fa-upload"></i> Nộp minh chứng</button>`;
                 } else {
                     processButtonsRight += `<span style="color: #15803d; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px; padding: 6px 4px;"><i class="fas fa-check-circle"></i> Đã hoàn thành</span>`;
                 }
@@ -808,7 +795,6 @@
                         ${task["han-hoan-thanh"] ? `
                             <span class="status-badge badge-gray"><i class="far fa-clock"></i> Hạn: ${formatDate(task["han-hoan-thanh"])}</span>
                         ` : ""}
-                        ${warningBadge}
                         <button class="btn-custom btn-custom-small" style="padding: 4px 10px; font-size: 13px; border-radius: 999px; background: var(--bg-page); border: 1px solid var(--border);" onclick="toggleStaffList('${task.id}')" title="Xem danh sách nhân sự">
                             <i class="fas fa-users"></i> Nhân sự (${staff.length}) <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
                         </button>
@@ -1481,28 +1467,6 @@
             const number = Number(value || 0);
             if (Number.isInteger(number)) return `${number}%`;
             return `${number.toFixed(1)}%`;
-        }
-
-        function getDeadlineWarning(dateStr, status) {
-            if (!dateStr || status === 'hoan-thanh' || status === 'tam-dung') return "";
-            try {
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                const target = new Date(dateStr);
-                if (isNaN(target)) return "";
-                target.setHours(0,0,0,0);
-                
-                const diffTime = target - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (diffDays < 0) return `<span class="status-badge badge-warning-critical"><i class="fas fa-exclamation-triangle"></i> Quá hạn ${Math.abs(diffDays)} ngày</span>`;
-                if (diffDays === 0) return `<span class="status-badge badge-warning-critical"><i class="fas fa-exclamation-circle"></i> Hết hạn hôm nay!</span>`;
-                if (diffDays <= 1) return `<span class="status-badge badge-warning-critical"><i class="fas fa-exclamation-circle"></i> Còn 1 ngày!</span>`;
-                if (diffDays <= 3) return `<span class="status-badge badge-warning-high"><i class="fas fa-exclamation-circle"></i> Còn ${diffDays} ngày</span>`;
-                if (diffDays <= 7) return `<span class="status-badge badge-warning-medium"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
-                if (diffDays <= 10) return `<span class="status-badge badge-warning-low"><i class="far fa-clock"></i> Còn ${diffDays} ngày</span>`;
-            } catch (e) { return ""; }
-            return "";
         }
 
         function escapeHtml(value) {
