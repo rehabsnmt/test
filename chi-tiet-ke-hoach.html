@@ -126,7 +126,7 @@
         .staff-status-text { font-size: 0.75rem; font-weight: bold; margin-left: 4px; }
         .staff-status-text.completed { color: #15803d; }
 
-        /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
+        /* Cảnh báo đếm ngược nổi bật */
         @keyframes pulse-critical {
             0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
             70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
@@ -199,7 +199,8 @@
             .plan-overview-card { padding: 16px; }
             .plan-meta-grid { grid-template-columns: 1fr; gap: 12px; border-bottom: none; padding-bottom: 0;}
             .plan-progress-container { max-width: 100%; margin-top: 15px; border-top: 1px solid var(--border-light); padding-top: 15px;}
-            .task-top { flex-direction: column; }
+            /* Ở màn hình nhỏ, nút ... vẫn giữ ngang hàng với tiêu đề */
+            .task-top { flex-direction: row; } 
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full { grid-column: auto; }
             .modal-footer { flex-direction: column-reverse; gap: 10px; align-items: stretch; }
@@ -403,6 +404,27 @@
         </div>
     </div>
 
+    <!-- MODAL XÁC NHẬN XÓA CHUNG (YÊU CẦU 4 SỐ) -->
+    <div id="delete-confirm-modal" class="custom-modal-backdrop">
+        <div class="custom-modal" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2 class="modal-title" style="color:var(--accent)"><i class="fas fa-exclamation-triangle"></i> Xác nhận Xóa</h2>
+                <button class="modal-close" onclick="closeModal('delete-confirm-modal')">×</button>
+            </div>
+            <form id="delete-confirm-form">
+                <div class="modal-body">
+                    <p id="delete-confirm-msg" style="margin-bottom: 10px; line-height: 1.5; color: var(--text-dark);"></p>
+                    <p style="margin-bottom: 10px; line-height: 1.5; color: var(--text-dark);">Vui lòng nhập mã số <strong id="generic-delete-random-code" style="color:var(--accent); font-size:1.15rem;"></strong> để xác nhận.</p>
+                    <input id="generic-delete-confirm-input" class="custom-input" type="text" autocomplete="off" placeholder="Nhập mã xác nhận..." required>
+                </div>
+                <div class="modal-footer" style="justify-content: flex-end;">
+                    <button type="button" class="btn-custom" onclick="closeModal('delete-confirm-modal')">Hủy</button>
+                    <button type="submit" class="btn-custom btn-custom-danger" id="btnGenericConfirmDelete"><i class="fas fa-trash-alt"></i> Xóa Vĩnh Viễn</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="js/layout.js"></script>
 
     <script>
@@ -416,6 +438,10 @@
         
         let currentManageTaskId = null;
         let currentTempStaff = [];
+
+        // Trạng thái cho Xóa
+        let pendingDeleteAction = null;
+        let genericDeleteCode = "";
 
         document.addEventListener("DOMContentLoaded", () => {
             // Lấy ID kế hoạch từ URL Parameter
@@ -562,42 +588,6 @@
         }
 
         /* =========================================================
-           HÀM XỬ LÝ TRẠNG THÁI TASK TỰ ĐỘNG
-        ========================================================= */
-        async function syncTaskStatus(taskId) {
-            try {
-                // Lấy danh sách phân công
-                const { data: staff } = await window.supabaseClient.from("nhan-su-cong-viec").select("ma-giang-vien").eq("cong-viec-id", taskId);
-                // Lấy danh sách minh chứng
-                const { data: evs } = await window.supabaseClient.from("cong-viec-minh-chung").select("ma-giang-vien").eq("cong-viec-id", taskId);
-                
-                let newStatus = "dang-thuc-hien";
-                
-                if (staff && staff.length > 0) {
-                    // Tập hợp các ma-giang-vien ĐÃ NỘP minh chứng
-                    const submittedSet = new Set((evs || []).map(e => e["ma-giang-vien"]));
-                    
-                    // Kiểm tra xem tất cả staff được phân công đã nộp chưa?
-                    const allSubmitted = staff.every(s => submittedSet.has(s["ma-giang-vien"]));
-                    
-                    if (allSubmitted && evs.length > 0) {
-                        newStatus = "hoan-thanh";
-                    }
-                } else {
-                    // Nếu không phân công ai cả, nhưng quản lý tạo minh chứng -> Xong
-                    if (evs && evs.length > 0) {
-                        newStatus = "hoan-thanh";
-                    }
-                }
-                
-                await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
-            } catch (e) {
-                console.error("Lỗi đồng bộ trạng thái task: ", e);
-            }
-        }
-
-
-        /* =========================================================
            HÀM XỬ LÝ MENU 3 CHẤM VÀ CÁC TIỆN ÍCH
         ========================================================= */
         function toggleDropdown(id, event) {
@@ -634,8 +624,8 @@
 
             const html = `
                 <div class="plan-overview-card">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; gap: 15px; flex-wrap: wrap;">
-                        <h2 class="plan-title-large" style="margin: 0; flex: 1;">${escapeHtml(plan.ten)}</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; gap: 10px; flex-wrap: nowrap;">
+                        <h2 class="plan-title-large" style="margin: 0; flex: 1; word-break: break-word; min-width: 0;">${escapeHtml(plan.ten)}</h2>
                         
                         <div style="display: flex; align-items: center; gap: 15px; flex-shrink: 0;">
                             <!-- Tiến độ thu nhỏ góc phải -->
@@ -749,14 +739,14 @@
             return `
                 <div class="task-card">
                     <div class="task-top">
-                        <div style="flex:1; padding-right: 15px;">
+                        <div style="flex:1; padding-right: 15px; min-width: 0;">
                             <div class="task-title">${escapeHtml(task["tieu-de"])}</div>
                             ${task["mo-ta"] ? `<div class="task-description">${linkify(escapeHtml(task["mo-ta"]))}</div>` : ""}
                         </div>
                         
                         <!-- Nút Dropdown Menu Công việc -->
                         ${canEdit ? `
-                        <div class="dropdown-container">
+                        <div class="dropdown-container" style="flex-shrink: 0;">
                             <button class="btn-icon-only" onclick="toggleDropdown('task-menu-${task.id}', event)" title="Tùy chọn">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
@@ -811,7 +801,7 @@
 
             // CHỈ AI NỘP MINH CHỨNG MỚI ĐƯỢC TÔ XANH
             if (taskEvidences.some(e => e["ma-giang-vien"] === item["ma-giang-vien"])) {
-                statusHtml = `<span class="staff-status-text completed"><i class="fas fa-check"></i> Đã nộp MC</span>`;
+                statusHtml = `<span class="staff-status-text completed"><i class="fas fa-check"></i> Hoàn thành</span>`;
                 bgClass = "is-completed"; // Xanh lá
             }
 
@@ -836,6 +826,42 @@
             if (currentAccount.role === "admin") return (task["created-by-ma-gv"] === currentAccount["ma-giang-vien"]);
             return false;
         }
+
+        /* =========================================================
+           HÀM XÁC NHẬN XÓA (YÊU CẦU 4 SỐ NGẪU NHIÊN)
+        ========================================================= */
+        function openDeleteConfirm(message, actionCallback) {
+            genericDeleteCode = Math.floor(1000 + Math.random() * 9000).toString();
+            document.getElementById("delete-confirm-msg").textContent = message;
+            document.getElementById("generic-delete-random-code").textContent = genericDeleteCode;
+            document.getElementById("generic-delete-confirm-input").value = "";
+            pendingDeleteAction = actionCallback;
+            openModal("delete-confirm-modal");
+        }
+
+        document.getElementById("delete-confirm-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const inputVal = document.getElementById("generic-delete-confirm-input").value.trim();
+            if (inputVal !== genericDeleteCode) {
+                alert("Mã xác nhận không khớp. Vui lòng nhập đúng dãy số màu đỏ.");
+                return;
+            }
+            const btn = document.getElementById("btnGenericConfirmDelete");
+            const ogText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Xóa...';
+            btn.disabled = true;
+
+            try {
+                if (pendingDeleteAction) await pendingDeleteAction();
+                closeModal("delete-confirm-modal");
+            } catch(err) {
+                showError(err.message);
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
+        });
+
 
         /* =========================================================
            CÁC HÀM XỬ LÝ KẾ HOẠCH
@@ -951,13 +977,45 @@
             } catch (error) { showError(error.message); }
         });
 
-        async function deleteTask(taskId) {
-            if (!confirm("Bạn có chắc muốn xóa vĩnh viễn công việc này?")) return;
-            try {
+        function deleteTask(taskId) {
+            openDeleteConfirm("Hành động này sẽ xóa vĩnh viễn công việc và toàn bộ minh chứng đi kèm.", async () => {
                 const { error } = await window.supabaseClient.from("cong-viec").delete().eq("id", taskId);
                 if (error) throw error;
                 await syncPlanProgress();
-            } catch (error) { showError(error.message); }
+            });
+        }
+
+        // TỰ ĐỘNG ĐÁNH GIÁ TRẠNG THÁI CÔNG VIỆC DỰA TRÊN NGƯỜI NỘP
+        async function syncTaskStatus(taskId) {
+            try {
+                // Tải danh sách phân công của task
+                const { data: staff } = await window.supabaseClient.from("nhan-su-cong-viec").select("ma-giang-vien").eq("cong-viec-id", taskId);
+                // Tải danh sách minh chứng của task
+                const { data: evs } = await window.supabaseClient.from("cong-viec-minh-chung").select("ma-giang-vien").eq("cong-viec-id", taskId);
+                
+                let newStatus = "dang-thuc-hien";
+                
+                if (staff && staff.length > 0) {
+                    // Lọc ra các mã giảng viên đã nộp minh chứng
+                    const submittedSet = new Set((evs || []).map(e => e["ma-giang-vien"]));
+                    
+                    // Nếu 100% staff được phân công đều đã có trong danh sách nộp minh chứng
+                    const allSubmitted = staff.every(s => submittedSet.has(s["ma-giang-vien"]));
+                    if (allSubmitted) {
+                        newStatus = "hoan-thanh";
+                    }
+                } else {
+                    // Nếu công việc không phân công cho ai, nhưng lại có minh chứng được nộp (bởi admin/creator)
+                    if (evs && evs.length > 0) {
+                        newStatus = "hoan-thanh";
+                    }
+                }
+                
+                // Cập nhật lại db
+                await window.supabaseClient.from("cong-viec").update({"trang-thai": newStatus}).eq("id", taskId);
+            } catch (e) {
+                console.error("Lỗi đồng bộ trạng thái task: ", e);
+            }
         }
 
         // Mở popup nộp / sửa minh chứng
@@ -968,7 +1026,6 @@
             
             if (evidenceId) {
                 const btn = document.getElementById("btnSaveEvidence");
-                const ogHTML = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
                 
                 openModal("submit-evidence-modal");
@@ -1000,7 +1057,7 @@
                 btn.disabled = true;
 
                 if (evidenceId) {
-                    // Update kèm cập nhật thời gian
+                    // Cập nhật minh chứng
                     const { error: evErr } = await window.supabaseClient.from("cong-viec-minh-chung")
                         .update({ 
                             "minh-chung": content,
@@ -1009,7 +1066,7 @@
                         .eq("id", evidenceId);
                     if (evErr) throw evErr;
                 } else {
-                    // Insert
+                    // Thêm mới minh chứng
                     const payloadEvidence = {
                         "cong-viec-id": taskId,
                         "ma-giang-vien": currentAccount["ma-giang-vien"],
@@ -1019,7 +1076,7 @@
                     if (evErr) throw evErr;
                 }
 
-                // Tự động kiểm đếm người nộp và cập nhật trạng thái Task (hoàn thành hay đang làm)
+                // Cập nhật trạng thái công việc (Đếm xem đủ người nộp chưa)
                 await syncTaskStatus(taskId);
 
                 closeModal("submit-evidence-modal");
@@ -1086,22 +1143,18 @@
             }
         }
         
-        async function deleteEvidence(evidenceId, taskId) {
-            if (!confirm("Bạn có chắc chắn muốn xóa minh chứng này?")) return;
-            try {
-                // Xóa minh chứng
+        function deleteEvidence(evidenceId, taskId) {
+            openDeleteConfirm("Bạn có chắc chắn muốn xóa minh chứng này?", async () => {
                 const { error } = await window.supabaseClient.from("cong-viec-minh-chung").delete().eq("id", evidenceId);
                 if (error) throw error;
 
-                // Tự động quét cập nhật lại trạng thái công việc (sẽ lùi về dang-thuc-hien nếu thiếu minh chứng)
+                // Tự động quét cập nhật lại trạng thái công việc
                 await syncTaskStatus(taskId);
 
                 // Cập nhật tiến độ tổng & UI
                 await syncPlanProgress();
                 viewEvidence(taskId); 
-            } catch (err) {
-                showError("Lỗi khi xóa minh chứng: " + err.message);
-            }
+            });
         }
 
         /* =========================================================
