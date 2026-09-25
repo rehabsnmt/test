@@ -72,12 +72,13 @@
         .db-title { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
         .db-value { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
         
-        /* Container Biểu đồ */
+        /* Container Biểu đồ Grid */
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 25px; }
         .chart-wrapper {
-            background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 25px;
+            background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px;
         }
         .chart-container {
-            position: relative; height: 350px; width: 100%;
+            position: relative; height: 320px; width: 100%;
         }
 
         .search-bar-container { position: relative; margin-bottom: 20px; display: flex; gap: 10px;}
@@ -117,7 +118,7 @@
         .progress-track { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; width: 100%; margin: 0;}
         .progress-bar { height: 100%; background: var(--primary); border-radius: 99px; transition: width 0.3s ease; }
 
-        .plan-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-light); flex-wrap: nowrap;}
+        .plan-bottom { display: flex; justify-content: flex-end; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-light);}
         .plan-actions { flex-shrink: 0; }
 
         /* Cảnh báo đếm ngược nổi bật (Pulse Animation) */
@@ -143,9 +144,6 @@
         .badge-warning-low { background: #3b82f6; color: white; border: none; }
 
         .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
-        .badge-blue { background: #e0f2fe; color: #0284c7; }
-        .badge-green { background: #dcfce7; color: #15803d; }
-        .badge-yellow { background: #fef3c7; color: #b45309; }
 
         .custom-modal-backdrop {
             position: fixed; inset: 0; background: rgba(15, 23, 42, .6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
@@ -176,19 +174,18 @@
             .page-header { align-items: flex-start; flex-direction: column; }
             .page-title { font-size: 22px; }
             
-            /* Giữ thẻ kế hoạch ngang, tiến độ ở góc phải */
             .plan-top { flex-direction: row; gap: 10px; }
             .plan-meta { flex-direction: column; align-items: flex-start; gap: 5px; }
             .plan-progress { width: 75px; }
             
-            /* Hàng nút dưới cùng được canh lề 2 bên */
-            .plan-bottom { flex-direction: row; align-items: center; flex-wrap: nowrap; }
-            .plan-bottom > div:first-child { flex-wrap: wrap; gap: 4px; }
+            .plan-bottom { flex-direction: row; justify-content: flex-end; }
             .plan-actions .btn-custom { padding: 6px 12px; font-size: 0.8rem; white-space: nowrap; }
             
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full { grid-column: auto; }
             .search-bar-container { flex-direction: column; }
+            
+            .charts-grid { grid-template-columns: 1fr; }
             .chart-wrapper { padding: 16px; }
             .chart-container { height: 280px; }
             .interactive-dashboard { grid-template-columns: 1fr; }
@@ -241,20 +238,35 @@
                 </div>
             </div>
 
-            <!-- BIỂU ĐỒ KHỐI LƯỢNG CÔNG VIỆC - CHỈ HIỆN VỚI SUPERADMIN/HEAD -->
-            <div class="chart-wrapper" id="main-chart" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-dark); font-weight: 700;">
-                        <i class="fas fa-chart-bar" style="color: var(--text-muted);"></i> Khối lượng công việc
-                    </h3>
-                    <select id="chart-status-filter" class="custom-select" style="max-width: 250px; font-size: 0.85rem; padding: 6px 10px; height: auto;" onchange="renderChart()">
-                        <option value="active" selected>Đang thực hiện</option>
-                        <option value="completed">Đã hoàn thành</option>
-                        <option value="all">Tất cả</option>
-                    </select>
+            <!-- BIỂU ĐỒ - CHỈ HIỆN VỚI SUPERADMIN/HEAD -->
+            <div class="charts-grid" id="main-charts" style="display: none;">
+                <!-- Biểu đồ Khối lượng công việc -->
+                <div class="chart-wrapper" style="margin-bottom: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-dark); font-weight: 700;">
+                            <i class="fas fa-chart-bar" style="color: var(--text-muted);"></i> Khối lượng công việc
+                        </h3>
+                        <select id="chart-status-filter" class="custom-select" style="max-width: 150px; font-size: 0.85rem; padding: 6px 10px; height: auto;" onchange="renderChart()">
+                            <option value="active" selected>Đang thực hiện</option>
+                            <option value="completed">Đã hoàn thành</option>
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="workloadChart"></canvas>
+                    </div>
                 </div>
-                <div class="chart-container">
-                    <canvas id="workloadChart"></canvas>
+                
+                <!-- Biểu đồ Tốc độ hoàn thành -->
+                <div class="chart-wrapper" style="margin-bottom: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-dark); font-weight: 700;">
+                            <i class="fas fa-chart-line" style="color: var(--text-muted);"></i> Tốc độ hoàn thành (% theo tháng)
+                        </h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="completionTrendChart"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -358,8 +370,11 @@
         let currentAccount = null;
         let plans = [];
         let allAssignments = [];
+        let allTasksData = [];
         let lecturers = [];
+        
         let workloadChartInstance = null;
+        let completionChartInstance = null;
 
         let currentPlanId = null; 
         let planToDeleteId = null;
@@ -421,14 +436,14 @@
             
             // Xử lý hiển thị Dashboard chỉ cho Superadmin và Head
             const dash = document.getElementById("main-dashboard");
-            const chart = document.getElementById("main-chart");
+            const chartsGrid = document.getElementById("main-charts");
             
             if (isApprover()) {
                 if (dash) dash.style.display = "grid";
-                if (chart) chart.style.display = "block";
+                if (chartsGrid) chartsGrid.style.display = "grid";
             } else {
                 if (dash) dash.style.display = "none";
-                if (chart) chart.style.display = "none";
+                if (chartsGrid) chartsGrid.style.display = "none";
             }
         }
 
@@ -460,7 +475,7 @@
                 const [planRes, assignRes, taskRes] = await Promise.all([
                     window.supabaseClient.from("tien-do-ke-hoach").select("*"),
                     window.supabaseClient.from("nhan-su-cong-viec").select("cong-viec-id, ma-giang-vien"),
-                    window.supabaseClient.from("cong-viec").select("id, trang-thai, ke-hoach-id")
+                    window.supabaseClient.from("cong-viec").select("id, trang-thai, ke-hoach-id, han-hoan-thanh")
                 ]);
 
                 if (planRes.error) throw planRes.error;
@@ -469,7 +484,7 @@
 
                 let allPlans = planRes.data || [];
                 allAssignments = assignRes.data || [];
-                const allTasks = taskRes.data || [];
+                allTasksData = taskRes.data || [];
 
                 // LỌC KẾ HOẠCH DÀNH CHO ADMIN VÀ GIẢNG VIÊN THÔNG THƯỜNG (Ẩn bớt kế hoạch không liên quan)
                 if (!isApprover()) {
@@ -477,7 +492,7 @@
                     // Lấy các task mình được phân công
                     const myTaskIds = allAssignments.filter(a => a["ma-giang-vien"] === myMaGV).map(a => a["cong-viec-id"]);
                     // Lấy các kế hoạch chứa các task đó
-                    const myPlanIds = allTasks.filter(t => myTaskIds.includes(t.id)).map(t => t["ke-hoach-id"]);
+                    const myPlanIds = allTasksData.filter(t => myTaskIds.includes(t.id)).map(t => t["ke-hoach-id"]);
                     
                     // Lọc kế hoạch: mình tạo, mình phụ trách, hoặc có chứa task của mình
                     allPlans = allPlans.filter(p => 
@@ -491,13 +506,14 @@
 
                 // Gắn trạng thái công việc vào từng phân công để vẽ biểu đồ
                 allAssignments.forEach(a => {
-                    const task = allTasks.find(t => t.id === a["cong-viec-id"]);
+                    const task = allTasksData.find(t => t.id === a["cong-viec-id"]);
                     a["trang-thai"] = task ? task["trang-thai"] : "dang-thuc-hien";
                 });
 
                 if (isApprover()) {
                     updateDashboardCounts();
                     renderChart();
+                    renderTrendChart();
                 }
                 
                 renderPlans();
@@ -508,7 +524,7 @@
         }
 
         /* =========================================================
-           VẼ BIỂU ĐỒ CHART.JS KÈM LỌC TRẠNG THÁI (GỘP CỘT)
+           VẼ BIỂU ĐỒ 1: KHỐI LƯỢNG CÔNG VIỆC
         ========================================================= */
         function renderChart() {
             const ctx = document.getElementById('workloadChart');
@@ -597,6 +613,87 @@
                         tooltip: {
                             mode: 'index',
                             intersect: false
+                        }
+                    }
+                }
+            });
+        }
+
+        /* =========================================================
+           VẼ BIỂU ĐỒ 2: TỐC ĐỘ HOÀN THÀNH (% THEO THÁNG)
+        ========================================================= */
+        function renderTrendChart() {
+            const ctx = document.getElementById('completionTrendChart');
+            if (!ctx) return;
+
+            const labels = [];
+            const dataRates = [];
+
+            // Lấy 6 tháng gần nhất (Bao gồm tháng hiện tại)
+            const today = new Date();
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                const monthStr = `${d.getMonth() + 1}/${d.getFullYear()}`;
+                labels.push(monthStr);
+
+                // Lọc các công việc có hạn chót nằm trong tháng này
+                const monthTasks = allTasksData.filter(t => {
+                    if (!t["han-hoan-thanh"]) return false;
+                    const td = new Date(t["han-hoan-thanh"]);
+                    return td.getMonth() === d.getMonth() && td.getFullYear() === d.getFullYear();
+                });
+
+                if (monthTasks.length === 0) {
+                    dataRates.push(0);
+                } else {
+                    const completed = monthTasks.filter(t => t["trang-thai"] === "hoan-thanh").length;
+                    const rate = Math.round((completed / monthTasks.length) * 100);
+                    dataRates.push(rate);
+                }
+            }
+
+            if (completionChartInstance) {
+                completionChartInstance.destroy();
+            }
+
+            completionChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '% Tỷ lệ Hoàn thành',
+                        data: dataRates,
+                        borderColor: '#10b981', // Màu xanh Success
+                        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#10b981',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) { return value + '%' }
+                            }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + '%';
+                                }
+                            }
                         }
                     }
                 }
@@ -744,11 +841,6 @@
                     </div>
 
                     <div class="plan-bottom">
-                        <div style="display:flex; gap:6px; flex-wrap: wrap; align-items: center;">
-                            ${statusBadge(plan["trang-thai"])}
-                            ${approvalBadge(plan["trang-thai-duyet"])}
-                        </div>
-
                         <div class="plan-actions">
                             <button class="btn-custom btn-custom-small btn-custom-primary" onclick="window.location.href='chi-tiet-ke-hoach.html?id=${plan.id}'">
                                 Chi tiết <i class="fas fa-chevron-right" style="margin-left:3px; font-size:10px;"></i>
@@ -883,24 +975,6 @@
             const number = Number(value || 0);
             if (Number.isInteger(number)) return `${number}%`;
             return `${number.toFixed(1)}%`;
-        }
-
-        function statusBadge(status) {
-            const map = {
-                "dang-thuc-hien": ["Đang thực hiện", "blue", "fa-play-circle"],
-                "hoan-thanh": ["Hoàn thành", "green", "fa-check-circle"]
-            };
-            const [label, color, icon] = map[status] || ["Đang thực hiện", "blue", "fa-play-circle"];
-            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
-        }
-
-        function approvalBadge(status) {
-            const map = {
-                "cho-duyet": ["Chờ duyệt", "yellow", "fa-hourglass-half"],
-                "da-duyet": ["Đã duyệt", "green", "fa-clipboard-check"]
-            };
-            const [label, color, icon] = map[status] || [status || "—", "gray", "fa-info-circle"];
-            return `<span class="status-badge badge-${color}"><i class="fas ${icon}"></i> <span>${label}</span></span>`;
         }
 
         function escapeHtml(value) {
