@@ -8,41 +8,82 @@
     <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
     <link rel="apple-touch-icon" href="images/logo_Bộ môn.png">
     
+    <!-- Dùng trực tiếp CSS gốc của hệ thống -->
     <link rel="stylesheet" href="css/style.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Đã cấp quyền tải CDN Tailwind trong CSP để tránh bị chặn -->
     <meta http-equiv="Content-Security-Policy" content="
             default-src 'self';
             connect-src 'self' https://*.supabase.co;
             img-src 'self' data: https://*.supabase.co;
-            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com;
-            script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com;
+            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
+            script-src 'self' 'unsafe-inline';
             font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
         ">
 
-    <!-- Cấu hình Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { corePlugins: { preflight: false } }
-    </script>
-
     <style>
-        /* Đồng bộ CSS Reset cục bộ cho container */
-        #app-container, #app-container * { 
-            border-style: solid; 
-            border-width: 0; 
-            box-sizing: border-box; 
+        .app-container { max-width: 1200px; margin: 0 auto; padding: 24px 16px; background: transparent; }
+
+        /* Nút bấm hệ thống */
+        .btn-custom {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            border: 1px solid var(--border); background: white; color: var(--text-dark);
+            border-radius: 8px; padding: 10px 16px; font-weight: 600; cursor: pointer;
+            font-size: 0.9rem; transition: 0.2s; text-decoration: none;
         }
-        /* Ép font cho các thẻ chữ nhưng CHỪA LẠI thẻ <i> của Font Awesome để không bị lỗi ô vuông */
-        #app-container *:not(i) {
-            font-family: inherit;
+        .btn-custom:hover { background: var(--bg-page); }
+        .btn-custom-primary { border-color: var(--primary); background: var(--primary); color: white; }
+        .btn-custom-primary:hover { background: var(--primary-hover); color: white;}
+
+        /* Card hiển thị chung */
+        .plan-overview-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .plan-title-large { font-size: 22px; font-weight: 700; color: var(--text-dark); margin: 0; }
+        .plan-description { margin: 0; color: var(--text-muted); font-size: 15px; line-height: 1.6; }
+
+        .meta-label { color: var(--text-muted); font-size: 13px; font-weight: 500; }
+        .status-section-title { font-size: 1.15rem; font-weight: 700; margin: 10px 0 15px 0; padding-bottom: 8px; display: flex; align-items: center; gap: 8px; color: var(--text-dark); border-bottom: 2px solid var(--border-light); }
+
+        /* Khung chương trình (Kế thừa từ Task List) */
+        .task-list { display: grid; gap: 14px; }
+        .task-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 0; text-align: left; transition: border-color 0.2s; overflow: hidden; }
+        .task-card:hover { border-color: var(--primary-light); }
+        .task-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; cursor: pointer; transition: background 0.2s; }
+        .task-top:hover { background: var(--bg-page); }
+        .task-title { font-weight: 700; margin: 0; color: var(--text-dark); font-size: 16px; }
+        
+        .status-badge {
+            display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+            border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 600; white-space: nowrap;
         }
-        #app-container ul { list-style: none; padding: 0; margin: 0; }
-        #app-container button { background: transparent; cursor: pointer; outline: none; }
-        #app-container table { border-collapse: collapse; text-indent: initial; border-spacing: 2px; }
-        #app-container h2, #app-container h3 { margin: 0; }
+        .badge-gray { background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); }
+        .badge-blue { background: #e0f2fe; color: #0284c7; }
+
+        /* Chuyên ngành Tab Buttons */
+        .major-tabs-container { display: flex; gap: 10px; margin-bottom: 24px; overflow-x: auto; scrollbar-width: none; }
+        .major-tabs-container::-webkit-scrollbar { display: none; }
+        .tab-btn { flex: 1; padding: 14px 10px; font-size: 14px; white-space: nowrap; text-align: center; border: 2px solid var(--border-light); background: white; color: var(--text-muted); border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .tab-btn:hover { border-color: var(--border); color: var(--text-dark); background: var(--bg-page); }
+        .tab-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1); transform: scale(1.02); z-index: 1;}
+
+        /* Bảng Khung chương trình */
+        .curriculum-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; margin-top: 10px; }
+        .curriculum-table th { padding: 12px 10px; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid var(--border-light); white-space: nowrap; }
+        .curriculum-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-dark); }
+        .curriculum-table tr:last-child td { border-bottom: none; }
+        .curriculum-table tr:hover td { background: var(--bg-page); }
+
+        /* Layout Container Top Info */
+        .top-info-layout { display: flex; gap: 24px; align-items: stretch; flex-wrap: wrap; }
+        .top-info-left { flex: 1; min-width: 280px; display: flex; align-items: center; gap: 16px; justify-content: center; }
+        .top-info-right { flex: 2; min-width: 300px; display: flex; flex-direction: column; gap: 10px; justify-content: center; border-left: 1px dashed var(--border); padding-left: 24px; }
+        .top-info-action { width: 100%; display: flex; justify-content: center; margin-top: 15px; }
+
+        @media (max-width: 900px) {
+            .top-info-right { border-left: none; padding-left: 0; border-top: 1px dashed var(--border); padding-top: 20px; }
+            .top-info-left { justify-content: flex-start; }
+            .tab-btn { font-size: 13px; padding: 12px 8px; }
+        }
     </style>
 </head>
 <body style="display: flex; flex-direction: column; min-height: 100vh; background-color: #f8fafc; overflow-x: hidden;">
@@ -51,13 +92,14 @@
     <div id="header-placeholder"></div>
 
     <main style="flex: 1; padding-top: 2rem; width: 100%;">
-        <div style="text-align: center; margin-bottom: 2rem; padding: 0 1rem;">
-            <h2 style="font-size: clamp(1.4rem, 5.5vw, 2rem); color: var(--text-dark); margin: 0; font-weight: 700; letter-spacing: -0.5px;">THÔNG TIN TUYỂN SINH</h2>
-            <div style="font-size: clamp(0.9rem, 3.5vw, 1rem); color: var(--text-body); font-weight: 600; margin-top: 5px;">BỘ MÔN PHỤC HỒI CHỨC NĂNG</div>
+        <div class="section-title" style="margin-top: 1rem;">
+            <h1>Thông tin Tuyển sinh</h1>
+            <div class="section-divider"></div>
+            <p>Bộ môn Phục hồi chức năng</p>
         </div>
 
-        <!-- Khu vực render nội dung -->
-        <div id="app-container" class="w-full text-gray-900 pb-8 px-4 max-w-[1100px] mx-auto"></div>
+        <!-- Khu vực render nội dung Vanilla JS -->
+        <div id="app-container" class="app-container"></div>
     </main>
 
     <!-- FOOTER -->
@@ -65,9 +107,8 @@
 
     <script src="js/layout.js"></script>
 
-    <!-- SCRIPT CHÍNH (VANILLA JS - ĐẢM BẢO CHẠY 100%) -->
+    <!-- SCRIPT CHÍNH (VANILLA JS) -->
     <script>
-        // --- DỮ LIỆU TĨNH ---
         const curriculumDatabase = {
             y1_s1: [
               { id: 1, name: "Tiếng Anh chuyên ngành", theory: 1, practice: 1 },
@@ -177,7 +218,6 @@
         const majors = {
             VLTL: {
               name: "Vật lý trị liệu",
-              color: "blue",
               description: "Tập trung vào việc phát triển, duy trì và phục hồi tối đa khả năng vận động và chức năng của con người trong suốt vòng đời.",
               jobs: [
                 "Làm việc tại các bệnh viện, trung tâm phục hồi chức năng, viện dưỡng lão.",
@@ -188,7 +228,6 @@
             },
             HĐTL: {
               name: "Hoạt động trị liệu",
-              color: "orange",
               description: "Hỗ trợ người bệnh phát triển, phục hồi hoặc duy trì khả năng thực hiện và tham gia vào các hoạt động hằng ngày có ý nghĩa.",
               jobs: [
                 "Làm việc tại các bệnh viện, trung tâm phục hồi chức năng.",
@@ -199,7 +238,6 @@
             },
             NNTL: {
               name: "Ngôn ngữ trị liệu",
-              color: "emerald",
               description: "Làm việc với trẻ em và người lớn nhằm sàng lọc, nhận diện, can thiệp, tư vấn các vấn đề về ngôn ngữ, lời nói, giao tiếp và nuốt.",
               jobs: [
                 "Làm việc tại các bệnh viện, trung tâm phục hồi chức năng, viện dưỡng lão.",
@@ -225,16 +263,6 @@
         let activeMajor = 'VLTL';
         let expandedSemester = null;
 
-        // Hàm hỗ trợ CSS Tailwind
-        const getColors = (color) => {
-            switch(color) {
-              case 'blue': return { bg: 'bg-blue-600', text: 'text-white', border: 'border-blue-200', light: 'bg-blue-50', textLight: 'text-blue-600' };
-              case 'orange': return { bg: 'bg-orange-500', text: 'text-white', border: 'border-orange-200', light: 'bg-orange-50', textLight: 'text-orange-500' };
-              case 'emerald': return { bg: 'bg-emerald-600', text: 'text-white', border: 'border-emerald-200', light: 'bg-emerald-50', textLight: 'text-emerald-600' };
-              default: return { bg: 'bg-gray-600', text: 'text-white', border: 'border-gray-200', light: 'bg-gray-50', textLight: 'text-gray-600' };
-            }
-        };
-
         // Các hàm thay đổi trạng thái
         window.changeMajor = function(majorKey) {
             activeMajor = majorKey;
@@ -250,32 +278,27 @@
         // Hàm vẽ toàn bộ giao diện HTML
         function renderApp() {
             const container = document.getElementById('app-container');
-            const theme = getColors(majors[activeMajor].color);
 
-            // 1. Tạo HTML cho phần chọn Chuyên ngành (Ép không rớt dòng)
+            // 1. HTML Chọn Chuyên ngành (Tab Buttons - Ngăn rớt dòng)
             const majorButtonsHtml = Object.keys(majors).map(key => {
                 const isActive = activeMajor === key;
-                const mTheme = getColors(majors[key].color);
-                const activeClasses = isActive 
-                    ? `${mTheme.border} ${mTheme.light} text-gray-900 shadow-sm scale-[1.02]` 
-                    : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50';
-                
+                const activeClass = isActive ? 'active' : '';
                 return `
-                    <button onclick="changeMajor('${key}')" class="py-2.5 px-1 sm:px-4 rounded-lg sm:rounded-xl border-2 transition-all font-semibold text-[10px] sm:text-sm whitespace-nowrap overflow-hidden ${activeClasses}">
+                    <button onclick="changeMajor('${key}')" class="tab-btn ${activeClass}">
                         ${majors[key].name}
                     </button>
                 `;
             }).join('');
 
-            // 2. Tạo HTML cho danh sách việc làm
+            // 2. HTML Danh sách việc làm
             const jobsHtml = majors[activeMajor].jobs.map(job => `
-                <li class="flex items-start gap-2">
-                    <span class="mt-1.5 w-1.5 h-1.5 rounded-full ${theme.bg} flex-shrink-0"></span> 
+                <li style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; color: var(--text-dark); font-size: 15px; line-height: 1.5;">
+                    <i class="fas fa-check-circle" style="color: var(--primary); margin-top: 4px; font-size: 14px;"></i>
                     <span>${job}</span>
                 </li>
             `).join('');
 
-            // 3. Tạo HTML cho danh sách Khung chương trình
+            // 3. HTML Khung chương trình
             const semestersHtml = semesters.map(sem => {
                 const subjects = curriculumDatabase[sem.key]?.filter(sub => !sub.tags || sub.tags.includes(activeMajor)) || [];
                 const isOpen = expandedSemester === sem.id;
@@ -284,25 +307,25 @@
                 let tableHtml = '';
                 if (isOpen) {
                     const rowsHtml = subjects.map((sub, idx) => `
-                        <tr class="border-b last:border-0 hover:bg-gray-50 transition-colors">
-                            <td class="py-3 text-gray-500 whitespace-nowrap">${idx + 1}</td>
-                            <td class="py-3 font-medium text-gray-800 min-w-[150px]">${sub.name}</td>
-                            <td class="py-3 text-center whitespace-nowrap">
-                                <span class="font-bold">${sub.theory + sub.practice}</span>
-                                <span class="text-gray-400 text-xs ml-1">(${sub.theory}+${sub.practice})</span>
+                        <tr>
+                            <td style="width: 50px;">${idx + 1}</td>
+                            <td style="font-weight: 500; min-width: 200px;">${sub.name}</td>
+                            <td style="text-align: center; white-space: nowrap;">
+                                <span style="font-weight: 700;">${sub.theory + sub.practice}</span>
+                                <span style="color: var(--text-muted); font-size: 12px; margin-left: 4px;">(${sub.theory}+${sub.practice})</span>
                             </td>
                         </tr>
                     `).join('');
 
                     tableHtml = `
-                        <div class="px-5 pb-5 animate-fade-in">
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-sm text-left border-collapse">
+                        <div style="padding: 0 20px 20px;">
+                            <div style="overflow-x: auto;">
+                                <table class="curriculum-table">
                                     <thead>
-                                        <tr class="text-gray-500 border-b">
-                                            <th class="py-2 w-12 font-medium whitespace-nowrap">STT</th>
-                                            <th class="py-2 font-medium whitespace-nowrap">Tên học phần</th>
-                                            <th class="py-2 text-center w-32 font-medium whitespace-nowrap">Tín chỉ (LT+TH)</th>
+                                        <tr>
+                                            <th>STT</th>
+                                            <th>Tên học phần</th>
+                                            <th style="text-align: center;">Tín chỉ (LT+TH)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -310,25 +333,23 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="mt-3 p-3 rounded-lg text-xs flex justify-between items-center ${theme.light}">
-                                <div class="flex items-center gap-1.5 text-gray-700">
-                                    <i class="fas fa-info-circle"></i> Tổng: <strong>${totalCredits}</strong> tín chỉ
-                                </div>
-                                <div class="text-gray-500 italic">*Khung chương trình 2025</div>
+                            <div style="margin-top: 15px; padding: 12px 16px; background: var(--bg-page); border-radius: 8px; border: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+                                <span style="color: var(--text-dark);"><i class="fas fa-info-circle" style="color: var(--primary); margin-right: 5px;"></i> Tổng: <b>${totalCredits}</b> tín chỉ</span>
+                                <span style="color: var(--text-muted); font-style: italic;">*Khung chương trình 2025</span>
                             </div>
                         </div>
                     `;
                 }
 
                 return `
-                    <div class="bg-white rounded-xl border overflow-hidden transition-all ${isOpen ? `border-2 ${theme.border} shadow-sm` : 'border-gray-200 hover:border-gray-300'}">
-                        <button onclick="toggleSemester(${sem.id})" class="w-full px-5 py-4 flex items-center justify-between text-left">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${isOpen ? theme.bg + ' text-white' : 'bg-gray-100 text-gray-500'}">${sem.id}</div>
-                                <span class="font-semibold ${isOpen ? 'text-gray-900' : 'text-gray-700'}">${sem.title}</span>
+                    <div class="task-card">
+                        <div class="task-top" onclick="toggleSemester(${sem.id})">
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                <div class="status-badge ${isOpen ? 'badge-blue' : 'badge-gray'}" style="width: 34px; height: 34px; padding: 0; border-radius: 50%; font-size: 14px;">${sem.id}</div>
+                                <div class="task-title" style="color: ${isOpen ? 'var(--primary)' : 'var(--text-dark)'};">${sem.title}</div>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-400 transition-transform ${isOpen ? 'rotate-90' : ''}"></i>
-                        </button>
+                            <i class="fas fa-chevron-right" style="color: var(--text-muted); transition: transform 0.2s; transform: ${isOpen ? 'rotate(90deg)' : 'rotate(0)'};"></i>
+                        </div>
                         ${tableHtml}
                     </div>
                 `;
@@ -336,96 +357,105 @@
 
             // Gắn toàn bộ mã HTML vào Container
             container.innerHTML = `
-                <!-- THÔNG TIN CHUNG (Xếp ngang trên máy tính, Xếp dọc trên điện thoại) -->
-                <div class="bg-white border border-blue-100 rounded-2xl p-4 sm:p-6 mb-6 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6 shadow-sm overflow-hidden">
+                <!-- THÔNG TIN CHUNG (Trải rộng, Tổ hợp môn căn trái xếp dọc) -->
+                <div class="plan-overview-card top-info-layout">
                   
-                  <!-- Ngành đào tạo -->
-                  <div class="flex items-center gap-3 sm:gap-4 w-full lg:w-auto shrink-0 justify-center lg:justify-start overflow-hidden">
-                    <div class="bg-blue-600 p-3 sm:p-4 rounded-xl text-white shadow-md shrink-0">
-                      <i class="fas fa-graduation-cap text-2xl sm:text-3xl"></i>
+                  <!-- Left: Icon + Tên Ngành -->
+                  <div class="top-info-left">
+                    <div style="background: var(--primary); color: white; width: 65px; height: 65px; border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); flex-shrink: 0;">
+                      <i class="fas fa-graduation-cap"></i>
                     </div>
-                    <div class="text-left overflow-hidden">
-                      <div class="text-[10px] sm:text-xs text-gray-500 font-bold uppercase tracking-wider mb-1 whitespace-nowrap">Ngành đào tạo</div>
-                      <div class="font-extrabold text-blue-900 text-[12px] sm:text-[15px] md:text-lg lg:text-xl whitespace-nowrap">KỸ THUẬT PHỤC HỒI CHỨC NĂNG</div>
+                    <div>
+                      <div class="meta-label" style="margin-bottom: 2px;">Ngành đào tạo</div>
+                      <div style="font-size: clamp(16px, 3vw, 22px); font-weight: 800; color: var(--primary); margin-bottom: 8px; white-space: nowrap;">KỸ THUẬT PHỤC HỒI CHỨC NĂNG</div>
+                      <span class="status-badge badge-gray" style="font-family: monospace; font-size: 14px; padding: 6px 14px; font-weight:bold; letter-spacing:1px; border-color: var(--border);">MÃ: 7720603</span>
                     </div>
                   </div>
 
-                  <!-- Khối thông tin: Chỉ tiêu, Học phí, Tổ hợp (Xếp dọc, Tổ hợp căn trái) -->
-                  <div class="flex flex-col gap-2.5 w-full flex-1 max-w-3xl mx-auto lg:mx-0">
-                    <div class="bg-blue-50 border border-blue-100 px-4 py-2.5 rounded-xl flex justify-between items-center w-full transition-colors hover:bg-blue-100/50">
-                      <span class="text-gray-600 font-medium text-sm">Chỉ tiêu:</span>
-                      <span class="font-bold text-blue-700 text-base">100</span>
+                  <!-- Right: Chỉ tiêu, Học phí, Tổ hợp môn xếp dọc -->
+                  <div class="top-info-right">
+                    <div style="background: var(--bg-page); border: 1px solid var(--border-light); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                      <span class="meta-label" style="text-transform: none;">Chỉ tiêu tuyển sinh:</span>
+                      <span style="font-size: 16px; font-weight: 800; color: var(--primary);">100</span>
                     </div>
-                    <div class="bg-blue-50 border border-blue-100 px-4 py-2.5 rounded-xl flex justify-between items-center w-full transition-colors hover:bg-blue-100/50">
-                      <span class="text-gray-600 font-medium text-sm">Học phí dự kiến:</span>
-                      <span class="font-bold text-gray-800 text-base">48.000.000 đ/năm</span>
+                    <div style="background: var(--bg-page); border: 1px solid var(--border-light); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                      <span class="meta-label" style="text-transform: none;">Học phí dự kiến:</span>
+                      <span style="font-size: 15px; font-weight: 700; color: var(--text-dark);">48.000.000 đ/năm</span>
                     </div>
-                    <div class="bg-blue-50 border border-blue-100 px-4 py-3 rounded-xl flex flex-col items-start gap-1 w-full transition-colors hover:bg-blue-100/50">
-                      <span class="text-gray-600 font-medium text-sm">Tổ hợp môn:</span>
-                      <div class="flex flex-col gap-1 w-full text-left pl-2 sm:pl-4 mt-1">
-                         <span class="font-bold text-gray-800 text-sm">A00 <span class="font-normal text-xs text-gray-500">(Toán, Lý, Hóa)</span></span>
-                         <span class="font-bold text-gray-800 text-sm">B00 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Sinh)</span></span>
-                         <span class="font-bold text-gray-800 text-sm">D07 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Anh)</span></span>
+                    
+                    <!-- Khối Tổ hợp môn (Căn trái, riêng biệt từng dòng) -->
+                    <div style="background: var(--bg-page); border: 1px solid var(--border-light); padding: 14px 16px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px;">
+                      <span class="meta-label" style="text-transform: none; margin-bottom: 4px;">Tổ hợp xét tuyển:</span>
+                      <div style="display: flex; flex-direction: column; gap: 8px; padding-left: 5px;">
+                          <div style="font-size: 14px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+                              <span style="font-weight: 700; width: 35px; color: var(--primary);">A00</span> 
+                              <span style="color: var(--text-muted);">(Toán, Lý, Hóa)</span>
+                          </div>
+                          <div style="font-size: 14px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+                              <span style="font-weight: 700; width: 35px; color: var(--primary);">B00</span> 
+                              <span style="color: var(--text-muted);">(Toán, Hóa, Sinh)</span>
+                          </div>
+                          <div style="font-size: 14px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+                              <span style="font-weight: 700; width: 35px; color: var(--primary);">D07</span> 
+                              <span style="color: var(--text-muted);">(Toán, Hóa, Anh)</span>
+                          </div>
                       </div>
                     </div>
                   </div>
                   
-                  <!-- Khối Mã Ngành & Nút Công văn -->
-                  <div class="flex flex-row lg:flex-col gap-3 w-full lg:w-48 shrink-0">
-                    <div class="bg-blue-600 px-4 py-3 rounded-xl shadow-md text-center text-white relative overflow-hidden flex flex-col justify-center flex-1">
-                      <div class="text-[10px] md:text-xs text-blue-100 font-bold mb-1 uppercase opacity-90 whitespace-nowrap">Mã Ngành</div>
-                      <div class="font-black text-xl md:text-2xl tracking-widest whitespace-nowrap">7720603</div>
-                    </div>
+                  <!-- Action Button -->
+                  <div class="top-info-action">
                     <a href="https://ump.edu.vn/uploads/ckeditor/files/Truong/DaoTaoDaiHoc/TuyenSinh/2026/1608_06042026_Thongtintuyensinh2026.pdf" 
                        target="_blank" 
-                       class="flex items-center justify-center gap-2 py-2.5 px-4 bg-white hover:bg-blue-50 text-blue-600 rounded-lg text-sm font-semibold transition-colors border border-blue-200 whitespace-nowrap flex-1 shadow-sm"
-                       style="text-decoration: none;">
-                      <i class="fas fa-external-link-alt"></i> Chi tiết
+                       class="btn-custom btn-custom-primary" style="width: 100%; max-width: 400px; padding: 12px;">
+                      <i class="fas fa-external-link-alt"></i> Xem chi tiết công văn tuyển sinh
                     </a>
                   </div>
                 </div>
 
-                <!-- CHỌN CHUYÊN NGÀNH (Sử dụng CSS Grid để chia 3 nút không rớt chữ) -->
-                <div class="mb-6">
-                  <div class="text-sm text-center text-gray-500 italic mb-3">* Sinh viên được chọn 1 trong 3 chuyên ngành để đào tạo chuyên sâu</div>
-                  <div class="grid grid-cols-3 gap-1 sm:gap-3 w-full">
+                <!-- CHỌN CHUYÊN NGÀNH -->
+                <div>
+                  <div style="text-align: center; color: var(--text-muted); font-size: 13px; font-style: italic; margin-bottom: 15px;">* Sinh viên được chọn 1 trong 3 chuyên ngành để đào tạo chuyên sâu</div>
+                  <div class="major-tabs-container">
                     ${majorButtonsHtml}
                   </div>
                 </div>
 
                 <!-- THÔNG TIN CHUYÊN NGÀNH -->
-                <div class="p-5 sm:p-6 rounded-2xl mb-6 border-2 ${theme.border} ${theme.light} transition-colors">
-                  <h2 class="text-xl font-bold mb-2 text-gray-800">${majors[activeMajor].name}</h2>
-                  <p class="text-gray-700 text-sm mb-4 leading-relaxed">"${majors[activeMajor].description}"</p>
-                  <div class="flex gap-4 text-sm font-medium text-gray-600 bg-white p-3 rounded-lg border shadow-sm w-fit">
-                    <span class="flex items-center gap-2 whitespace-nowrap"><i class="far fa-clock"></i> 4 năm (8 học kỳ)</span>
-                    <span class="flex items-center gap-2 border-l pl-4 whitespace-nowrap"><i class="fas fa-bullseye"></i> 130 tín chỉ</span>
+                <div class="plan-overview-card" style="border: 2px solid var(--primary); background: var(--bg-page);">
+                  <h2 class="plan-title-large" style="margin-bottom: 12px; color: var(--primary);">${majors[activeMajor].name}</h2>
+                  <p class="plan-description" style="margin-bottom: 20px; color: var(--text-dark);">"${majors[activeMajor].description}"</p>
+                  <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <span class="status-badge badge-gray" style="background: white;"><i class="far fa-clock" style="color: var(--text-muted);"></i> 4 năm (8 học kỳ)</span>
+                    <span class="status-badge badge-gray" style="background: white;"><i class="fas fa-bullseye" style="color: var(--text-muted);"></i> 130 tín chỉ</span>
                   </div>
                 </div>
 
                 <!-- CƠ HỘI VIỆC LÀM -->
-                <div class="bg-white border border-gray-200 rounded-2xl p-5 mb-8 shadow-sm">
-                  <div class="flex items-center gap-3 mb-4 pb-3 border-b">
-                    <div class="p-2 rounded-lg ${theme.bg} ${theme.text}"><i class="fas fa-briefcase text-lg"></i></div>
-                    <h3 class="text-lg font-bold text-gray-800">Cơ hội việc làm</h3>
-                  </div>
-                  <ul class="space-y-2 text-sm text-gray-700">
+                <div class="plan-overview-card">
+                  <h3 class="status-section-title" style="margin-top: 0; border-bottom: 1px dashed var(--border-light); padding-bottom: 15px;">
+                      <div style="background: var(--primary-light); color: var(--primary); padding: 8px 12px; border-radius: 8px;"><i class="fas fa-briefcase"></i></div> 
+                      Cơ hội việc làm
+                  </h3>
+                  <ul style="margin: 0; padding: 0;">
                     ${jobsHtml}
                   </ul>
                 </div>
 
                 <!-- KHUNG CHƯƠNG TRÌNH -->
-                <div class="space-y-3 relative">
-                  <h3 class="text-lg font-bold flex items-center gap-2 mb-4">
-                    <i class="fas fa-book-open text-blue-600 text-lg"></i> Khung Chương Trình Đào Tạo
+                <div style="margin-bottom: 40px;">
+                  <h3 class="status-section-title" style="border: none;">
+                    <i class="fas fa-book-open" style="color: var(--primary);"></i> Khung Chương Trình Đào Tạo
                   </h3>
-                  ${semestersHtml}
+                  <div class="task-list">
+                      ${semestersHtml}
+                  </div>
                 </div>
 
                 <!-- NÚT FANPAGE (Luôn hiện đầy đủ chữ) -->
-                <a href="https://www.facebook.com/BomonPhuchoichucnang" target="_blank" class="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-[#1877F2] text-white px-5 py-3.5 rounded-full shadow-lg hover:-translate-y-1 transition-transform border border-blue-400" style="text-decoration: none;">
-                  <i class="fab fa-facebook text-xl"></i>
-                  <span class="text-sm font-medium whitespace-nowrap">Theo dõi Fanpage</span>
+                <a href="https://www.facebook.com/BomonPhuchoichucnang" target="_blank" class="btn-custom btn-custom-primary shadow-lg" style="position: fixed; bottom: 24px; right: 24px; z-index: 100; border-radius: 999px; padding: 12px 24px; box-shadow: 0 10px 25px rgba(2, 132, 199, 0.4);">
+                  <i class="fab fa-facebook" style="font-size: 20px;"></i>
+                  <span style="font-weight: 600; margin-left: 4px;">Theo dõi Fanpage</span>
                 </a>
             `;
         }
