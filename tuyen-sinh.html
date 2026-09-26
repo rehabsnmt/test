@@ -9,6 +9,7 @@
     <link rel="apple-touch-icon" href="images/logo_Bộ môn.png">
     
     <link rel="stylesheet" href="css/style.css">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Đã cấp quyền tải CDN Tailwind trong CSP để tránh bị chặn -->
@@ -28,12 +29,15 @@
     </script>
 
     <style>
-        /* Đồng bộ Font chữ chung của toàn website */
+        /* Đồng bộ CSS Reset cục bộ cho container */
         #app-container, #app-container * { 
             border-style: solid; 
             border-width: 0; 
             box-sizing: border-box; 
-            font-family: inherit !important; 
+        }
+        /* Ép font cho các thẻ chữ nhưng CHỪA LẠI thẻ <i> của Font Awesome để không bị lỗi ô vuông */
+        #app-container *:not(i) {
+            font-family: inherit;
         }
         #app-container ul { list-style: none; padding: 0; margin: 0; }
         #app-container button { background: transparent; cursor: pointer; outline: none; }
@@ -61,7 +65,7 @@
 
     <script src="js/layout.js"></script>
 
-    <!-- SCRIPT CHÍNH (VANILLA JS - ĐẢM BẢO CHẠY 100%) -->
+    <!-- SCRIPT CHÍNH (VANILLA JS) -->
     <script>
         // --- DỮ LIỆU TĨNH ---
         const curriculumDatabase = {
