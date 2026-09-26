@@ -57,7 +57,7 @@
         </div>
 
         <!-- Khu vực render nội dung -->
-        <div id="app-container" class="w-full text-gray-900 pb-8 px-4 max-w-4xl mx-auto"></div>
+        <div id="app-container" class="w-full text-gray-900 pb-8 px-4 max-w-[1400px] mx-auto"></div>
     </main>
 
     <!-- FOOTER -->
@@ -65,7 +65,7 @@
 
     <script src="js/layout.js"></script>
 
-    <!-- SCRIPT CHÍNH (VANILLA JS) -->
+    <!-- SCRIPT CHÍNH (VANILLA JS - ĐẢM BẢO CHẠY 100%) -->
     <script>
         // --- DỮ LIỆU TĨNH ---
         const curriculumDatabase = {
@@ -261,7 +261,7 @@
                     : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50';
                 
                 return `
-                    <button onclick="changeMajor('${key}')" class="py-2.5 rounded-xl border-2 transition-all font-semibold text-xs sm:text-sm ${activeClasses}">
+                    <button onclick="changeMajor('${key}')" class="py-2.5 px-4 rounded-xl border-2 transition-all font-semibold text-sm ${activeClasses}">
                         ${majors[key].name}
                     </button>
                 `;
@@ -336,57 +336,57 @@
 
             // Gắn toàn bộ mã HTML vào Container
             container.innerHTML = `
-                <!-- THÔNG TIN CHUNG -->
-                <div class="bg-white border border-blue-100 rounded-2xl p-5 mb-6 flex flex-col md:flex-row items-center justify-between gap-5 shadow-sm">
-                  <div class="flex items-center gap-4 w-full md:w-auto">
+                <!-- THÔNG TIN CHUNG (Trải rộng màn hình) -->
+                <div class="bg-white border border-blue-100 rounded-2xl p-5 mb-6 flex flex-col xl:flex-row items-center justify-between gap-4 shadow-sm">
+                  
+                  <!-- Ngành đào tạo -->
+                  <div class="flex items-center gap-3 w-full xl:w-auto shrink-0">
                     <div class="bg-blue-600 p-3 rounded-xl text-white shadow-md">
                       <i class="fas fa-graduation-cap text-2xl"></i>
                     </div>
                     <div>
-                      <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Ngành đào tạo</div>
-                      <div class="font-extrabold text-blue-900 text-lg">KỸ THUẬT PHỤC HỒI CHỨC NĂNG</div>
+                      <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1 whitespace-nowrap">Ngành đào tạo</div>
+                      <div class="font-extrabold text-blue-900 text-lg whitespace-nowrap">KỸ THUẬT PHỤC HỒI CHỨC NĂNG</div>
                     </div>
                   </div>
 
-                  <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto flex-1 md:justify-end">
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex-1 md:max-w-xs">
-                        <div class="flex justify-between items-center mb-2 pb-2 border-b border-blue-100">
-                          <span class="text-gray-600 font-medium text-sm">Chỉ tiêu:</span>
-                          <span class="font-bold text-blue-700">100</span>
-                        </div>
-                        <div class="flex justify-between items-center mb-2 pb-2 border-b border-blue-100">
-                          <span class="text-gray-600 font-medium text-sm">Học phí dự kiến:</span>
-                          <span class="font-bold text-gray-800 text-sm">48.000.000 đ/năm</span>
-                        </div>
-                        <div class="flex justify-between items-start mt-2">
-                          <span class="text-gray-600 font-medium text-sm">Tổ hợp môn:</span>
-                          <div class="text-right text-sm font-bold text-gray-800 space-y-1">
-                              <div>A00 <span class="font-normal text-xs text-gray-500">(Toán, Lý, Hóa)</span></div>
-                              <div>B00 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Sinh)</span></div>
-                              <div>D07 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Anh)</span></div>
-                          </div>
-                        </div>
+                  <!-- 3 thẻ thông tin trên 1 hàng -->
+                  <div class="flex flex-wrap lg:flex-nowrap gap-3 w-full xl:w-auto flex-1 xl:justify-center">
+                    <div class="bg-blue-50 border border-blue-100 p-3 rounded-xl flex items-center justify-center gap-2 whitespace-nowrap flex-1 shrink-0">
+                      <span class="text-gray-600 font-medium text-sm">Chỉ tiêu:</span>
+                      <span class="font-bold text-blue-700 text-base">100</span>
                     </div>
-                    
-                    <div class="flex flex-col gap-3">
-                        <div class="bg-blue-600 px-6 py-4 rounded-xl shadow-md text-center text-white relative overflow-hidden h-full flex flex-col justify-center">
-                          <div class="text-xs text-blue-100 font-bold mb-1 uppercase opacity-90">Mã Ngành</div>
-                          <div class="font-black text-3xl tracking-widest">7720603</div>
-                        </div>
-                        <a href="https://ump.edu.vn/uploads/ckeditor/files/Truong/DaoTaoDaiHoc/TuyenSinh/2026/1608_06042026_Thongtintuyensinh2026.pdf" 
-                           target="_blank" 
-                           class="flex items-center justify-center gap-2 py-2.5 bg-white hover:bg-blue-50 text-blue-600 rounded-lg text-sm font-semibold transition-colors border border-blue-200"
-                           style="text-decoration: none;">
-                          <i class="fas fa-external-link-alt"></i> Chi tiết công văn
-                        </a>
+                    <div class="bg-blue-50 border border-blue-100 p-3 rounded-xl flex items-center justify-center gap-2 whitespace-nowrap flex-1 shrink-0">
+                      <span class="text-gray-600 font-medium text-sm">Học phí dự kiến:</span>
+                      <span class="font-bold text-gray-800 text-base">48.000.000 đ/năm</span>
                     </div>
+                    <div class="bg-blue-50 border border-blue-100 p-3 rounded-xl flex items-center justify-center gap-3 whitespace-nowrap flex-1 shrink-0">
+                      <span class="text-gray-600 font-medium text-sm">Tổ hợp môn:</span>
+                      <span class="font-bold text-gray-800 text-sm">A00 <span class="font-normal text-xs text-gray-500">(Toán, Lý, Hóa)</span></span>
+                      <span class="font-bold text-gray-800 text-sm">B00 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Sinh)</span></span>
+                      <span class="font-bold text-gray-800 text-sm">D07 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Anh)</span></span>
+                    </div>
+                  </div>
+                  
+                  <!-- Khối Mã Ngành & Nút Công văn -->
+                  <div class="flex flex-row xl:flex-col gap-3 w-full xl:w-auto shrink-0">
+                    <div class="bg-blue-600 px-5 py-2 xl:py-3 rounded-xl shadow-md text-center text-white relative overflow-hidden flex flex-col justify-center flex-1">
+                      <div class="text-[10px] xl:text-xs text-blue-100 font-bold mb-0.5 uppercase opacity-90 whitespace-nowrap">Mã Ngành</div>
+                      <div class="font-black text-xl xl:text-2xl tracking-widest whitespace-nowrap">7720603</div>
+                    </div>
+                    <a href="https://ump.edu.vn/uploads/ckeditor/files/Truong/DaoTaoDaiHoc/TuyenSinh/2026/1608_06042026_Thongtintuyensinh2026.pdf" 
+                       target="_blank" 
+                       class="flex items-center justify-center gap-2 py-2 px-4 bg-white hover:bg-blue-50 text-blue-600 rounded-lg text-sm font-semibold transition-colors border border-blue-200 whitespace-nowrap flex-1 shadow-sm"
+                       style="text-decoration: none;">
+                      <i class="fas fa-external-link-alt"></i> Chi tiết công văn
+                    </a>
                   </div>
                 </div>
 
                 <!-- CHỌN CHUYÊN NGÀNH -->
                 <div class="mb-6">
                   <div class="text-sm text-center text-gray-500 italic mb-3">* Sinh viên được chọn 1 trong 3 chuyên ngành để đào tạo chuyên sâu</div>
-                  <div class="grid grid-cols-3 gap-2">
+                  <div class="grid grid-cols-3 gap-3">
                     ${majorButtonsHtml}
                   </div>
                 </div>
@@ -420,11 +420,10 @@
                   ${semestersHtml}
                 </div>
 
-                <!-- NÚT FANPAGE -->
-                <a href="https://www.facebook.com/BomonPhuchoichucnang" target="_blank" class="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#1877F2] text-white px-4 py-3 rounded-full shadow-lg hover:-translate-y-1 transition-transform" style="text-decoration: none;">
+                <!-- NÚT FANPAGE (Hiển thị đầy đủ chữ trên mọi thiết bị) -->
+                <a href="https://www.facebook.com/BomonPhuchoichucnang" target="_blank" class="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#1877F2] text-white px-5 py-3.5 rounded-full shadow-lg hover:-translate-y-1 transition-transform" style="text-decoration: none;">
                   <i class="fab fa-facebook text-xl"></i>
-                  <span class="text-sm font-medium hidden sm:block">Theo dõi fanpage cập nhật thông tin</span>
-                  <span class="text-sm font-medium sm:hidden">Theo dõi Fanpage</span>
+                  <span class="text-sm font-medium whitespace-nowrap">Theo dõi Fanpage</span>
                 </a>
             `;
         }
