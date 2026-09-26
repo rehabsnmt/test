@@ -336,49 +336,51 @@
 
             // Gắn toàn bộ mã HTML vào Container
             container.innerHTML = `
-                <!-- THÔNG TIN CHUNG (Trải rộng màn hình) -->
-                <div class="bg-white border border-blue-100 rounded-2xl p-5 mb-6 flex flex-col xl:flex-row items-center justify-between gap-4 shadow-sm">
+                <!-- THÔNG TIN CHUNG (Dàn ngang, các thẻ thông tin xếp dọc) -->
+                <div class="bg-white border border-blue-100 rounded-2xl p-5 md:p-6 mb-6 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6 shadow-sm">
                   
                   <!-- Ngành đào tạo -->
-                  <div class="flex items-center gap-3 w-full xl:w-auto shrink-0">
-                    <div class="bg-blue-600 p-3 rounded-xl text-white shadow-md">
-                      <i class="fas fa-graduation-cap text-2xl"></i>
+                  <div class="flex items-center gap-4 w-full lg:w-auto shrink-0 justify-center lg:justify-start">
+                    <div class="bg-blue-600 p-4 rounded-xl text-white shadow-md">
+                      <i class="fas fa-graduation-cap text-3xl"></i>
                     </div>
-                    <div>
+                    <div class="text-left">
                       <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1 whitespace-nowrap">Ngành đào tạo</div>
-                      <div class="font-extrabold text-blue-900 text-lg whitespace-nowrap">KỸ THUẬT PHỤC HỒI CHỨC NĂNG</div>
+                      <div class="font-extrabold text-blue-900 text-lg md:text-xl whitespace-nowrap">KỸ THUẬT PHỤC HỒI CHỨC NĂNG</div>
                     </div>
                   </div>
 
-                  <!-- 3 thẻ thông tin trên 1 hàng -->
-                  <div class="flex flex-wrap lg:flex-nowrap gap-3 w-full xl:w-auto flex-1 xl:justify-center">
-                    <div class="bg-blue-50 border border-blue-100 p-3 rounded-xl flex items-center justify-center gap-2 whitespace-nowrap flex-1 shrink-0">
+                  <!-- Khối thông tin: Chỉ tiêu, Học phí, Tổ hợp (Xếp dọc) -->
+                  <div class="flex flex-col gap-2.5 w-full flex-1 max-w-2xl mx-auto lg:mx-0">
+                    <div class="bg-blue-50 border border-blue-100 px-4 py-2.5 rounded-xl flex justify-between items-center w-full transition-colors hover:bg-blue-100/50">
                       <span class="text-gray-600 font-medium text-sm">Chỉ tiêu:</span>
                       <span class="font-bold text-blue-700 text-base">100</span>
                     </div>
-                    <div class="bg-blue-50 border border-blue-100 p-3 rounded-xl flex items-center justify-center gap-2 whitespace-nowrap flex-1 shrink-0">
+                    <div class="bg-blue-50 border border-blue-100 px-4 py-2.5 rounded-xl flex justify-between items-center w-full transition-colors hover:bg-blue-100/50">
                       <span class="text-gray-600 font-medium text-sm">Học phí dự kiến:</span>
                       <span class="font-bold text-gray-800 text-base">48.000.000 đ/năm</span>
                     </div>
-                    <div class="bg-blue-50 border border-blue-100 p-3 rounded-xl flex items-center justify-center gap-3 whitespace-nowrap flex-1 shrink-0">
-                      <span class="text-gray-600 font-medium text-sm">Tổ hợp môn:</span>
-                      <span class="font-bold text-gray-800 text-sm">A00 <span class="font-normal text-xs text-gray-500">(Toán, Lý, Hóa)</span></span>
-                      <span class="font-bold text-gray-800 text-sm">B00 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Sinh)</span></span>
-                      <span class="font-bold text-gray-800 text-sm">D07 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Anh)</span></span>
+                    <div class="bg-blue-50 border border-blue-100 px-4 py-2.5 rounded-xl flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 w-full transition-colors hover:bg-blue-100/50">
+                      <span class="text-gray-600 font-medium text-sm shrink-0">Tổ hợp môn:</span>
+                      <div class="flex flex-wrap gap-x-4 gap-y-1 sm:justify-end">
+                         <span class="font-bold text-gray-800 text-sm">A00 <span class="font-normal text-xs text-gray-500">(Toán, Lý, Hóa)</span></span>
+                         <span class="font-bold text-gray-800 text-sm">B00 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Sinh)</span></span>
+                         <span class="font-bold text-gray-800 text-sm">D07 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Anh)</span></span>
+                      </div>
                     </div>
                   </div>
                   
                   <!-- Khối Mã Ngành & Nút Công văn -->
-                  <div class="flex flex-row xl:flex-col gap-3 w-full xl:w-auto shrink-0">
-                    <div class="bg-blue-600 px-5 py-2 xl:py-3 rounded-xl shadow-md text-center text-white relative overflow-hidden flex flex-col justify-center flex-1">
-                      <div class="text-[10px] xl:text-xs text-blue-100 font-bold mb-0.5 uppercase opacity-90 whitespace-nowrap">Mã Ngành</div>
-                      <div class="font-black text-xl xl:text-2xl tracking-widest whitespace-nowrap">7720603</div>
+                  <div class="flex flex-row lg:flex-col gap-3 w-full lg:w-48 shrink-0">
+                    <div class="bg-blue-600 px-4 py-3 rounded-xl shadow-md text-center text-white relative overflow-hidden flex flex-col justify-center flex-1">
+                      <div class="text-[10px] md:text-xs text-blue-100 font-bold mb-1 uppercase opacity-90 whitespace-nowrap">Mã Ngành</div>
+                      <div class="font-black text-xl md:text-2xl tracking-widest whitespace-nowrap">7720603</div>
                     </div>
                     <a href="https://ump.edu.vn/uploads/ckeditor/files/Truong/DaoTaoDaiHoc/TuyenSinh/2026/1608_06042026_Thongtintuyensinh2026.pdf" 
                        target="_blank" 
-                       class="flex items-center justify-center gap-2 py-2 px-4 bg-white hover:bg-blue-50 text-blue-600 rounded-lg text-sm font-semibold transition-colors border border-blue-200 whitespace-nowrap flex-1 shadow-sm"
+                       class="flex items-center justify-center gap-2 py-2.5 px-4 bg-white hover:bg-blue-50 text-blue-600 rounded-lg text-sm font-semibold transition-colors border border-blue-200 whitespace-nowrap flex-1 shadow-sm"
                        style="text-decoration: none;">
-                      <i class="fas fa-external-link-alt"></i> Chi tiết công văn
+                      <i class="fas fa-external-link-alt"></i> Chi tiết
                     </a>
                   </div>
                 </div>
@@ -420,8 +422,8 @@
                   ${semestersHtml}
                 </div>
 
-                <!-- NÚT FANPAGE (Hiển thị đầy đủ chữ trên mọi thiết bị) -->
-                <a href="https://www.facebook.com/BomonPhuchoichucnang" target="_blank" class="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#1877F2] text-white px-5 py-3.5 rounded-full shadow-lg hover:-translate-y-1 transition-transform" style="text-decoration: none;">
+                <!-- NÚT FANPAGE (Luôn hiện đầy đủ chữ) -->
+                <a href="https://www.facebook.com/BomonPhuchoichucnang" target="_blank" class="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-[#1877F2] text-white px-5 py-3.5 rounded-full shadow-lg hover:-translate-y-1 transition-transform border border-blue-400" style="text-decoration: none;">
                   <i class="fab fa-facebook text-xl"></i>
                   <span class="text-sm font-medium whitespace-nowrap">Theo dõi Fanpage</span>
                 </a>
