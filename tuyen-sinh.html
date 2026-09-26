@@ -8,9 +8,7 @@
     <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
     <link rel="apple-touch-icon" href="images/logo_Bộ môn.png">
     
-    <!-- Dùng trực tiếp CSS gốc của hệ thống -->
     <link rel="stylesheet" href="css/style.css">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <meta http-equiv="Content-Security-Policy" content="
@@ -23,7 +21,15 @@
         ">
 
     <style>
-        .app-container { max-width: 1200px; margin: 0 auto; padding: 24px 16px; background: transparent; }
+        .app-container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; background: transparent; }
+
+        /* Reset cục bộ cho container */
+        #app-container, #app-container * { border-style: solid; border-width: 0; box-sizing: border-box; }
+        #app-container *:not(i) { font-family: inherit; }
+        #app-container ul { list-style: none; padding: 0; margin: 0; }
+        #app-container button { background: transparent; cursor: pointer; outline: none; }
+        #app-container table { border-collapse: collapse; text-indent: initial; border-spacing: 2px; }
+        #app-container h2, #app-container h3 { margin: 0; }
 
         /* Nút bấm hệ thống */
         .btn-custom {
@@ -37,21 +43,11 @@
         .btn-custom-primary:hover { background: var(--primary-hover); color: white;}
 
         /* Card hiển thị chung */
-        .plan-overview-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .plan-overview-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); }
         .plan-title-large { font-size: 22px; font-weight: 700; color: var(--text-dark); margin: 0; }
         .plan-description { margin: 0; color: var(--text-muted); font-size: 15px; line-height: 1.6; }
-
-        .meta-label { color: var(--text-muted); font-size: 13px; font-weight: 500; }
         .status-section-title { font-size: 1.15rem; font-weight: 700; margin: 10px 0 15px 0; padding-bottom: 8px; display: flex; align-items: center; gap: 8px; color: var(--text-dark); border-bottom: 2px solid var(--border-light); }
 
-        /* Khung chương trình (Kế thừa từ Task List) */
-        .task-list { display: grid; gap: 14px; }
-        .task-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 0; text-align: left; transition: border-color 0.2s; overflow: hidden; }
-        .task-card:hover { border-color: var(--primary-light); }
-        .task-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; cursor: pointer; transition: background 0.2s; }
-        .task-top:hover { background: var(--bg-page); }
-        .task-title { font-weight: 700; margin: 0; color: var(--text-dark); font-size: 16px; }
-        
         .status-badge {
             display: inline-flex; align-items: center; justify-content: center; gap: 5px;
             border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 600; white-space: nowrap;
@@ -60,11 +56,17 @@
         .badge-blue { background: #e0f2fe; color: #0284c7; }
 
         /* Chuyên ngành Tab Buttons */
-        .major-tabs-container { display: flex; gap: 10px; margin-bottom: 24px; overflow-x: auto; scrollbar-width: none; }
+        .major-tabs-container { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; scrollbar-width: none; }
         .major-tabs-container::-webkit-scrollbar { display: none; }
-        .tab-btn { flex: 1; padding: 14px 10px; font-size: 14px; white-space: nowrap; text-align: center; border: 2px solid var(--border-light); background: white; color: var(--text-muted); border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .tab-btn { flex: 1; padding: 14px 10px; font-size: 14px; white-space: nowrap; text-align: center; border: 2px solid var(--border-light); background: white; color: var(--text-muted); border-radius: 12px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
         .tab-btn:hover { border-color: var(--border); color: var(--text-dark); background: var(--bg-page); }
-        .tab-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1); transform: scale(1.02); z-index: 1;}
+
+        /* Component List/Card */
+        .task-list { display: grid; gap: 14px; }
+        .task-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 0; text-align: left; transition: border-color 0.2s; overflow: hidden; }
+        .task-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; cursor: pointer; transition: background 0.2s; }
+        .task-top:hover { background: var(--bg-page); }
+        .task-title { font-weight: 700; margin: 0; color: var(--text-dark); font-size: 16px; }
 
         /* Bảng Khung chương trình */
         .curriculum-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; margin-top: 10px; }
@@ -73,16 +75,9 @@
         .curriculum-table tr:last-child td { border-bottom: none; }
         .curriculum-table tr:hover td { background: var(--bg-page); }
 
-        /* Layout Container Top Info */
-        .top-info-layout { display: flex; gap: 24px; align-items: stretch; flex-wrap: wrap; }
-        .top-info-left { flex: 1; min-width: 280px; display: flex; align-items: center; gap: 16px; justify-content: center; }
-        .top-info-right { flex: 2; min-width: 300px; display: flex; flex-direction: column; gap: 10px; justify-content: center; border-left: 1px dashed var(--border); padding-left: 24px; }
-        .top-info-action { width: 100%; display: flex; justify-content: center; margin-top: 15px; }
-
-        @media (max-width: 900px) {
-            .top-info-right { border-left: none; padding-left: 0; border-top: 1px dashed var(--border); padding-top: 20px; }
-            .top-info-left { justify-content: flex-start; }
+        @media (max-width: 768px) {
             .tab-btn { font-size: 13px; padding: 12px 8px; }
+            .top-left-panel { border-right: none !important; border-bottom: 1px solid var(--border-light); padding-bottom: 24px !important; }
         }
     </style>
 </head>
@@ -98,7 +93,7 @@
             <p>Bộ môn Phục hồi chức năng</p>
         </div>
 
-        <!-- Khu vực render nội dung Vanilla JS -->
+        <!-- Khu vực render nội dung -->
         <div id="app-container" class="app-container"></div>
     </main>
 
@@ -259,11 +254,17 @@
             { id: 8, title: "Năm 4 - Học kì VIII", key: 'y4_s8' },
         ];
 
+        // Mã màu cho từng chuyên ngành
+        const majorThemes = {
+            VLTL: { pri: '#0284c7', light: '#e0f2fe' }, // Xanh dương
+            HĐTL: { pri: '#ea580c', light: '#ffedd5' }, // Cam
+            NNTL: { pri: '#10b981', light: '#d1fae5' }  // Xanh lá
+        };
+
         // Biến trạng thái
         let activeMajor = 'VLTL';
         let expandedSemester = null;
 
-        // Các hàm thay đổi trạng thái
         window.changeMajor = function(majorKey) {
             activeMajor = majorKey;
             expandedSemester = null;
@@ -275,30 +276,36 @@
             renderApp();
         };
 
-        // Hàm vẽ toàn bộ giao diện HTML
+        // Hàm vẽ toàn bộ giao diện
         function renderApp() {
             const container = document.getElementById('app-container');
+            const theme = majorThemes[activeMajor];
 
-            // 1. HTML Chọn Chuyên ngành (Tab Buttons - Ngăn rớt dòng)
+            // 1. Tab Chọn Chuyên Ngành
             const majorButtonsHtml = Object.keys(majors).map(key => {
                 const isActive = activeMajor === key;
-                const activeClass = isActive ? 'active' : '';
+                const t = majorThemes[key];
+                
+                const activeStyle = isActive 
+                    ? `border-color: ${t.pri}; background-color: ${t.light}; color: ${t.pri}; box-shadow: 0 4px 12px ${t.pri}33; transform: scale(1.02); z-index: 1;` 
+                    : `border-color: var(--border-light); background-color: white; color: var(--text-muted);`;
+                
                 return `
-                    <button onclick="changeMajor('${key}')" class="tab-btn ${activeClass}">
+                    <button onclick="changeMajor('${key}')" class="tab-btn" style="${activeStyle}">
                         ${majors[key].name}
                     </button>
                 `;
             }).join('');
 
-            // 2. HTML Danh sách việc làm
+            // 2. Danh sách việc làm
             const jobsHtml = majors[activeMajor].jobs.map(job => `
-                <li style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; color: var(--text-dark); font-size: 15px; line-height: 1.5;">
-                    <i class="fas fa-check-circle" style="color: var(--primary); margin-top: 4px; font-size: 14px;"></i>
+                <li style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; color: var(--text-dark); font-size: 14.5px; line-height: 1.5;">
+                    <i class="fas fa-check-circle" style="color: ${theme.pri}; margin-top: 4px; font-size: 14px;"></i>
                     <span>${job}</span>
                 </li>
             `).join('');
 
-            // 3. HTML Khung chương trình
+            // 3. Khung chương trình
             const semestersHtml = semesters.map(sem => {
                 const subjects = curriculumDatabase[sem.key]?.filter(sub => !sub.tags || sub.tags.includes(activeMajor)) || [];
                 const isOpen = expandedSemester === sem.id;
@@ -333,8 +340,8 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div style="margin-top: 15px; padding: 12px 16px; background: var(--bg-page); border-radius: 8px; border: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-                                <span style="color: var(--text-dark);"><i class="fas fa-info-circle" style="color: var(--primary); margin-right: 5px;"></i> Tổng: <b>${totalCredits}</b> tín chỉ</span>
+                            <div style="margin-top: 15px; padding: 12px 16px; background-color: ${theme.light}; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+                                <span style="color: var(--text-dark);"><i class="fas fa-info-circle" style="color: ${theme.pri}; margin-right: 5px;"></i> Tổng: <b>${totalCredits}</b> tín chỉ</span>
                                 <span style="color: var(--text-muted); font-style: italic;">*Khung chương trình 2025</span>
                             </div>
                         </div>
@@ -342,75 +349,79 @@
                 }
 
                 return `
-                    <div class="task-card">
+                    <div class="task-card" style="${isOpen ? `border: 2px solid ${theme.pri}; box-shadow: 0 4px 12px${theme.pri}1A;` : ''}">
                         <div class="task-top" onclick="toggleSemester(${sem.id})">
                             <div style="display: flex; gap: 15px; align-items: center;">
-                                <div class="status-badge ${isOpen ? 'badge-blue' : 'badge-gray'}" style="width: 34px; height: 34px; padding: 0; border-radius: 50%; font-size: 14px;">${sem.id}</div>
-                                <div class="task-title" style="color: ${isOpen ? 'var(--primary)' : 'var(--text-dark)'};">${sem.title}</div>
+                                <div class="status-badge" style="width: 34px; height: 34px; padding: 0; border-radius: 50%; font-size: 14px; background-color: ${isOpen ? theme.pri : 'var(--bg-page)'}; color: ${isOpen ? 'white' : 'var(--text-body)'}; border: 1px solid ${isOpen ? 'transparent' : 'var(--border)'};">${sem.id}</div>
+                                <div class="task-title" style="color: ${isOpen ? theme.pri : 'var(--text-dark)'};">${sem.title}</div>
                             </div>
-                            <i class="fas fa-chevron-right" style="color: var(--text-muted); transition: transform 0.2s; transform: ${isOpen ? 'rotate(90deg)' : 'rotate(0)'};"></i>
+                            <i class="fas fa-chevron-right" style="color: ${isOpen ? theme.pri : 'var(--text-muted)'}; transition: transform 0.2s; transform: ${isOpen ? 'rotate(90deg)' : 'rotate(0)'};"></i>
                         </div>
                         ${tableHtml}
                     </div>
                 `;
             }).join('');
 
-            // Gắn toàn bộ mã HTML vào Container
+            // Gắn HTML
             container.innerHTML = `
-                <!-- THÔNG TIN CHUNG (Trải rộng, Tổ hợp môn căn trái xếp dọc) -->
-                <div class="plan-overview-card top-info-layout">
-                  
-                  <!-- Left: Icon + Tên Ngành -->
-                  <div class="top-info-left">
-                    <div style="background: var(--primary); color: white; width: 65px; height: 65px; border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); flex-shrink: 0;">
-                      <i class="fas fa-graduation-cap"></i>
-                    </div>
-                    <div>
-                      <div class="meta-label" style="margin-bottom: 2px;">Ngành đào tạo</div>
-                      <div style="font-size: clamp(16px, 3vw, 22px); font-weight: 800; color: var(--primary); margin-bottom: 8px; white-space: nowrap;">KỸ THUẬT PHỤC HỒI CHỨC NĂNG</div>
-                      <span class="status-badge badge-gray" style="font-family: monospace; font-size: 14px; padding: 6px 14px; font-weight:bold; letter-spacing:1px; border-color: var(--border);">MÃ: 7720603</span>
-                    </div>
-                  </div>
+                <!-- THÔNG TIN CHUNG (Dashboard Style gọn gàng, khoa học) -->
+                <div class="plan-overview-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; margin-bottom: 30px;">
+                    <div style="display: flex; flex-wrap: wrap; background: white;">
+                        
+                        <!-- Cột Trái: Tên ngành -->
+                        <div class="top-left-panel" style="flex: 1; min-width: 300px; padding: 32px 24px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-right: 1px solid var(--border-light); background: linear-gradient(to bottom right, #f8fafc, #f1f5f9);">
+                            <div style="width: 70px; height: 70px; background: var(--primary); color: white; border-radius: 18px; display: flex; justify-content: center; align-items: center; font-size: 32px; box-shadow: 0 8px 16px rgba(2, 132, 199, 0.25); margin-bottom: 18px;">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;">Ngành đào tạo</div>
+                            <div style="font-size: clamp(20px, 4vw, 24px); font-weight: 800; color: var(--primary); text-align: center; line-height: 1.3; margin-bottom: 14px; white-space: nowrap;">KỸ THUẬT PHỤC HỒI<br>CHỨC NĂNG</div>
+                            <span class="status-badge badge-blue" style="font-family: monospace; font-size: 15px; padding: 6px 16px; border: 1px solid #bae6fd; letter-spacing: 1px;">MÃ NGÀNH: 7720603</span>
+                        </div>
+                        
+                        <!-- Cột Phải: Các thẻ thông số -->
+                        <div style="flex: 2; min-width: 320px; padding: 24px; display: flex; flex-direction: column; gap: 16px; justify-content: center;">
+                            
+                            <!-- Hàng 1: Chỉ tiêu & Học phí -->
+                            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 160px; background: var(--bg-page); border: 1px solid var(--border-light); padding: 18px; border-radius: 14px;">
+                                    <div style="font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-users" style="color: var(--primary);"></i> Chỉ tiêu tuyển sinh</div>
+                                    <div style="font-size: 24px; font-weight: 800; color: var(--text-dark);">100 <span style="font-size: 14px; font-weight: 500; color: var(--text-muted);">sinh viên</span></div>
+                                </div>
+                                <div style="flex: 1; min-width: 180px; background: var(--bg-page); border: 1px solid var(--border-light); padding: 18px; border-radius: 14px;">
+                                    <div style="font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-coins" style="color: var(--primary);"></i> Học phí dự kiến</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: var(--text-dark);">48.000.000 <span style="font-size: 14px; font-weight: 500; color: var(--text-muted);">đ/năm</span></div>
+                                </div>
+                            </div>
 
-                  <!-- Right: Chỉ tiêu, Học phí, Tổ hợp môn xếp dọc -->
-                  <div class="top-info-right">
-                    <div style="background: var(--bg-page); border: 1px solid var(--border-light); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
-                      <span class="meta-label" style="text-transform: none;">Chỉ tiêu tuyển sinh:</span>
-                      <span style="font-size: 16px; font-weight: 800; color: var(--primary);">100</span>
-                    </div>
-                    <div style="background: var(--bg-page); border: 1px solid var(--border-light); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
-                      <span class="meta-label" style="text-transform: none;">Học phí dự kiến:</span>
-                      <span style="font-size: 15px; font-weight: 700; color: var(--text-dark);">48.000.000 đ/năm</span>
+                            <!-- Hàng 2: Tổ hợp môn -->
+                            <div style="background: var(--bg-page); border: 1px solid var(--border-light); padding: 18px; border-radius: 14px;">
+                                <div style="font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-layer-group" style="color: var(--primary);"></i> Tổ hợp xét tuyển</div>
+                                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <div style="display: flex; align-items: center; gap: 10px; background: white; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-light); flex: 1; min-width: 160px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                        <span style="font-weight: 800; color: var(--primary); font-size: 16px;">A00</span>
+                                        <span style="color: var(--text-dark); font-size: 13px; font-weight: 500;">Toán, Lý, Hóa</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 10px; background: white; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-light); flex: 1; min-width: 160px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                        <span style="font-weight: 800; color: var(--primary); font-size: 16px;">B00</span>
+                                        <span style="color: var(--text-dark); font-size: 13px; font-weight: 500;">Toán, Hóa, Sinh</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 10px; background: white; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-light); flex: 1; min-width: 160px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                        <span style="font-weight: 800; color: var(--primary); font-size: 16px;">D07</span>
+                                        <span style="color: var(--text-dark); font-size: 13px; font-weight: 500;">Toán, Hóa, Anh</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <!-- Khối Tổ hợp môn (Căn trái, riêng biệt từng dòng) -->
-                    <div style="background: var(--bg-page); border: 1px solid var(--border-light); padding: 14px 16px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px;">
-                      <span class="meta-label" style="text-transform: none; margin-bottom: 4px;">Tổ hợp xét tuyển:</span>
-                      <div style="display: flex; flex-direction: column; gap: 8px; padding-left: 5px;">
-                          <div style="font-size: 14px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
-                              <span style="font-weight: 700; width: 35px; color: var(--primary);">A00</span> 
-                              <span style="color: var(--text-muted);">(Toán, Lý, Hóa)</span>
-                          </div>
-                          <div style="font-size: 14px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
-                              <span style="font-weight: 700; width: 35px; color: var(--primary);">B00</span> 
-                              <span style="color: var(--text-muted);">(Toán, Hóa, Sinh)</span>
-                          </div>
-                          <div style="font-size: 14px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
-                              <span style="font-weight: 700; width: 35px; color: var(--primary);">D07</span> 
-                              <span style="color: var(--text-muted);">(Toán, Hóa, Anh)</span>
-                          </div>
-                      </div>
+                    <!-- Dải ngang dưới cùng chứa Nút Công văn -->
+                    <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid var(--border-light); display: flex; justify-content: center;">
+                        <a href="https://ump.edu.vn/uploads/ckeditor/files/Truong/DaoTaoDaiHoc/TuyenSinh/2026/1608_06042026_Thongtintuyensinh2026.pdf" 
+                           target="_blank" 
+                           class="btn-custom btn-custom-primary" style="padding: 10px 24px; border-radius: 99px;">
+                          <i class="fas fa-external-link-alt"></i> Xem chi tiết công văn tuyển sinh ĐHYD TP.HCM
+                        </a>
                     </div>
-                  </div>
-                  
-                  <!-- Action Button -->
-                  <div class="top-info-action">
-                    <a href="https://ump.edu.vn/uploads/ckeditor/files/Truong/DaoTaoDaiHoc/TuyenSinh/2026/1608_06042026_Thongtintuyensinh2026.pdf" 
-                       target="_blank" 
-                       class="btn-custom btn-custom-primary" style="width: 100%; max-width: 400px; padding: 12px;">
-                      <i class="fas fa-external-link-alt"></i> Xem chi tiết công văn tuyển sinh
-                    </a>
-                  </div>
                 </div>
 
                 <!-- CHỌN CHUYÊN NGÀNH -->
@@ -421,20 +432,20 @@
                   </div>
                 </div>
 
-                <!-- THÔNG TIN CHUYÊN NGÀNH -->
-                <div class="plan-overview-card" style="border: 2px solid var(--primary); background: var(--bg-page);">
-                  <h2 class="plan-title-large" style="margin-bottom: 12px; color: var(--primary);">${majors[activeMajor].name}</h2>
+                <!-- THÔNG TIN CHUYÊN NGÀNH THEO MÀU -->
+                <div class="plan-overview-card" style="border: 2px solid ${theme.pri}; background-color: ${theme.light}; transition: all 0.3s ease;">
+                  <h2 class="plan-title-large" style="margin-bottom: 12px; color: ${theme.pri};">${majors[activeMajor].name}</h2>
                   <p class="plan-description" style="margin-bottom: 20px; color: var(--text-dark);">"${majors[activeMajor].description}"</p>
                   <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <span class="status-badge badge-gray" style="background: white;"><i class="far fa-clock" style="color: var(--text-muted);"></i> 4 năm (8 học kỳ)</span>
-                    <span class="status-badge badge-gray" style="background: white;"><i class="fas fa-bullseye" style="color: var(--text-muted);"></i> 130 tín chỉ</span>
+                    <span class="status-badge badge-gray" style="background: white; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: ${theme.pri};"><i class="far fa-clock"></i> <span style="color: var(--text-dark);">4 năm (8 học kỳ)</span></span>
+                    <span class="status-badge badge-gray" style="background: white; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: ${theme.pri};"><i class="fas fa-bullseye"></i> <span style="color: var(--text-dark);">130 tín chỉ</span></span>
                   </div>
                 </div>
 
-                <!-- CƠ HỘI VIỆC LÀM -->
+                <!-- CƠ HỘI VIỆC LÀM THEO MÀU -->
                 <div class="plan-overview-card">
                   <h3 class="status-section-title" style="margin-top: 0; border-bottom: 1px dashed var(--border-light); padding-bottom: 15px;">
-                      <div style="background: var(--primary-light); color: var(--primary); padding: 8px 12px; border-radius: 8px;"><i class="fas fa-briefcase"></i></div> 
+                      <div style="background-color: ${theme.light}; color: ${theme.pri}; padding: 8px 12px; border-radius: 8px;"><i class="fas fa-briefcase"></i></div> 
                       Cơ hội việc làm
                   </h3>
                   <ul style="margin: 0; padding: 0;">
@@ -442,17 +453,17 @@
                   </ul>
                 </div>
 
-                <!-- KHUNG CHƯƠNG TRÌNH -->
+                <!-- KHUNG CHƯƠNG TRÌNH THEO MÀU -->
                 <div style="margin-bottom: 40px;">
                   <h3 class="status-section-title" style="border: none;">
-                    <i class="fas fa-book-open" style="color: var(--primary);"></i> Khung Chương Trình Đào Tạo
+                    <i class="fas fa-book-open" style="color: ${theme.pri};"></i> Khung Chương Trình Đào Tạo
                   </h3>
                   <div class="task-list">
                       ${semestersHtml}
                   </div>
                 </div>
 
-                <!-- NÚT FANPAGE (Luôn hiện đầy đủ chữ) -->
+                <!-- NÚT FANPAGE -->
                 <a href="https://www.facebook.com/BomonPhuchoichucnang" target="_blank" class="btn-custom btn-custom-primary shadow-lg" style="position: fixed; bottom: 24px; right: 24px; z-index: 100; border-radius: 999px; padding: 12px 24px; box-shadow: 0 10px 25px rgba(2, 132, 199, 0.4);">
                   <i class="fab fa-facebook" style="font-size: 20px;"></i>
                   <span style="font-weight: 600; margin-left: 4px;">Theo dõi Fanpage</span>
