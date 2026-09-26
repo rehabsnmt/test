@@ -57,7 +57,7 @@
         </div>
 
         <!-- Khu vực render nội dung -->
-        <div id="app-container" class="w-full text-gray-900 pb-8 px-4 max-w-[1400px] mx-auto"></div>
+        <div id="app-container" class="w-full text-gray-900 pb-8 px-4 max-w-[1100px] mx-auto"></div>
     </main>
 
     <!-- FOOTER -->
@@ -252,7 +252,7 @@
             const container = document.getElementById('app-container');
             const theme = getColors(majors[activeMajor].color);
 
-            // 1. Tạo HTML cho phần chọn Chuyên ngành
+            // 1. Tạo HTML cho phần chọn Chuyên ngành (Ép không rớt dòng)
             const majorButtonsHtml = Object.keys(majors).map(key => {
                 const isActive = activeMajor === key;
                 const mTheme = getColors(majors[key].color);
@@ -261,7 +261,7 @@
                     : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50';
                 
                 return `
-                    <button onclick="changeMajor('${key}')" class="py-2.5 px-4 rounded-xl border-2 transition-all font-semibold text-sm ${activeClasses}">
+                    <button onclick="changeMajor('${key}')" class="py-2.5 px-1 sm:px-4 rounded-lg sm:rounded-xl border-2 transition-all font-semibold text-[10px] sm:text-sm whitespace-nowrap overflow-hidden ${activeClasses}">
                         ${majors[key].name}
                     </button>
                 `;
@@ -285,9 +285,9 @@
                 if (isOpen) {
                     const rowsHtml = subjects.map((sub, idx) => `
                         <tr class="border-b last:border-0 hover:bg-gray-50 transition-colors">
-                            <td class="py-3 text-gray-500">${idx + 1}</td>
-                            <td class="py-3 font-medium text-gray-800">${sub.name}</td>
-                            <td class="py-3 text-center">
+                            <td class="py-3 text-gray-500 whitespace-nowrap">${idx + 1}</td>
+                            <td class="py-3 font-medium text-gray-800 min-w-[150px]">${sub.name}</td>
+                            <td class="py-3 text-center whitespace-nowrap">
                                 <span class="font-bold">${sub.theory + sub.practice}</span>
                                 <span class="text-gray-400 text-xs ml-1">(${sub.theory}+${sub.practice})</span>
                             </td>
@@ -300,9 +300,9 @@
                                 <table class="w-full text-sm text-left border-collapse">
                                     <thead>
                                         <tr class="text-gray-500 border-b">
-                                            <th class="py-2 w-12 font-medium">STT</th>
-                                            <th class="py-2 font-medium">Tên học phần</th>
-                                            <th class="py-2 text-center w-32 font-medium">Tín chỉ (LT+TH)</th>
+                                            <th class="py-2 w-12 font-medium whitespace-nowrap">STT</th>
+                                            <th class="py-2 font-medium whitespace-nowrap">Tên học phần</th>
+                                            <th class="py-2 text-center w-32 font-medium whitespace-nowrap">Tín chỉ (LT+TH)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -336,22 +336,22 @@
 
             // Gắn toàn bộ mã HTML vào Container
             container.innerHTML = `
-                <!-- THÔNG TIN CHUNG (Dàn ngang, các thẻ thông tin xếp dọc) -->
-                <div class="bg-white border border-blue-100 rounded-2xl p-5 md:p-6 mb-6 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6 shadow-sm">
+                <!-- THÔNG TIN CHUNG (Xếp ngang trên máy tính, Xếp dọc trên điện thoại) -->
+                <div class="bg-white border border-blue-100 rounded-2xl p-4 sm:p-6 mb-6 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6 shadow-sm overflow-hidden">
                   
                   <!-- Ngành đào tạo -->
-                  <div class="flex items-center gap-4 w-full lg:w-auto shrink-0 justify-center lg:justify-start">
-                    <div class="bg-blue-600 p-4 rounded-xl text-white shadow-md">
-                      <i class="fas fa-graduation-cap text-3xl"></i>
+                  <div class="flex items-center gap-3 sm:gap-4 w-full lg:w-auto shrink-0 justify-center lg:justify-start overflow-hidden">
+                    <div class="bg-blue-600 p-3 sm:p-4 rounded-xl text-white shadow-md shrink-0">
+                      <i class="fas fa-graduation-cap text-2xl sm:text-3xl"></i>
                     </div>
-                    <div class="text-left">
-                      <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1 whitespace-nowrap">Ngành đào tạo</div>
-                      <div class="font-extrabold text-blue-900 text-lg md:text-xl whitespace-nowrap">KỸ THUẬT PHỤC HỒI CHỨC NĂNG</div>
+                    <div class="text-left overflow-hidden">
+                      <div class="text-[10px] sm:text-xs text-gray-500 font-bold uppercase tracking-wider mb-1 whitespace-nowrap">Ngành đào tạo</div>
+                      <div class="font-extrabold text-blue-900 text-[12px] sm:text-[15px] md:text-lg lg:text-xl whitespace-nowrap">KỸ THUẬT PHỤC HỒI CHỨC NĂNG</div>
                     </div>
                   </div>
 
-                  <!-- Khối thông tin: Chỉ tiêu, Học phí, Tổ hợp (Xếp dọc) -->
-                  <div class="flex flex-col gap-2.5 w-full flex-1 max-w-2xl mx-auto lg:mx-0">
+                  <!-- Khối thông tin: Chỉ tiêu, Học phí, Tổ hợp (Xếp dọc, Tổ hợp căn trái) -->
+                  <div class="flex flex-col gap-2.5 w-full flex-1 max-w-3xl mx-auto lg:mx-0">
                     <div class="bg-blue-50 border border-blue-100 px-4 py-2.5 rounded-xl flex justify-between items-center w-full transition-colors hover:bg-blue-100/50">
                       <span class="text-gray-600 font-medium text-sm">Chỉ tiêu:</span>
                       <span class="font-bold text-blue-700 text-base">100</span>
@@ -360,9 +360,9 @@
                       <span class="text-gray-600 font-medium text-sm">Học phí dự kiến:</span>
                       <span class="font-bold text-gray-800 text-base">48.000.000 đ/năm</span>
                     </div>
-                    <div class="bg-blue-50 border border-blue-100 px-4 py-2.5 rounded-xl flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 w-full transition-colors hover:bg-blue-100/50">
-                      <span class="text-gray-600 font-medium text-sm shrink-0">Tổ hợp môn:</span>
-                      <div class="flex flex-wrap gap-x-4 gap-y-1 sm:justify-end">
+                    <div class="bg-blue-50 border border-blue-100 px-4 py-3 rounded-xl flex flex-col items-start gap-1 w-full transition-colors hover:bg-blue-100/50">
+                      <span class="text-gray-600 font-medium text-sm">Tổ hợp môn:</span>
+                      <div class="flex flex-col gap-1 w-full text-left pl-2 sm:pl-4 mt-1">
                          <span class="font-bold text-gray-800 text-sm">A00 <span class="font-normal text-xs text-gray-500">(Toán, Lý, Hóa)</span></span>
                          <span class="font-bold text-gray-800 text-sm">B00 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Sinh)</span></span>
                          <span class="font-bold text-gray-800 text-sm">D07 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Anh)</span></span>
@@ -385,10 +385,10 @@
                   </div>
                 </div>
 
-                <!-- CHỌN CHUYÊN NGÀNH -->
+                <!-- CHỌN CHUYÊN NGÀNH (Sử dụng CSS Grid để chia 3 nút không rớt chữ) -->
                 <div class="mb-6">
                   <div class="text-sm text-center text-gray-500 italic mb-3">* Sinh viên được chọn 1 trong 3 chuyên ngành để đào tạo chuyên sâu</div>
-                  <div class="grid grid-cols-3 gap-3">
+                  <div class="grid grid-cols-3 gap-1 sm:gap-3 w-full">
                     ${majorButtonsHtml}
                   </div>
                 </div>
@@ -398,8 +398,8 @@
                   <h2 class="text-xl font-bold mb-2 text-gray-800">${majors[activeMajor].name}</h2>
                   <p class="text-gray-700 text-sm mb-4 leading-relaxed">"${majors[activeMajor].description}"</p>
                   <div class="flex gap-4 text-sm font-medium text-gray-600 bg-white p-3 rounded-lg border shadow-sm w-fit">
-                    <span class="flex items-center gap-2"><i class="far fa-clock"></i> 4 năm (8 học kỳ)</span>
-                    <span class="flex items-center gap-2 border-l pl-4"><i class="fas fa-bullseye"></i> 130 tín chỉ</span>
+                    <span class="flex items-center gap-2 whitespace-nowrap"><i class="far fa-clock"></i> 4 năm (8 học kỳ)</span>
+                    <span class="flex items-center gap-2 border-l pl-4 whitespace-nowrap"><i class="fas fa-bullseye"></i> 130 tín chỉ</span>
                   </div>
                 </div>
 
