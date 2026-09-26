@@ -11,37 +11,34 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Cấu hình Tailwind CSS (Tắt preflight để không làm hỏng CSS gốc của Header) -->
+    <!-- Đã cấp quyền tải CDN Tailwind trong CSP để tránh bị chặn -->
+    <meta http-equiv="Content-Security-Policy" content="
+            default-src 'self';
+            connect-src 'self' https://*.supabase.co;
+            img-src 'self' data: https://*.supabase.co;
+            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com;
+            script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com;
+            font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
+        ">
+
+    <!-- Cấu hình Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { corePlugins: { preflight: false } }
     </script>
-    
-    <!-- React & Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script type="importmap">
-        {
-            "imports": {
-                "react": "https://esm.sh/react@18.2.0",
-                "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-                "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-                "lucide-react": "https://esm.sh/lucide-react@0.344.0?external=react&bundle"
-            }
-        }
-    </script>
 
     <style>
-        /* Đồng bộ Font chữ cho khu vực React */
-        #root, #root * { 
+        /* Đồng bộ Font chữ chung của toàn website */
+        #app-container, #app-container * { 
             border-style: solid; 
             border-width: 0; 
             box-sizing: border-box; 
             font-family: inherit !important; 
         }
-        #root ul { list-style: none; padding: 0; margin: 0; }
-        #root button { background: transparent; cursor: pointer; outline: none; }
-        #root table { border-collapse: collapse; text-indent: initial; border-spacing: 2px; }
-        #root h2, #root h3 { margin: 0; }
+        #app-container ul { list-style: none; padding: 0; margin: 0; }
+        #app-container button { background: transparent; cursor: pointer; outline: none; }
+        #app-container table { border-collapse: collapse; text-indent: initial; border-spacing: 2px; }
+        #app-container h2, #app-container h3 { margin: 0; }
     </style>
 </head>
 <body style="display: flex; flex-direction: column; min-height: 100vh; background-color: #f8fafc; overflow-x: hidden;">
@@ -55,8 +52,8 @@
             <div style="font-size: clamp(0.9rem, 3.5vw, 1rem); color: var(--text-body); font-weight: 600; margin-top: 5px;">BỘ MÔN PHỤC HỒI CHỨC NĂNG</div>
         </div>
 
-        <!-- React Root -->
-        <div id="root"></div>
+        <!-- Khu vực render nội dung -->
+        <div id="app-container" class="w-full text-gray-900 pb-8 px-4 max-w-4xl mx-auto"></div>
     </main>
 
     <!-- FOOTER -->
@@ -64,13 +61,9 @@
 
     <script src="js/layout.js"></script>
 
-    <!-- SCRIPT CHÍNH (REACT) -->
-    <script type="text/babel" data-presets="react,env" data-type="module">
-        import React, { useState } from 'react';
-        import { createRoot } from 'react-dom/client';
-        import { ChevronRight, BookOpen, Clock, Target, Info, GraduationCap, Briefcase, ExternalLink, Facebook } from 'lucide-react';
-
-        // --- DỮ LIỆU TĨNH (Đưa ra ngoài component để tối ưu hiệu suất) ---
+    <!-- SCRIPT CHÍNH (VANILLA JS - ĐẢM BẢO CHẠY 100%) -->
+    <script>
+        // --- DỮ LIỆU TĨNH ---
         const curriculumDatabase = {
             y1_s1: [
               { id: 1, name: "Tiếng Anh chuyên ngành", theory: 1, practice: 1 },
@@ -224,7 +217,11 @@
             { id: 8, title: "Năm 4 - Học kì VIII", key: 'y4_s8' },
         ];
 
-        // Hàm hỗ trợ Tailwind classes
+        // Biến trạng thái
+        let activeMajor = 'VLTL';
+        let expandedSemester = null;
+
+        // Hàm hỗ trợ CSS Tailwind
         const getColors = (color) => {
             switch(color) {
               case 'blue': return { bg: 'bg-blue-600', text: 'text-white', border: 'border-blue-200', light: 'bg-blue-50', textLight: 'text-blue-600' };
@@ -234,175 +231,205 @@
             }
         };
 
-        const App = () => {
-          const [activeMajor, setActiveMajor] = useState('VLTL');
-          const [expandedSemester, setExpandedSemester] = useState(null);
+        // Các hàm thay đổi trạng thái
+        window.changeMajor = function(majorKey) {
+            activeMajor = majorKey;
+            expandedSemester = null;
+            renderApp();
+        };
 
-          const theme = getColors(majors[activeMajor].color);
+        window.toggleSemester = function(semId) {
+            expandedSemester = expandedSemester === semId ? null : semId;
+            renderApp();
+        };
 
-          return (
-            <div className="w-full text-gray-900 pb-8 px-4 max-w-4xl mx-auto">
+        // Hàm vẽ toàn bộ giao diện HTML
+        function renderApp() {
+            const container = document.getElementById('app-container');
+            const theme = getColors(majors[activeMajor].color);
+
+            // 1. Tạo HTML cho phần chọn Chuyên ngành
+            const majorButtonsHtml = Object.keys(majors).map(key => {
+                const isActive = activeMajor === key;
+                const mTheme = getColors(majors[key].color);
+                const activeClasses = isActive 
+                    ? `${mTheme.border} ${mTheme.light} text-gray-900 shadow-sm scale-[1.02]` 
+                    : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50';
                 
-                {/* THÔNG TIN CHUNG */}
-                <div className="bg-white border border-blue-100 rounded-2xl p-5 mb-6 flex flex-col md:flex-row items-center justify-between gap-5 shadow-sm">
-                  <div className="flex items-center gap-4 w-full md:w-auto">
-                    <div className="bg-blue-600 p-3 rounded-xl text-white shadow-md">
-                      <GraduationCap className="w-6 h-6" />
+                return `
+                    <button onclick="changeMajor('${key}')" class="py-2.5 rounded-xl border-2 transition-all font-semibold text-xs sm:text-sm ${activeClasses}">
+                        ${majors[key].name}
+                    </button>
+                `;
+            }).join('');
+
+            // 2. Tạo HTML cho danh sách việc làm
+            const jobsHtml = majors[activeMajor].jobs.map(job => `
+                <li class="flex items-start gap-2">
+                    <span class="mt-1.5 w-1.5 h-1.5 rounded-full ${theme.bg} flex-shrink-0"></span> 
+                    <span>${job}</span>
+                </li>
+            `).join('');
+
+            // 3. Tạo HTML cho danh sách Khung chương trình
+            const semestersHtml = semesters.map(sem => {
+                const subjects = curriculumDatabase[sem.key]?.filter(sub => !sub.tags || sub.tags.includes(activeMajor)) || [];
+                const isOpen = expandedSemester === sem.id;
+                const totalCredits = subjects.reduce((a, c) => a + c.theory + c.practice, 0);
+                
+                let tableHtml = '';
+                if (isOpen) {
+                    const rowsHtml = subjects.map((sub, idx) => `
+                        <tr class="border-b last:border-0 hover:bg-gray-50 transition-colors">
+                            <td class="py-3 text-gray-500">${idx + 1}</td>
+                            <td class="py-3 font-medium text-gray-800">${sub.name}</td>
+                            <td class="py-3 text-center">
+                                <span class="font-bold">${sub.theory + sub.practice}</span>
+                                <span class="text-gray-400 text-xs ml-1">(${sub.theory}+${sub.practice})</span>
+                            </td>
+                        </tr>
+                    `).join('');
+
+                    tableHtml = `
+                        <div class="px-5 pb-5 animate-fade-in">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left border-collapse">
+                                    <thead>
+                                        <tr class="text-gray-500 border-b">
+                                            <th class="py-2 w-12 font-medium">STT</th>
+                                            <th class="py-2 font-medium">Tên học phần</th>
+                                            <th class="py-2 text-center w-32 font-medium">Tín chỉ (LT+TH)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${rowsHtml}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-3 p-3 rounded-lg text-xs flex justify-between items-center ${theme.light}">
+                                <div class="flex items-center gap-1.5 text-gray-700">
+                                    <i class="fas fa-info-circle"></i> Tổng: <strong>${totalCredits}</strong> tín chỉ
+                                </div>
+                                <div class="text-gray-500 italic">*Khung chương trình 2025</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="bg-white rounded-xl border overflow-hidden transition-all ${isOpen ? `border-2 ${theme.border} shadow-sm` : 'border-gray-200 hover:border-gray-300'}">
+                        <button onclick="toggleSemester(${sem.id})" class="w-full px-5 py-4 flex items-center justify-between text-left">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${isOpen ? theme.bg + ' text-white' : 'bg-gray-100 text-gray-500'}">${sem.id}</div>
+                                <span class="font-semibold ${isOpen ? 'text-gray-900' : 'text-gray-700'}">${sem.title}</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400 transition-transform ${isOpen ? 'rotate-90' : ''}"></i>
+                        </button>
+                        ${tableHtml}
+                    </div>
+                `;
+            }).join('');
+
+            // Gắn toàn bộ mã HTML vào Container
+            container.innerHTML = `
+                <!-- THÔNG TIN CHUNG -->
+                <div class="bg-white border border-blue-100 rounded-2xl p-5 mb-6 flex flex-col md:flex-row items-center justify-between gap-5 shadow-sm">
+                  <div class="flex items-center gap-4 w-full md:w-auto">
+                    <div class="bg-blue-600 p-3 rounded-xl text-white shadow-md">
+                      <i class="fas fa-graduation-cap text-2xl"></i>
                     </div>
                     <div>
-                      <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Ngành đào tạo</div>
-                      <div className="font-extrabold text-blue-900 text-lg">KỸ THUẬT PHỤC HỒI CHỨC NĂNG</div>
+                      <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Ngành đào tạo</div>
+                      <div class="font-extrabold text-blue-900 text-lg">KỸ THUẬT PHỤC HỒI CHỨC NĂNG</div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto flex-1 md:justify-end">
-                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex-1 md:max-w-xs">
-                        <div className="flex justify-between items-center mb-2 pb-2 border-b border-blue-100">
-                          <span className="text-gray-600 font-medium text-sm">Chỉ tiêu:</span>
-                          <span className="font-bold text-blue-700">100</span>
+                  <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto flex-1 md:justify-end">
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex-1 md:max-w-xs">
+                        <div class="flex justify-between items-center mb-2 pb-2 border-b border-blue-100">
+                          <span class="text-gray-600 font-medium text-sm">Chỉ tiêu:</span>
+                          <span class="font-bold text-blue-700">100</span>
                         </div>
-                        <div className="flex justify-between items-center mb-2 pb-2 border-b border-blue-100">
-                          <span className="text-gray-600 font-medium text-sm">Học phí dự kiến:</span>
-                          <span className="font-bold text-gray-800 text-sm">48.000.000 đ/năm</span>
+                        <div class="flex justify-between items-center mb-2 pb-2 border-b border-blue-100">
+                          <span class="text-gray-600 font-medium text-sm">Học phí dự kiến:</span>
+                          <span class="font-bold text-gray-800 text-sm">48.000.000 đ/năm</span>
                         </div>
-                        <div className="flex justify-between items-start mt-2">
-                          <span className="text-gray-600 font-medium text-sm">Tổ hợp môn:</span>
-                          <div className="text-right text-sm font-bold text-gray-800 space-y-1">
-                              <div>A00 <span className="font-normal text-xs text-gray-500">(Toán, Lý, Hóa)</span></div>
-                              <div>B00 <span className="font-normal text-xs text-gray-500">(Toán, Hóa, Sinh)</span></div>
-                              <div>D07 <span className="font-normal text-xs text-gray-500">(Toán, Hóa, Anh)</span></div>
+                        <div class="flex justify-between items-start mt-2">
+                          <span class="text-gray-600 font-medium text-sm">Tổ hợp môn:</span>
+                          <div class="text-right text-sm font-bold text-gray-800 space-y-1">
+                              <div>A00 <span class="font-normal text-xs text-gray-500">(Toán, Lý, Hóa)</span></div>
+                              <div>B00 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Sinh)</span></div>
+                              <div>D07 <span class="font-normal text-xs text-gray-500">(Toán, Hóa, Anh)</span></div>
                           </div>
                         </div>
                     </div>
                     
-                    <div className="flex flex-col gap-3">
-                        <div className="bg-blue-600 px-6 py-4 rounded-xl shadow-md text-center text-white relative overflow-hidden h-full flex flex-col justify-center">
-                          <div className="text-xs text-blue-100 font-bold mb-1 uppercase opacity-90">Mã Ngành</div>
-                          <div className="font-black text-3xl tracking-widest">7720603</div>
+                    <div class="flex flex-col gap-3">
+                        <div class="bg-blue-600 px-6 py-4 rounded-xl shadow-md text-center text-white relative overflow-hidden h-full flex flex-col justify-center">
+                          <div class="text-xs text-blue-100 font-bold mb-1 uppercase opacity-90">Mã Ngành</div>
+                          <div class="font-black text-3xl tracking-widest">7720603</div>
                         </div>
-                        <a 
-                          href="https://ump.edu.vn/uploads/ckeditor/files/Truong/DaoTaoDaiHoc/TuyenSinh/2026/1608_06042026_Thongtintuyensinh2026.pdf" 
-                          target="_blank" 
-                          className="flex items-center justify-center gap-2 py-2.5 bg-white hover:bg-blue-50 text-blue-600 rounded-lg text-sm font-semibold transition-colors border border-blue-200"
-                        >
-                          <ExternalLink className="w-4 h-4" /> Chi tiết công văn
+                        <a href="https://ump.edu.vn/uploads/ckeditor/files/Truong/DaoTaoDaiHoc/TuyenSinh/2026/1608_06042026_Thongtintuyensinh2026.pdf" 
+                           target="_blank" 
+                           class="flex items-center justify-center gap-2 py-2.5 bg-white hover:bg-blue-50 text-blue-600 rounded-lg text-sm font-semibold transition-colors border border-blue-200"
+                           style="text-decoration: none;">
+                          <i class="fas fa-external-link-alt"></i> Chi tiết công văn
                         </a>
                     </div>
                   </div>
                 </div>
 
-                {/* CHỌN CHUYÊN NGÀNH */}
-                <div className="mb-6">
-                  <div className="text-sm text-center text-gray-500 italic mb-3">* Sinh viên được chọn 1 trong 3 chuyên ngành để đào tạo chuyên sâu</div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {Object.keys(majors).map(key => (
-                      <button
-                        key={key}
-                        onClick={() => { setActiveMajor(key); setExpandedSemester(null); }}
-                        className={`py-2.5 rounded-xl border-2 transition-all font-semibold text-xs sm:text-sm ${
-                          activeMajor === key 
-                            ? `${getColors(majors[key].color).border}${getColors(majors[key].color).light} text-gray-900 shadow-sm scale-[1.02]`
-                            : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50'
-                        }`}
-                      >
-                        {majors[key].name}
-                      </button>
-                    ))}
+                <!-- CHỌN CHUYÊN NGÀNH -->
+                <div class="mb-6">
+                  <div class="text-sm text-center text-gray-500 italic mb-3">* Sinh viên được chọn 1 trong 3 chuyên ngành để đào tạo chuyên sâu</div>
+                  <div class="grid grid-cols-3 gap-2">
+                    ${majorButtonsHtml}
                   </div>
                 </div>
 
-                {/* THÔNG TIN CHUYÊN NGÀNH */}
-                <div className={`p-5 sm:p-6 rounded-2xl mb-6 border-2 ${theme.border} ${theme.light}`}>
-                  <h2 className="text-xl font-bold mb-2 text-gray-800">{majors[activeMajor].name}</h2>
-                  <p className="text-gray-700 text-sm mb-4 leading-relaxed">"{majors[activeMajor].description}"</p>
-                  <div className="flex gap-4 text-sm font-medium text-gray-600 bg-white p-3 rounded-lg border shadow-sm w-fit">
-                    <span className="flex items-center gap-2"><Clock className="w-4 h-4" /> 4 năm (8 học kỳ)</span>
-                    <span className="flex items-center gap-2 border-l pl-4"><Target className="w-4 h-4" /> 130 tín chỉ</span>
+                <!-- THÔNG TIN CHUYÊN NGÀNH -->
+                <div class="p-5 sm:p-6 rounded-2xl mb-6 border-2 ${theme.border} ${theme.light} transition-colors">
+                  <h2 class="text-xl font-bold mb-2 text-gray-800">${majors[activeMajor].name}</h2>
+                  <p class="text-gray-700 text-sm mb-4 leading-relaxed">"${majors[activeMajor].description}"</p>
+                  <div class="flex gap-4 text-sm font-medium text-gray-600 bg-white p-3 rounded-lg border shadow-sm w-fit">
+                    <span class="flex items-center gap-2"><i class="far fa-clock"></i> 4 năm (8 học kỳ)</span>
+                    <span class="flex items-center gap-2 border-l pl-4"><i class="fas fa-bullseye"></i> 130 tín chỉ</span>
                   </div>
                 </div>
 
-                <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-8 shadow-sm">
-                  <div className="flex items-center gap-3 mb-4 pb-3 border-b">
-                    <div className={`p-2 rounded-lg ${theme.bg} ${theme.text}`}><Briefcase className="w-5 h-5" /></div>
-                    <h3 className="text-lg font-bold text-gray-800">Cơ hội việc làm</h3>
+                <!-- CƠ HỘI VIỆC LÀM -->
+                <div class="bg-white border border-gray-200 rounded-2xl p-5 mb-8 shadow-sm">
+                  <div class="flex items-center gap-3 mb-4 pb-3 border-b">
+                    <div class="p-2 rounded-lg ${theme.bg} ${theme.text}"><i class="fas fa-briefcase text-lg"></i></div>
+                    <h3 class="text-lg font-bold text-gray-800">Cơ hội việc làm</h3>
                   </div>
-                  <ul className="space-y-2 text-sm text-gray-700">
-                    {majors[activeMajor].jobs.map((job, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className={`mt-1.5 w-1.5 h-1.5 rounded-full ${theme.bg}`}></span> {job}
-                      </li>
-                    ))}
+                  <ul class="space-y-2 text-sm text-gray-700">
+                    ${jobsHtml}
                   </ul>
                 </div>
 
-                {/* KHUNG CHƯƠNG TRÌNH */}
-                <div className="space-y-3">
-                  <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
-                    <BookOpen className="w-5 h-5 text-blue-600" /> Khung Chương Trình Đào Tạo
+                <!-- KHUNG CHƯƠNG TRÌNH -->
+                <div class="space-y-3 relative">
+                  <h3 class="text-lg font-bold flex items-center gap-2 mb-4">
+                    <i class="fas fa-book-open text-blue-600 text-lg"></i> Khung Chương Trình Đào Tạo
                   </h3>
-
-                  {semesters.map((sem) => {
-                    const subjects = curriculumDatabase[sem.key]?.filter(sub => !sub.tags || sub.tags.includes(activeMajor)) || [];
-                    const isOpen = expandedSemester === sem.id;
-                    
-                    return (
-                      <div key={sem.id} className={`bg-white rounded-xl border overflow-hidden ${isOpen ? `border-2 ${theme.border} shadow-sm` : 'border-gray-200 hover:border-gray-300'}`}>
-                        <button onClick={() => setExpandedSemester(isOpen ? null : sem.id)} className="w-full px-5 py-4 flex items-center justify-between text-left">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${isOpen ? theme.bg + ' text-white' : 'bg-gray-100 text-gray-500'}`}>{sem.id}</div>
-                            <span className={`font-semibold ${isOpen ? 'text-gray-900' : 'text-gray-700'}`}>{sem.title}</span>
-                          </div>
-                          <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
-                        </button>
-
-                        {isOpen && (
-                          <div className="px-5 pb-5">
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-sm text-left border-collapse">
-                                <thead>
-                                  <tr className="text-gray-500 border-b">
-                                    <th className="py-2 w-12">STT</th>
-                                    <th className="py-2">Tên học phần</th>
-                                    <th className="py-2 text-center w-32">Tín chỉ (LT+TH)</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {subjects.map((sub, idx) => (
-                                    <tr key={sub.id} className="border-b last:border-0 hover:bg-gray-50">
-                                      <td className="py-3 text-gray-500">{idx + 1}</td>
-                                      <td className="py-3 font-medium text-gray-800">{sub.name}</td>
-                                      <td className="py-3 text-center">
-                                        <span className="font-bold">{sub.theory + sub.practice}</span>
-                                        <span className="text-gray-400 text-xs ml-1">({sub.theory}+{sub.practice})</span>
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                            <div className={`mt-3 p-3 rounded-lg text-xs flex justify-between items-center ${theme.light}`}>
-                                <div className="flex items-center gap-1.5"><Info className="w-4 h-4" /> Tổng: <strong>{subjects.reduce((a, c) => a + c.theory + c.practice, 0)}</strong> tín chỉ</div>
-                                <div className="text-gray-500 italic">*Khung chương trình 2025</div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                  ${semestersHtml}
                 </div>
 
-                {/* NÚT FANPAGE */}
-                <a href="https://www.facebook.com/BomonPhuchoichucnang" target="_blank" className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#1877F2] text-white px-4 py-3 rounded-full shadow-lg hover:-translate-y-1 transition-transform" style={{ textDecoration: 'none' }}>
-                  <Facebook className="w-5 h-5 fill-current" />
-                  <span className="text-sm font-medium hidden sm:block">Theo dõi fanpage cập nhật thông tin</span>
-                  <span className="text-sm font-medium sm:hidden">Theo dõi Fanpage</span>
+                <!-- NÚT FANPAGE -->
+                <a href="https://www.facebook.com/BomonPhuchoichucnang" target="_blank" class="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#1877F2] text-white px-4 py-3 rounded-full shadow-lg hover:-translate-y-1 transition-transform" style="text-decoration: none;">
+                  <i class="fab fa-facebook text-xl"></i>
+                  <span class="text-sm font-medium hidden sm:block">Theo dõi fanpage cập nhật thông tin</span>
+                  <span class="text-sm font-medium sm:hidden">Theo dõi Fanpage</span>
                 </a>
-            </div>
-          );
-        };
+            `;
+        }
 
-        const root = createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // Khởi chạy khi load xong
+        document.addEventListener("DOMContentLoaded", () => {
+            renderApp();
+        });
+
     </script>
 </body>
 </html>
