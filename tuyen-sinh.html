@@ -207,32 +207,39 @@
         const majors = {
             VLTL: {
               name: "Vật lý trị liệu",
-              description: "Tập trung vào việc phát triển, duy trì và phục hồi tối đa khả năng vận động và chức năng của con người trong suốt vòng đời.",
+              color: "blue",
+              description: "Vật lý trị liệu là ngành thuộc lĩnh vực khoa học sức khỏe, tập trung vào việc phát triển, duy trì và phục hồi tối đa khả năng vận động và chức năng của con người trong suốt vòng đời...",
               jobs: [
                 "Làm việc tại các bệnh viện, trung tâm phục hồi chức năng, viện dưỡng lão.",
                 "Tự phát triển và vận hành các cơ sở kỹ thuật phục hồi chức năng tư nhân.",
-                "Làm cán bộ dự án liên quan phục hồi chức năng ở tổ chức phi chính phủ.",
+                "Làm cán bộ của các dự án liên quan phục hồi chức năng ở các tổ chức phi chính phủ.",
                 "Trung tâm thể dục thể thao, cơ sở kinh doanh thiết bị vật lý trị liệu."
               ]
             },
             HĐTL: {
               name: "Hoạt động trị liệu",
-              description: "Hỗ trợ người bệnh phát triển, phục hồi hoặc duy trì khả năng thực hiện và tham gia vào các hoạt động hằng ngày có ý nghĩa.",
+              color: "orange",
+              description: "Hoạt động trị liệu là ngành hỗ trợ người bệnh/khách hàng phát triển, phục hồi hoặc duy trì khả năng thực hiện và tham gia vào các hoạt động hằng ngày có ý nghĩa...",
               jobs: [
-                "Làm việc tại các bệnh viện, trung tâm phục hồi chức năng.",
-                "Trường học từ mẫu giáo đến trung học phổ thông, trung tâm giáo dục hòa nhập.",
-                "Nhà máy xí nghiệp (chăm sóc sức khỏe lao động).",
+                "Làm việc tại các bệnh viện, trung tâm phục hồi chức năng, viện dưỡng lão.",
+                "Tự phát triển và vận hành các cơ sở kỹ thuật phục hồi chức năng tư nhân.",
+                "Làm cán bộ của các dự án liên quan phục hồi chức năng ở các tổ chức phi chính phủ.",
+                "Trung tâm giáo dục hòa nhập, nhà máy xí nghiệp (chăm sóc sức khỏe lao động).",
+                "Trường học từ mẫu giáo đến trung học phổ thông.",
                 "Công ty sản xuất trang thiết bị công thái học hoặc dụng cụ thích nghi/trợ giúp."
               ]
             },
             NNTL: {
               name: "Ngôn ngữ trị liệu",
-              description: "Làm việc với trẻ em và người lớn nhằm sàng lọc, nhận diện, can thiệp, tư vấn các vấn đề về ngôn ngữ, lời nói, giao tiếp và nuốt.",
+              color: "emerald",
+              description: "Ngôn ngữ trị liệu là ngành làm việc với trẻ em và người lớn nhằm sàng lọc, nhận diện, can thiệp, tư vấn, huấn luyện kỹ năng quản lý các vấn đề về ngôn ngữ, lời nói, giao tiếp và nuốt.",
               jobs: [
                 "Làm việc tại các bệnh viện, trung tâm phục hồi chức năng, viện dưỡng lão.",
-                "Trung tâm giáo dục hòa nhập, trường học các cấp.",
-                "Tự phát triển và vận hành cơ sở tư nhân.",
-                "Công ty sản xuất trang thiết bị trợ thính hoặc công nghệ trợ giúp giao tiếp."
+                "Tự phát triển và vận hành các cơ sở kỹ thuật phục hồi chức năng tư nhân.",
+                "Làm cán bộ của các dự án liên quan phục hồi chức năng ở các tổ chức phi chính phủ.",
+                "Trung tâm giáo dục hòa nhập.",
+                "Trường học từ mẫu giáo đến trung học phổ thông.",
+                "Công ty sản xuất trang thiết bị trợ thính hoặc công nghệ trợ giúp giao tiếp hoặc nuốt."
               ]
             }
         };
@@ -369,7 +376,7 @@
                             </div>
                             <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;">Ngành đào tạo</div>
                             <div style="font-size: clamp(14px, 2.2vw, 20px); font-weight: 800; color: var(--primary); text-align: center; line-height: 1.3; margin-bottom: 14px; white-space: nowrap;">KỸ THUẬT PHỤC HỒI CHỨC NĂNG</div>
-                            <span class="status-badge badge-blue" style="font-size: 14px; font-weight: 700; padding: 6px 14px; border: 1px solid #bae6fd; letter-spacing: 1px;">MÃ NGÀNH: 7720603</span>
+                            <div style="background: var(--bg-page); color: var(--text-body); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 700; white-space: nowrap;">Mã ngành: 7720603</div>
                         </div>
                         
                         <!-- Cột Phải: Các thẻ thông số -->
