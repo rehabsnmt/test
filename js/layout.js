@@ -67,7 +67,7 @@
                     <a href="./index.html" class="nav-item">Trang chủ</a>
                     <a href="./gioi-thieu.html" class="nav-item">Giới thiệu</a>
                     <a href="./tuyen-sinh.html" class="nav-item">Tuyển sinh</a>
-                    <a href="./luan-van.html" class="nav-item">Luận văn</a>
+                    <a href="./de-tai.html" class="nav-item">Đề tài</a>
                     <a href="./tai-nguyen.html" class="nav-item">Tài nguyên</a>
                     <a href="./thong-bao.html" class="nav-item">Thông báo</a>
                     
