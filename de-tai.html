@@ -7,10 +7,8 @@
     
     <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
     
-    <!-- Link CSS gốc để đồng bộ giao diện -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     
     <style>
         /* =========================================
@@ -33,10 +31,12 @@
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-dark); margin-bottom: 5px; }
         
-        select, input[type="text"] {
-            width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; background-color: var(--bg-page); color: var(--text-dark); outline: none; transition: var(--transition); box-sizing: border-box;
+        /* Chuyển ô tên đề tài thành textarea tự mở rộng */
+        select, input[type="text"], textarea {
+            width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; background-color: var(--bg-page); color: var(--text-dark); outline: none; transition: var(--transition); box-sizing: border-box; font-family: inherit;
         }
-        select:focus, input[type="text"]:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); background-color: var(--surface); }
+        select:focus, input[type="text"]:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); background-color: var(--surface); }
+        textarea { resize: none; overflow: hidden; line-height: 1.5; }
 
         /* Tabs Chuyển hệ */
         .tabs-header { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 20px; gap: 10px; }
@@ -63,14 +63,16 @@
         .btn-outline { background-color: white; color: var(--primary); border: 1px solid var(--primary); padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-outline:hover { background-color: var(--primary-light); }
 
-        /* Bảng hiển thị */
+        /* Bảng hiển thị - Đã cấu hình để bẻ dòng tự động */
         .table-container { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); position: relative; }
-        table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 0.95rem; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; word-wrap: break-word; }
         th { background-color: var(--bg-page); font-weight: 600; color: var(--text-dark); text-transform: uppercase; font-size: 0.85rem; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px;}
         tr:hover { background-color: var(--primary-light); }
         tr.recently-updated td { background-color: #ecfdf5; }
         
+        .td-nowrap { white-space: nowrap; }
+
         #thAction, .td-action { position: sticky; right: 0; background-color: var(--surface); z-index: 5; box-shadow: -4px 0 8px rgba(0,0,0,0.02); border-left: 1px solid var(--border); }
         tr:hover .td-action { background-color: var(--primary-light); }
 
@@ -84,17 +86,8 @@
         /* =========================================
            CSS THÔNG BÁO TOAST (POPUP GÓC DƯỚI)
         ========================================= */
-        .toast-container {
-            position: fixed; bottom: 20px; right: 20px; z-index: 9999;
-            display: flex; flex-direction: column; gap: 10px;
-        }
-        .toast {
-            min-width: 250px; background-color: var(--surface); color: var(--text-dark);
-            padding: 15px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            display: flex; align-items: center; gap: 12px;
-            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s;
-            font-weight: 600; border-left: 5px solid; opacity: 0; font-size: 0.95rem;
-        }
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { min-width: 250px; background-color: var(--surface); color: var(--text-dark); padding: 15px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px; transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s; font-weight: 600; border-left: 5px solid; opacity: 0; font-size: 0.95rem; }
         .toast.show { transform: translateX(0); opacity: 1; }
         .toast.success { border-left-color: #22c55e; }
         .toast.warning { border-left-color: #f59e0b; }
@@ -139,6 +132,9 @@
     <!-- Khung chứa thông báo nổi -->
     <div id="toastContainer" class="toast-container"></div>
 
+    <!-- Danh sách gợi ý giảng viên -->
+    <datalist id="advisorList"></datalist>
+
     <main style="flex: 1; padding-top: 2rem;">
         <div class="header-actions">
             <div class="header-title-box">
@@ -148,35 +144,7 @@
             <div class="header-buttons">
                 <button id="btnOpenAdd" class="btn-success hidden"><i class="fas fa-plus"></i> Thêm đề tài</button>
                 <button id="btnOpenHistory" class="btn-primary hidden" onclick="openHistoryModal()"><i class="fas fa-history"></i> Lịch sử</button>
-                <button id="btnOpenBulk" class="btn-warning hidden"><i class="fas fa-file-excel"></i> Nhập Excel</button>
-                <button id="btnOpenTrash" class="btn-danger hidden" onclick="openTrashModal()"><i class="fas fa-trash-restore"></i> Thùng rác</button>
             </div>
-        </div>
-
-        <!-- Khung nhập file Excel -->
-        <div id="bulkSection" class="section-box hidden" style="background: #fffbeb; border-color: #fde68a;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
-                <div>
-                    <h3 style="margin-top: 0; margin-bottom: 10px; color: #b45309;"><i class="fas fa-file-import"></i> Nhập dữ liệu hàng loạt từ Excel</h3>
-                    <p style="font-size: 0.9rem; color: #78350f; margin-bottom: 15px; line-height: 1.6;">
-                        <strong>Cấu trúc file Excel bắt buộc:</strong> Hàng đầu tiên là tiêu đề. Dữ liệu bắt đầu từ hàng 2.<br>
-                        <strong>Thứ tự cột:</strong> Cột A (Tác giả) | Cột B (Tên đề tài) | Cột C (Giảng viên hướng dẫn) | Cột D (Lớp) | Cột E (Chuyên ngành)<br>
-                        <em>Mẹo: Nếu có 2 Giảng viên, hãy dùng dấu "/" để ngăn cách ở Cột C (Ví dụ: TS. A / ThS. B).</em>
-                    </p>
-                </div>
-                <button id="btnDownloadTemplate" class="btn-secondary"><i class="fas fa-download"></i> Tải Excel Mẫu</button>
-            </div>
-            
-            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
-                <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" style="display: none;">
-                <button id="btnSelectFile" class="btn-warning" style="border: none;">Chọn file Excel</button>
-                <span id="fileNameDisplay" style="font-style: italic; font-size: 0.9rem; color: var(--text-body);">Chưa chọn file</span>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button id="btnUploadExcel" class="btn-primary hidden" style="border: none;">Bắt đầu tải lên</button>
-                <button id="btnCloseBulk" class="btn-danger btn-sm">Đóng khung</button>
-            </div>
-            <div id="bulkLog" style="font-size: 0.9rem; font-weight: 600; color: #15803d; margin-top: 15px;"></div>
         </div>
 
         <!-- Popup Thêm/Sửa đề tài -->
@@ -189,20 +157,13 @@
             </h3>
             <input type="hidden" id="editId">
             <div class="form-grid">
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Tên đề tài *</label>
+                    <textarea id="addTitle" placeholder="Nhập tên đề tài..." rows="2"></textarea>
+                </div>
                 <div class="form-group">
                     <label>Tác giả *</label>
                     <input type="text" id="addAuthor" placeholder="Họ và tên tác giả">
-                </div>
-                <div class="form-group" style="grid-column: span 2;">
-                    <label>Tên đề tài *</label>
-                    <input type="text" id="addTitle" placeholder="Nhập tên đề tài...">
-                </div>
-                <div class="form-group">
-                    <label>Lớp *</label>
-                    <div style="display: flex; gap: 10px;">
-                        <select id="addLevel" style="flex: 1;"><option value="CN">CN</option><option value="THS">THS</option></select>
-                        <select id="addYear" style="flex: 1;"></select>
-                    </div>
                 </div>
                 <div class="form-group">
                     <label>Chuyên ngành</label>
@@ -213,8 +174,19 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Giảng viên hướng dẫn *</label>
-                    <input type="text" id="addAdvisor" placeholder="Cách nhau bằng dấu / (Ví dụ: GV1 / GV2)">
+                    <label>Lớp *</label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="addLevel" style="flex: 1;"><option value="CN">CN</option><option value="THS">THS</option></select>
+                        <select id="addYear" style="flex: 1;"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Giảng viên hướng dẫn 1 *</label>
+                    <input type="text" id="addGvhd1" list="advisorList" placeholder="Nhập hoặc chọn tên GV..." autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Giảng viên hướng dẫn 2 (nếu có)</label>
+                    <input type="text" id="addGvhd2" list="advisorList" placeholder="Nhập hoặc chọn tên GV..." autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label>&nbsp;</label>
@@ -264,12 +236,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="text-align: center; width: 60px;">STT</th>
+                        <th class="td-nowrap" style="text-align: center; width: 60px;">STT</th>
                         <th style="width: 180px;">Tác Giả</th>
-                        <th style="min-width: 300px;">Tên Đề Tài</th>
-                        <th style="width: 160px;">LỚP</th>
-                        <th style="min-width: 200px;">Giảng Viên Hướng Dẫn</th>
-                        <th id="thAction" class="hidden" style="text-align: center; width: 120px;"></th>
+                        <th style="min-width: 350px;">Tên Đề Tài</th>
+                        <th class="td-nowrap" style="width: 120px;">LỚP</th>
+                        <th style="width: 250px;">Giảng Viên Hướng Dẫn</th>
+                        <th id="thAction" class="td-nowrap hidden" style="text-align: center; width: 120px;"></th>
                     </tr>
                 </thead>
                 <tbody id="dataTableBody">
@@ -335,29 +307,7 @@
         </div>
     </div>
 
-    <!-- MODAL 3: THÙNG RÁC -->
-    <div id="trashModal" class="modal-overlay hidden">
-        <div class="modal-content" style="max-width: 900px;">
-            <button class="modal-close" onclick="closeTrashModal()"><i class="fas fa-times"></i></button>
-            <h2 style="color: var(--text-dark); margin-bottom: 10px;"><i class="fas fa-trash-restore" style="color: var(--accent);"></i> Thùng rác</h2>
-            <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm);">
-                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
-                    <thead>
-                        <tr>
-                            <th style="background: var(--bg-page); padding: 10px; width: 150px;">Tác giả</th>
-                            <th style="background: var(--bg-page); padding: 10px;">Tên đề tài</th>
-                            <th style="background: var(--bg-page); padding: 10px; width: 110px; text-align: center;">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="trashTableBody">
-                        <tr><td colspan="3" align="center">Đang tải...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 4: LỊCH SỬ -->
+    <!-- MODAL LỊCH SỬ -->
     <div id="historyModal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 900px;">
             <button class="modal-close" onclick="closeHistoryModal()"><i class="fas fa-times"></i></button>
@@ -366,10 +316,10 @@
                 <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
                     <thead>
                         <tr>
-                            <th style="background: var(--bg-page); padding: 10px; width: 140px;">Thời gian</th>
-                            <th style="background: var(--bg-page); padding: 10px; width: 90px;">Thao tác</th>
+                            <th style="background: var(--bg-page); padding: 10px; width: 140px;" class="td-nowrap">Thời gian</th>
+                            <th style="background: var(--bg-page); padding: 10px; width: 90px;" class="td-nowrap">Thao tác</th>
                             <th style="background: var(--bg-page); padding: 10px; width: 150px;">Tài khoản</th>
-                            <th style="background: var(--bg-page); padding: 10px; white-space: normal;">Chi tiết cập nhật</th>
+                            <th style="background: var(--bg-page); padding: 10px;">Chi tiết cập nhật</th>
                         </tr>
                     </thead>
                     <tbody id="historyTableBody"></tbody>
@@ -378,7 +328,7 @@
         </div>
     </div>
 
-    <!-- MODAL 5: XÁC NHẬN XÓA -->
+    <!-- MODAL XÁC NHẬN XÓA -->
     <div id="deleteConfirmModal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 400px; text-align: center;">
             <button class="modal-close" onclick="closeDeleteModal()"><i class="fas fa-times"></i></button>
@@ -399,8 +349,9 @@
 
     <script src="js/layout.js"></script>
 
-    <!-- JS TÍCH HỢP SUPABASE DÀNH CHO BẢNG de-tai -->
+    <!-- JS TÍCH HỢP SUPABASE -->
     <script>
+        // Data giảng viên gợi ý
         const internalAdvisors = {
             "TS. Lê Thanh Vân": { degree: "Tiến sĩ / Trưởng Bộ môn", bio: "Lê Thanh Vân" },
             "TS. Nguyễn Thanh Duy": { degree: "Tiến sĩ / Giảng viên", bio: "Nguyễn Thanh Duy" },
@@ -417,6 +368,20 @@
             "ThS. Trần Hữu Đức": { degree: "Thạc sĩ / Giảng viên", bio: "Trần Hữu Đức" },
             "ThS. Nguyễn Mai Ngọc Đoan": { degree: "Thạc sĩ / Giảng viên", bio: "Nguyễn Mai Ngọc Đoan" }
         };
+
+        // Gắn danh sách gợi ý vào datalist
+        const advisorDatalist = document.getElementById('advisorList');
+        Object.keys(internalAdvisors).forEach(name => {
+            advisorDatalist.innerHTML += `<option value="${name}">`;
+        });
+
+        // Xử lý Textarea tự co giãn chiều cao
+        const addTitleInput = document.getElementById('addTitle');
+        function autoResizeTextarea() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        }
+        addTitleInput.addEventListener('input', autoResizeTextarea);
 
         let allTheses = [];
         let isAdmin = false;
@@ -438,10 +403,8 @@
 
         const tableBody = document.getElementById('dataTableBody');
         const thAction = document.getElementById('thAction');
-        const adminSection = document.getElementById('adminSection');
         const thesisFormModal = document.getElementById('thesisFormModal');
         const btnOpenAdd = document.getElementById('btnOpenAdd');
-        const bulkSection = document.getElementById('bulkSection');
         const filterClass = document.getElementById('filterClass'); 
         const sortSelect = document.getElementById('sortSelect'); 
 
@@ -542,30 +505,21 @@
                         });
                     }
 
-                    // Phân quyền dựa vào role trong bảng tai-khoan-he-thong
+                    // Phân quyền
                     const { data: account } = await window.supabaseClient.from("tai-khoan-he-thong").select("role").eq("id", data.user.id).single();
                     const role = account ? account.role : 'user';
 
                     if (['superadmin', 'head', 'admin'].includes(role)) {
                         isAdmin = true;
-                        document.getElementById('btnOpenBulk').classList.remove('hidden');
                         btnOpenAdd.classList.remove('hidden');
                         document.getElementById('btnOpenHistory').classList.remove('hidden');
                         thAction.classList.remove('hidden');
-                        
-                        if (['superadmin', 'head'].includes(role)) {
-                            document.getElementById('btnOpenTrash').classList.remove('hidden');
-                        }
                     } else {
-                        // Chặn quyền người dùng thường
                         isAdmin = false;
                         thesisFormModal.classList.add('hidden');
-                        document.getElementById('bulkSection').classList.add('hidden');
                         thAction.classList.add('hidden');
-                        document.getElementById('btnOpenBulk').classList.add('hidden');
                         btnOpenAdd.classList.add('hidden');
                         document.getElementById('btnOpenHistory').classList.add('hidden');
-                        document.getElementById('btnOpenTrash').classList.add('hidden');
                     }
                 }
             } catch(e) { console.error("Lỗi xác thực:", e); }
@@ -664,7 +618,7 @@
                 const dataStrObj = encodeURIComponent(JSON.stringify(t)).replace(/'/g, "%27");
 
                 if (isAdmin) {
-                    actionHtml = `<td class="td-action" align="center"><button class="btn-sm btn-warning" onclick="triggerEdit('${dataStrObj}')">Sửa</button> <button class="btn-sm btn-danger" onclick="triggerDeleteConfirm('${t.id}', '${encodeURIComponent(String(t['ten-de-tai']||'')).replace(/'/g, "%27")}')">Xóa</button></td>`;
+                    actionHtml = `<td class="td-action td-nowrap" align="center"><button class="btn-sm btn-warning" onclick="triggerEdit('${dataStrObj}')">Sửa</button> <button class="btn-sm btn-danger" onclick="triggerDeleteConfirm('${t.id}', '${encodeURIComponent(String(t['ten-de-tai']||'')).replace(/'/g, "%27")}')">Xóa</button></td>`;
                 }
 
                 const advHtml = [t['gvhd1'], t['gvhd2']].filter(Boolean).map(a => {
@@ -674,14 +628,14 @@
 
                 tableBody.innerHTML += `
                     <tr data-thesis-id="${t.id}">
-                        <td align="center" style="color:#94a3b8;font-weight:bold">${actualIndex}</td>
+                        <td align="center" class="td-nowrap" style="color:#94a3b8;font-weight:bold">${actualIndex}</td>
                         <td><b>${t['tac-gia']}</b></td>
                         
-                        <td style="white-space:normal;">
+                        <td>
                             <button type="button" class="thesis-title-link" onclick="openThesisDetailModal('${dataStrObj}')" aria-label="Xem thông tin đề tài: ${t['ten-de-tai']}">${t['ten-de-tai']}</button>
                         </td>
 
-                        <td>
+                        <td class="td-nowrap">
                             <div style="font-weight: 600; color: var(--text-dark);">${t['lop']||'—'}</div>
                             <div style="font-size: 0.85rem; color: var(--primary); margin-top: 2px;">${t['chuyen-nganh']||'—'}</div>
                         </td>
@@ -811,64 +765,10 @@
         };
         window.closeHistoryModal = () => document.getElementById('historyModal').classList.add('hidden');
 
+
         // ==========================================
-        // THÙNG RÁC
+        // XÓA ĐỀ TÀI TRỰC TIẾP
         // ==========================================
-        window.openTrashModal = async () => {
-            document.getElementById('trashModal').classList.remove('hidden');
-            const tbody = document.getElementById('trashTableBody');
-            tbody.innerHTML = '<tr><td colspan="3" align="center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>';
-            
-            try {
-                const { data, error } = await window.supabaseClient.from('thung-rac-de-tai').select('*');
-                if (error) throw error;
-
-                if(data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" align="center">Thùng rác đang trống.</td></tr>';
-                    return;
-                }
-                tbody.innerHTML = '';
-                data.forEach(d => {
-                    const id = d.id;
-                    const dataStrObj = encodeURIComponent(JSON.stringify(d)).replace(/'/g, "%27");
-                    
-                    tbody.innerHTML += `
-                        <tr id="trash-row-${id}">
-                            <td><b>${d['tac-gia'] || 'Chưa rõ'}</b></td>
-                            <td style="white-space: normal; color: var(--text-dark);">${d['ten-de-tai'] || 'Chưa rõ'}</td>
-                            <td align="center">
-                                <button class="btn-sm btn-success" onclick="restoreThesis('${id}', '${dataStrObj}')"><i class="fas fa-undo"></i> Khôi phục</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="3" align="center" style="color:red;">Lỗi tải dữ liệu: ${e.message}</td></tr>`;
-            }
-        };
-
-        window.closeTrashModal = () => document.getElementById('trashModal').classList.add('hidden');
-
-        window.restoreThesis = async (id, encodedData) => {
-            try {
-                const restoreData = JSON.parse(decodeURIComponent(encodedData));
-                delete restoreData.id;
-                delete restoreData.deleted_at;
-
-                await window.supabaseClient.from('de-tai').insert([restoreData]);
-                await window.supabaseClient.from('thung-rac-de-tai').delete().eq('id', id);
-                
-                const row = document.getElementById(`trash-row-${id}`);
-                if (row) row.remove();
-                
-                logAction("KHÔI PHỤC", `<strong>Đề tài:</strong> ${restoreData['ten-de-tai']}`);
-                showToast("Đã khôi phục đề tài thành công!", "success");
-                loadData(true);
-            } catch (error) {
-                showToast("Lỗi khôi phục: " + error.message, "danger");
-            }
-        };
-
         window.triggerDeleteConfirm = (id, enT) => {
             targetDeleteId = id; targetDeleteTitle = decodeURIComponent(enT);
             generatedSecurityCode = Math.floor(1000 + Math.random() * 9000).toString();
@@ -887,19 +787,6 @@
             if(!targetDeleteId) return;
             
             try {
-                const deletedItem = allTheses.find(t => t.id === targetDeleteId);
-                if (deletedItem) {
-                    const backupData = { ...deletedItem };
-                    delete backupData.id; 
-                    
-                    // Backup vào thung-rac-de-tai trước khi xóa
-                    await window.supabaseClient.from('thung-rac-de-tai').insert([backupData]);
-                }
-            } catch (backupError) {
-                console.warn("Lỗi sao lưu thùng rác:", backupError);
-            }
-
-            try {
                 await window.supabaseClient.from('de-tai').delete().eq('id', targetDeleteId);
                 logAction("XÓA", `<strong>Đề tài:</strong> ${targetDeleteTitle}`);
                 closeDeleteModal();
@@ -910,21 +797,19 @@
             }
         };
 
+        // ==========================================
         // THÊM & SỬA ĐỀ TÀI
+        // ==========================================
         document.getElementById('btnSaveData').onclick = async () => {
             const title = document.getElementById('addTitle').value.trim();
             const author = document.getElementById('addAuthor').value.trim();
-            const advisorInput = document.getElementById('addAdvisor').value.trim();
+            const gvhd1 = document.getElementById('addGvhd1').value.trim() || null;
+            const gvhd2 = document.getElementById('addGvhd2').value.trim() || null;
             
-            if(!title || !author || !advisorInput) {
+            if(!title || !author || !gvhd1) {
                 showToast("Vui lòng điền đủ thông tin có dấu *", "warning");
                 return;
             }
-
-            // Tách Giảng viên bằng dấu /
-            const advArr = advisorInput.split('/').map(s => s.trim()).filter(Boolean);
-            const gvhd1 = advArr[0] || null;
-            const gvhd2 = advArr[1] || null;
             
             const obj = { 
                 'ten-de-tai': title, 
@@ -979,13 +864,20 @@
             originalEditData = t;
             
             document.getElementById('editId').value = t.id;
-            document.getElementById('addTitle').value = t['ten-de-tai']||'';
+            
+            // Set values
+            const titleEl = document.getElementById('addTitle');
+            titleEl.value = t['ten-de-tai']||'';
             document.getElementById('addAuthor').value = t['tac-gia']||'';
-            
-            const combinedAdvisor = [t.gvhd1, t.gvhd2].filter(Boolean).join(' / ');
-            document.getElementById('addAdvisor').value = combinedAdvisor;
-            
+            document.getElementById('addGvhd1').value = t.gvhd1 || '';
+            document.getElementById('addGvhd2').value = t.gvhd2 || '';
             document.getElementById('addMajor').value = t['chuyen-nganh']||'Vật lý trị liệu';
+            
+            // Adjust textarea height
+            setTimeout(() => {
+                titleEl.style.height = 'auto';
+                titleEl.style.height = titleEl.scrollHeight + 'px';
+            }, 10);
             
             if (t['lop']) {
                 let lvl = String(t['lop']).startsWith('THS') ? 'THS' : 'CN';
@@ -1014,97 +906,28 @@
             document.getElementById('btnCancelEditContainer').classList.remove('hidden');
             document.getElementById('btnSaveData').innerText = 'Cập nhật';
             thesisFormModal.classList.remove('hidden');
-            requestAnimationFrame(() => document.getElementById('addTitle').focus());
+            requestAnimationFrame(() => titleEl.focus());
         };
 
         document.getElementById('btnCancelEdit').onclick = () => window.closeThesisFormModal();
+        
         function resetForm() {
             isEditing = false; 
             originalEditData = null; 
             document.getElementById('editId').value = '';
-            document.getElementById('addTitle').value = ''; 
+            
+            const titleEl = document.getElementById('addTitle');
+            titleEl.value = ''; 
+            titleEl.style.height = 'auto'; // Reset height
+            
             document.getElementById('addAuthor').value = ''; 
-            document.getElementById('addAdvisor').value = '';
+            document.getElementById('addGvhd1').value = '';
+            document.getElementById('addGvhd2').value = '';
             document.getElementById('formTitle').innerText = 'Thêm đề tài mới';
             document.getElementById('editModeBadge').classList.add('hidden');
             document.getElementById('btnCancelEditContainer').classList.add('hidden');
             document.getElementById('btnSaveData').innerText = 'Lưu dữ liệu';
         }
-
-        // ==========================================
-        // NHẬP DỮ LIỆU EXCEL
-        // ==========================================
-        document.getElementById('btnOpenBulk').onclick = () => { window.closeThesisFormModal(); document.getElementById('bulkSection').classList.remove('hidden'); };
-        document.getElementById('btnCloseBulk').onclick = () => document.getElementById('bulkSection').classList.add('hidden');
-        
-        let uploadData = [];
-        document.getElementById('btnSelectFile').onclick = () => document.getElementById('excelFile').click();
-        
-        document.getElementById('btnDownloadTemplate').addEventListener('click', () => {
-            const templateData = [
-                ["Tác giả", "Tên đề tài", "Giảng viên hướng dẫn", "Lớp", "Chuyên ngành"],
-                ["Nguyễn Văn A", "Đánh giá chất lượng cuộc sống bệnh nhân...", "TS. Lê Thanh Vân", "CN2022", "Vật lý trị liệu"],
-                ["Trần Thị B", "Ứng dụng hoạt động trị liệu trên trẻ tự kỷ...", "ThS. Cao Minh Hạnh / ThS. Nguyễn Mai Ngọc Đoan", "THS2023", "Hoạt động trị liệu"]
-            ];
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(templateData);
-            ws['!cols'] = [ {wpx: 120}, {wpx: 300}, {wpx: 200}, {wpx: 80}, {wpx: 120} ];
-            XLSX.utils.book_append_sheet(wb, ws, "LuanVan_Mau");
-            XLSX.writeFile(wb, "Bieu_Mau_Nhap_Luan_Van.xlsx");
-        });
-
-        document.getElementById('excelFile').onchange = (e) => {
-            const f = e.target.files[0]; if(!f) return;
-            document.getElementById('fileNameDisplay').innerText = f.name;
-            const r = new FileReader();
-            r.onload = (ev) => {
-                const j = XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(ev.target.result), {type:'array'}).Sheets[XLSX.read(new Uint8Array(ev.target.result), {type:'array'}).SheetNames[0]], {header:1});
-                uploadData = j.slice(1).filter(r => r.length > 0);
-                if(uploadData.length > 0) {
-                    document.getElementById('btnUploadExcel').classList.remove('hidden');
-                    document.getElementById('bulkLog').innerText = `Sẵn sàng tải lên ${uploadData.length} đề tài.`;
-                }
-            };
-            r.readAsArrayBuffer(f);
-        };
-        
-        document.getElementById('btnUploadExcel').onclick = async () => {
-            if(!uploadData.length) return;
-            let success = 0; document.getElementById('btnUploadExcel').disabled = true;
-            
-            const insertArray = [];
-
-            for(const row of uploadData) {
-                const advArr = row[2] ? String(row[2]).split('/').map(s => s.trim()).filter(Boolean) : [];
-                
-                insertArray.push({ 
-                    'tac-gia': row[0]?String(row[0]).trim():"Chưa rõ", 
-                    'ten-de-tai': row[1]?String(row[1]).trim():"Chưa có tên", 
-                    'gvhd1': advArr[0] || null,
-                    'gvhd2': advArr[1] || null,
-                    'lop': row[3]?String(row[3]).trim().toUpperCase():"CN2022", 
-                    'chuyen-nganh': row[4]?String(row[4]).trim():"Vật lý trị liệu"
-                });
-            }
-
-            try {
-                // Insert bulk to Supabase
-                const { error } = await window.supabaseClient.from('de-tai').insert(insertArray);
-                if (error) throw error;
-                
-                success = insertArray.length;
-                logAction("NHẬP EXCEL", `Đã nhập <b>${success}</b> đề tài hàng loạt.`);
-                showToast(`Hoàn tất tải lên ${success} đề tài!`, "success");
-                loadData(true);
-            } catch (error) {
-                showToast(`Lỗi nhập hàng loạt: ${error.message}`, "danger");
-            }
-
-            document.getElementById('btnCloseBulk').click();
-            uploadData = []; document.getElementById('excelFile').value = '';
-            document.getElementById('btnUploadExcel').disabled = false; document.getElementById('btnUploadExcel').classList.add('hidden');
-            document.getElementById('fileNameDisplay').innerText = "Chưa chọn file";
-        };
     </script>
 </body>
 </html>
