@@ -67,7 +67,7 @@
             width: 100%; 
             border-collapse: collapse; 
             font-size: 0.95rem; 
-            table-layout: fixed; /* Bắt buộc để không tràn bảng ngang */
+            table-layout: fixed; 
         }
         th, td { 
             padding: 15px 12px; 
@@ -118,27 +118,28 @@
 
         /* Tên đề tài format tự động ngắt dòng */
         .thesis-title-link { 
-            cursor: pointer; 
+            cursor: default; /* Bỏ cursor pointer vì không còn click */
             color: var(--text-dark); 
-            transition: color 0.2s; 
             font-weight: 700; 
             line-height: 1.5; 
             text-align: left; 
+            background: transparent; 
+            border: 0; 
+            padding: 0;
             display: block; 
             margin-bottom: 8px;
-            font-size: 1.15rem; /* Cỡ chữ to dễ đọc */
+            font-size: 1.15rem; 
             width: 100%;
-            white-space: normal !important; /* Quan trọng: Cho phép xuống hàng */
+            white-space: normal !important; 
             word-wrap: break-word; 
             word-break: break-word;
             overflow-wrap: break-word;
         }
-        .thesis-title-link:hover { color: var(--primary); text-decoration: underline; }
 
-        /* Dòng thông tin lớp, chuyên ngành, tác giả */
+        /* Dòng thông tin tác giả, lớp, chuyên ngành, GVHD - Được phép ngắt dòng thoải mái */
         .metadata-line {
             font-size: 0.95rem; 
-            color: var(--text-body); 
+            color: var(--text-body); /* Màu xám nhạt đồng bộ */
             margin-bottom: 6px; 
             white-space: normal; 
             width: 100%;
@@ -148,7 +149,7 @@
             line-height: 1.6;
         }
         .meta-dot { color: var(--border); margin: 0 6px; }
-        .author-block { display: inline-block; }
+        .author-block { display: inline-block; color: var(--text-body); font-weight: 500; }
 
         /* =========================================
            CSS THÔNG BÁO TOAST
@@ -178,7 +179,7 @@
             .toast-container { bottom: 10px; right: 10px; left: 10px; }
             .toast { min-width: unset; width: 100%; box-sizing: border-box; }
 
-            /* Điều chỉnh bảng và ép tác giả xuống dòng */
+            /* Điều chỉnh lại padding cho gọn */
             table { font-size: 0.9rem; }
             th, td { padding: 15px 10px; }
             th:first-child, td:first-child { width: 45px !important; padding: 15px 5px; }
@@ -311,7 +312,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="text-align: center; width: 60px;">STT</th>
+                        <th style="text-align: center; width: 50px;">STT</th>
                         <th style="width: auto;">Thông tin đề tài</th>
                     </tr>
                 </thead>
@@ -535,7 +536,7 @@
             try {
                 const { data, error } = await window.supabaseClient.auth.getUser();
                 
-                // Nạp thông tin giảng viên từ bảng giang-vien
+                // Nạp thông tin giảng viên cơ hữu từ bảng giang-vien
                 const { data: usersData } = await window.supabaseClient.from("giang-vien").select("*");
                 if (usersData) {
                     usersData.forEach(d => {
@@ -674,7 +675,7 @@
 
                 if (isAdmin) {
                     actionHtml = `
-                    <div style="position: absolute; top: 12px; right: 12px;" class="action-menu-container">
+                    <div style="position: absolute; top: 15px; right: 15px;" class="action-menu-container">
                         <button class="btn-ellipsis" onclick="toggleDropdown('${rowId}')" aria-label="Thao tác">
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
@@ -711,22 +712,22 @@
                         <td style="padding: 15px 12px; width: 100%; position: relative;">
                             ${actionHtml}
                             
-                            <div style="padding-right: 30px;">
+                            <div style="padding-right: 35px;">
                                 <div class="thesis-title-link">
                                     ${t['ten-de-tai']}
                                 </div>
                                 
                                 <div class="metadata-line">
-                                    <span style="font-weight: 700; color: var(--text-dark);">${t['lop']||'—'}</span>
+                                    <span style="color: var(--text-body); font-weight: 500;">${t['lop']||'—'}</span>
                                     <span class="meta-dot"> • </span>
                                     <span class="${majorClass}">${majorStr}</span>
                                     <span class="meta-dot author-dot"> • </span>
                                     <div class="author-block">
-                                        <b>${t['tac-gia']}</b>
+                                        ${t['tac-gia']}
                                     </div>
                                 </div>
                                 
-                                <div class="metadata-line" style="color: var(--text-body); margin-bottom: 0;">
+                                <div class="metadata-line" style="margin-bottom: 0;">
                                     ${gvhdDisplay}
                                 </div>
                             </div>
@@ -956,6 +957,7 @@
             
             document.getElementById('editOriginalTitle').value = t['ten-de-tai'] || '';
             
+            // Đổ dữ liệu vào Form
             const titleEl = document.getElementById('addTitle');
             titleEl.value = t['ten-de-tai']||'';
             document.getElementById('addAuthor').value = t['tac-gia']||'';
