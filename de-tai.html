@@ -387,7 +387,7 @@
         let isAdmin = false;
         let isEditing = false; 
         let currentTab = 'CN'; 
-        let targetDeleteId = null;
+        let targetDeleteObj = null;
         let targetDeleteTitle = "";
         let generatedSecurityCode = "";
         let lastEditedId = null; 
@@ -576,7 +576,7 @@
 
             const editedIdForReturn = lastEditedId;
             if (editedIdForReturn) {
-                const editedThesis = allTheses.find(t => t.id === editedIdForReturn);
+                const editedThesis = allTheses.find(t => t.id === editedIdForReturn || t['ten-de-tai'] === editedIdForReturn);
                 const editedTab = String(editedThesis?.['lop'] || '').startsWith('THS') ? 'THS' : 'CN';
                 if (editedThesis && currentTab !== editedTab) {
                     currentTab = editedTab;
@@ -587,7 +587,7 @@
                     updateDynamicFilters();
                     return renderTable();
                 }
-                const editedIndex = filtered.findIndex(t => t.id === editedIdForReturn);
+                const editedIndex = filtered.findIndex(t => t.id === editedIdForReturn || t['ten-de-tai'] === editedIdForReturn);
                 if (editedIndex !== -1) {
                     currentPage = Math.floor(editedIndex / itemsPerPage) + 1;
                     lastEditedId = null;
@@ -616,9 +616,10 @@
                 let actionHtml = '';
                 
                 const dataStrObj = encodeURIComponent(JSON.stringify(t)).replace(/'/g, "%27");
+                const rowId = t.id || String(t['ten-de-tai']||'').replace(/"/g, '&quot;');
 
                 if (isAdmin) {
-                    actionHtml = `<td class="td-action td-nowrap" align="center"><button class="btn-sm btn-warning" onclick="triggerEdit('${dataStrObj}')">Sửa</button> <button class="btn-sm btn-danger" onclick="triggerDeleteConfirm('${t.id}', '${encodeURIComponent(String(t['ten-de-tai']||'')).replace(/'/g, "%27")}')">Xóa</button></td>`;
+                    actionHtml = `<td class="td-action td-nowrap" align="center"><button class="btn-sm btn-warning" onclick="triggerEdit('${dataStrObj}')">Sửa</button> <button class="btn-sm btn-danger" onclick="triggerDeleteConfirm('${dataStrObj}')">Xóa</button></td>`;
                 }
 
                 const advHtml = [t['gvhd1'], t['gvhd2']].filter(Boolean).map(a => {
@@ -627,7 +628,7 @@
                 }).join('<br>');
 
                 tableBody.innerHTML += `
-                    <tr data-thesis-id="${t.id}">
+                    <tr data-thesis-id="${rowId}">
                         <td align="center" class="td-nowrap" style="color:#94a3b8;font-weight:bold">${actualIndex}</td>
                         <td><b>${t['tac-gia']}</b></td>
                         
@@ -753,8 +754,8 @@
                     const c = log.action==='THÊM' ? '#16a34a' : log.action==='SỬA' ? '#d97706' : log.action==='XÓA' ? '#dc2626' : '#2563eb';
                     const timeStr = new Date(log.created_at).toLocaleString('vi-VN');
                     historyBody.innerHTML += `<tr>
-                        <td style="color:#64748b">${timeStr}</td>
-                        <td style="color:${c};font-weight:bold">${log.action}</td>
+                        <td style="color:#64748b" class="td-nowrap">${timeStr}</td>
+                        <td style="color:${c};font-weight:bold" class="td-nowrap">${log.action}</td>
                         <td style="word-break: break-all;">${log.user || ''}</td>
                         <td style="white-space: normal; line-height: 1.5;">${log.details}</td>
                     </tr>`;
@@ -767,27 +768,43 @@
 
 
         // ==========================================
-        // XÓA ĐỀ TÀI TRỰC TIẾP
+        // XÓA ĐỀ TÀI TRỰC TIẾP (FIXED LỖI 400 ID UNDEFINED)
         // ==========================================
-        window.triggerDeleteConfirm = (id, enT) => {
-            targetDeleteId = id; targetDeleteTitle = decodeURIComponent(enT);
+        window.triggerDeleteConfirm = (enD) => {
+            const t = JSON.parse(decodeURIComponent(enD));
+            targetDeleteObj = t;
+            targetDeleteTitle = t['ten-de-tai'] || 'Chưa có tên';
+            
             generatedSecurityCode = Math.floor(1000 + Math.random() * 9000).toString();
             document.getElementById('deleteThesisTitlePreview').innerText = targetDeleteTitle;
             document.getElementById('randomDeleteCodeDisplay').innerText = generatedSecurityCode;
+            
             const input = document.getElementById('inputDeleteCodeConfirm');
             input.value = '';
             document.getElementById('btnExecuteFinalDelete').disabled = true;
             document.getElementById('deleteConfirmModal').classList.remove('hidden');
             input.focus();
         };
+        
         window.closeDeleteModal = () => document.getElementById('deleteConfirmModal').classList.add('hidden');
         document.getElementById('inputDeleteCodeConfirm').oninput = (e) => { document.getElementById('btnExecuteFinalDelete').disabled = (e.target.value.trim() !== generatedSecurityCode); };
         
         document.getElementById('btnExecuteFinalDelete').onclick = async () => {
-            if(!targetDeleteId) return;
+            if(!targetDeleteObj) return;
             
             try {
-                await window.supabaseClient.from('de-tai').delete().eq('id', targetDeleteId);
+                // Xây dựng câu truy vấn tự động nhận diện có cột id hay không
+                let query = window.supabaseClient.from('de-tai').delete();
+                
+                if (targetDeleteObj.id) {
+                    query = query.eq('id', targetDeleteObj.id);
+                } else {
+                    query = query.eq('ten-de-tai', targetDeleteObj['ten-de-tai']).eq('tac-gia', targetDeleteObj['tac-gia']);
+                }
+
+                const { error } = await query;
+                if (error) throw error;
+
                 logAction("XÓA", `<strong>Đề tài:</strong> ${targetDeleteTitle}`);
                 closeDeleteModal();
                 showToast("Đã xóa đề tài thành công!", "danger");
@@ -821,9 +838,17 @@
             };
             
             try {
-                const editIdValue = document.getElementById('editId').value;
-                if(isEditing && editIdValue) {
-                    await window.supabaseClient.from("de-tai").update(obj).eq("id", editIdValue);
+                if(isEditing && originalEditData) {
+                    let query = window.supabaseClient.from("de-tai").update(obj);
+                    
+                    if (originalEditData.id) {
+                        query = query.eq("id", originalEditData.id);
+                    } else {
+                        query = query.eq('ten-de-tai', originalEditData['ten-de-tai']).eq('tac-gia', originalEditData['tac-gia']);
+                    }
+                    
+                    const { error } = await query;
+                    if (error) throw error;
                     
                     let changes = [];
                     if(originalEditData['ten-de-tai'] !== obj['ten-de-tai']) changes.push(`- <b>Tên đề tài:</b> ${originalEditData['ten-de-tai']} ➔ <span style="color:#d97706">${obj['ten-de-tai']}</span>`);
@@ -834,7 +859,7 @@
                     let historyString = changes.length > 0 ? changes.join('<br>') : "<i>Cập nhật dữ liệu Giảng viên Hướng dẫn.</i>";
                     
                     logAction("SỬA", historyString);
-                    lastEditedId = editIdValue; 
+                    lastEditedId = originalEditData.id || obj['ten-de-tai']; 
                     showToast("Đã cập nhật thay đổi thành công!", "success");
                 } else {
                     await window.supabaseClient.from("de-tai").insert([obj]);
@@ -863,7 +888,7 @@
             const t = JSON.parse(decodeURIComponent(enD));
             originalEditData = t;
             
-            document.getElementById('editId').value = t.id;
+            document.getElementById('editId').value = t.id || '';
             
             // Set values
             const titleEl = document.getElementById('addTitle');
