@@ -206,6 +206,7 @@
             .author-block { display: block; width: 100%; margin-top: 2px; }
             .thesis-title-link { font-size: 0.95rem; margin-bottom: 4px;}
             .metadata-line { font-size: 0.8rem; margin-bottom: 4px; gap: 4px; }
+            .major-badge { padding: 1px 6px; font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -612,14 +613,6 @@
             filterClass.value = tabClasses.includes(currClass) ? currClass : 'Tất cả';
         }
 
-        function updateDynamicFilters() {
-            const currClass = filterClass.value;
-            const tabClasses = [...new Set(allTheses.map(t => String(t['lop'] || '').trim()).filter(c => c.startsWith(currentTab)))].sort();
-            filterClass.innerHTML = '<option value="Tất cả">Tất cả lớp</option>';
-            tabClasses.forEach(c => filterClass.innerHTML += `<option value="${c}">${c}</option>`);
-            filterClass.value = tabClasses.includes(currClass) ? currClass : 'Tất cả';
-        }
-
         function renderTable() {
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             const filterCls = filterClass.value; 
@@ -705,7 +698,7 @@
                     </div>`;
                 }
 
-                // Xử lý html GVHD
+                // Xử lý html GVHD riêng biệt cho 2 dòng
                 const gv1 = t['gvhd1'] ? t['gvhd1'].trim() : '';
                 const adv1Html = gv1 ? (usersMap[gv1] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv1).replace(/'/g, "%27")}')">${gv1}</span>` : `<span style="font-weight:500; color:var(--text-body);">${gv1}</span>`) : '—';
 
@@ -836,17 +829,18 @@
                 data.forEach(log => {
                     let actionText = '';
                     let actionColor = '';
+                    let actionRaw = (log['hanh-dong'] || '').toLowerCase();
                     
-                    if (log['hanh-dong'] === 'INSERT') { actionText = 'THÊM MỚI'; actionColor = '#16a34a'; }
-                    else if (log['hanh-dong'] === 'UPDATE') { actionText = 'CẬP NHẬT'; actionColor = '#d97706'; }
-                    else if (log['hanh-dong'] === 'DELETE') { actionText = 'XÓA'; actionColor = '#dc2626'; }
-                    else { actionText = log['hanh-dong']; actionColor = '#2563eb'; }
+                    if (actionRaw === 'thêm' || actionRaw === 'insert') { actionText = 'THÊM'; actionColor = '#16a34a'; }
+                    else if (actionRaw === 'sửa' || actionRaw === 'update') { actionText = 'SỬA'; actionColor = '#d97706'; }
+                    else if (actionRaw === 'xóa' || actionRaw === 'delete') { actionText = 'XÓA'; actionColor = '#dc2626'; }
+                    else { actionText = (log['hanh-dong'] || '').toUpperCase(); actionColor = '#2563eb'; }
 
                     const timeStr = new Date(log['thuc-hien-luc']).toLocaleString('vi-VN');
                     const userStr = log['ma-giang-vien'] || log['thuc-hien-boi'] || 'Hệ thống';
                     
                     let detailsHtml = '';
-                    if (log['hanh-dong'] === 'UPDATE' && log['du-lieu-cu'] && log['du-lieu-moi']) {
+                    if ((actionRaw === 'sửa' || actionRaw === 'update') && log['du-lieu-cu'] && log['du-lieu-moi']) {
                         const oldD = log['du-lieu-cu'];
                         const newD = log['du-lieu-moi'];
                         let changes = [];
@@ -859,10 +853,12 @@
                         if (oldD['gvhd2'] !== newD['gvhd2']) changes.push(`- <b>GVHD 2:</b> ${oldD['gvhd2'] || 'Trống'} ➔ <span style="color:#d97706">${newD['gvhd2'] || 'Trống'}</span>`);
                         
                         detailsHtml = changes.length > 0 ? changes.join('<br>') : 'Không có thay đổi dữ liệu thực tế';
-                    } else if (log['hanh-dong'] === 'INSERT' && log['du-lieu-moi']) {
+                    } else if ((actionRaw === 'thêm' || actionRaw === 'insert') && log['du-lieu-moi']) {
                          detailsHtml = `<b>Tên đề tài:</b> ${log['du-lieu-moi']['ten-de-tai'] || log['ten-de-tai']}`;
-                    } else if (log['hanh-dong'] === 'DELETE' && log['du-lieu-cu']) {
+                    } else if ((actionRaw === 'xóa' || actionRaw === 'delete') && log['du-lieu-cu']) {
                          detailsHtml = `<b>Tên đề tài:</b> ${log['du-lieu-cu']['ten-de-tai'] || log['ten-de-tai']}`;
+                    } else if (log['ten-de-tai']) {
+                        detailsHtml = `<b>Tên đề tài:</b> ${log['ten-de-tai']}`;
                     }
 
                     historyBody.innerHTML += `<tr>
