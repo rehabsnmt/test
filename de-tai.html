@@ -17,11 +17,7 @@
         ========================================= */
         main { max-width: 1200px; padding: 2rem 3%; margin: 0 auto; }
 
-        /* Tiêu đề căn giữa */
-        .header-actions { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border); gap: 10px; }
-        .header-title-box h2 { font-size: 1.6rem; color: var(--text-dark); margin: 0; font-weight: 700; }
-        .header-title-box .subtitle { font-size: 1rem; color: var(--text-body); font-weight: 600; margin-top: 5px; }
-        .header-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+        .header-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 25px; }
         
         .section-box { background: var(--surface); padding: 25px; border-radius: var(--radius-md); margin-bottom: 20px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
         .hidden { display: none !important; }
@@ -52,7 +48,7 @@
         .btn-danger:hover { background-color: #be123c; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2); }
         .btn-success { background-color: #16a34a; color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
         .btn-success:hover { background-color: #15803d; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); }
-        .btn-sm { padding: 6px 12px; font-size: 0.85rem; border-radius: 6px; }
+        .btn-sm { padding: 5px 10px; font-size: 0.85rem; border-radius: 6px; }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-page { background-color: var(--surface); color: var(--text-dark); border: 1px solid var(--border); padding: 5px 15px; border-radius: 6px; font-weight: 600; }
         .btn-page:hover:not(:disabled) { background-color: var(--primary-light); color: var(--primary); border-color: var(--primary); }
@@ -90,39 +86,35 @@
         tr:hover { background-color: var(--primary-light); }
         tr.recently-updated td { background-color: #ecfdf5; }
 
-        /* Nút tác vụ (Sửa/Xóa) */
-        .td-action { vertical-align: middle; }
+        /* Menu Hành động Dropdown (...) */
+        .action-menu-container { position: relative; }
+        .dropdown-menu { 
+            display: none; position: absolute; right: 15px; top: 35px; 
+            background: white; border: 1px solid var(--border); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 8px; 
+            z-index: 100; min-width: 120px; flex-direction: column; overflow: hidden;
+        }
+        .dropdown-menu.show { display: flex; }
+        .dropdown-item { 
+            padding: 10px 15px; cursor: pointer; text-align: left; 
+            font-size: 0.9rem; color: var(--text-dark); border: none; 
+            background: transparent; width: 100%; display: flex; align-items: center; gap: 8px;
+            font-family: inherit; font-weight: 500;
+        }
+        .dropdown-item:hover { background: var(--bg-page); color: var(--primary); }
+        .dropdown-item.text-danger { color: var(--accent); }
+        .dropdown-item.text-danger:hover { color: var(--accent); background: #fef2f2; }
+        .btn-ellipsis { background: transparent; border: none; font-size: 1.2rem; color: var(--text-muted); padding: 5px 10px; border-radius: 4px; }
+        .btn-ellipsis:hover { color: var(--primary); background: var(--bg-page); }
 
         /* Tương tác tên GVHD */
         .advisor-link { color: var(--primary); font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
         .advisor-link:hover { color: var(--primary-hover); text-decoration: underline; }
         
         /* Màu sắc chuyên ngành */
-        .major-vltl { color: #0284c7; font-weight: 600; }
-        .major-hdtl { color: #ea580c; font-weight: 600; }
-        .major-nntl { color: #16a34a; font-weight: 600; }
-
-        /* Tên đề tài format */
-        .thesis-title-link { 
-            cursor: pointer; 
-            color: var(--text-dark); 
-            transition: color 0.2s; 
-            font: inherit; 
-            font-weight: 600; 
-            line-height: 1.5; 
-            text-align: left; 
-            background: transparent; 
-            border: 0; 
-            padding: 0;
-            display: block; 
-            margin-bottom: 6px;
-            font-size: 0.95rem;
-            width: 100%;
-            white-space: normal !important; 
-            word-wrap: break-word; 
-            overflow-wrap: break-word;
-        }
-        .thesis-title-link:hover, .thesis-title-link:focus-visible { color: var(--primary); text-decoration: underline; outline: none; }
+        .major-vltl { color: #0284c7 !important; font-weight: 600; }
+        .major-hdtl { color: #ea580c !important; font-weight: 600; }
+        .major-nntl { color: #16a34a !important; font-weight: 600; }
 
         /* Dòng thông tin tác giả, lớp, chuyên ngành, GVHD - Được phép ngắt dòng thoải mái */
         .metadata-line {
@@ -155,7 +147,6 @@
            RESPONSIVE DÀNH RIÊNG CHO ĐIỆN THOẠI
         ========================================= */
         @media (max-width: 768px) {
-            .header-title-box h2 { font-size: 1.3rem; }
             .header-buttons { width: 100%; justify-content: center; margin-top: 10px; }
             .thesis-form-modal { margin: 12px; max-height: calc(100vh - 24px); }
             .thesis-form-modal .form-group[style*="grid-column"] { grid-column: auto !important; }
@@ -170,7 +161,7 @@
             table { font-size: 0.9rem; }
             th, td { padding: 12px 8px; }
             th:first-child, td:first-child { width: 40px !important; padding: 12px 4px; }
-            .thesis-title-link, .metadata-line { font-size: 0.9rem; }
+            .metadata-line { font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -182,19 +173,21 @@
     <!-- Khung chứa thông báo nổi -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <!-- Danh sách gợi ý giảng viên (Sẽ tự động nạp từ DB) -->
+    <!-- Danh sách gợi ý giảng viên -->
     <datalist id="advisorList"></datalist>
 
     <main style="flex: 1; padding-top: 2rem;">
-        <div class="header-actions">
-            <div class="header-title-box">
-                <h2>DANH SÁCH LUẬN VĂN THẠC SĨ VÀ KHÓA LUẬN CỬ NHÂN</h2>
-                <div class="subtitle">BỘ MÔN PHỤC HỒI CHỨC NĂNG</div>
-            </div>
-            <div class="header-buttons">
-                <button id="btnOpenAdd" class="btn-success hidden"><i class="fas fa-plus"></i> Thêm đề tài</button>
-                <button id="btnOpenHistory" class="btn-primary hidden" onclick="openHistoryModal()"><i class="fas fa-history"></i> Lịch sử</button>
-            </div>
+        
+        <!-- Tiêu đề chuẩn form chung của web -->
+        <div class="section-title" style="margin-top: 1rem; text-align: center;">
+            <h1 style="font-size: clamp(1.4rem, 5.5vw, 2rem); color: var(--text-dark); margin: 0; font-weight: 700; letter-spacing: -0.5px;">DANH SÁCH ĐỀ TÀI</h1>
+            <div class="section-divider" style="margin: 0.5rem auto 1rem auto; width: 60px; height: 4px; background: var(--primary); border-radius: 2px;"></div>
+            <p style="font-size: clamp(0.9rem, 3.5vw, 1rem); color: var(--text-body); font-weight: 600; margin: 0;">Bộ môn Phục hồi chức năng</p>
+        </div>
+
+        <div class="header-buttons">
+            <button id="btnOpenAdd" class="btn-success hidden"><i class="fas fa-plus"></i> Thêm đề tài</button>
+            <button id="btnOpenHistory" class="btn-primary hidden" onclick="openHistoryModal()"><i class="fas fa-history"></i> Lịch sử</button>
         </div>
 
         <!-- Popup Thêm/Sửa đề tài -->
@@ -238,11 +231,11 @@
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 200px;">
                             <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">Giảng viên hướng dẫn 1 *</label>
-                            <input type="text" id="addGvhd1" list="advisorList" placeholder="Nhập hoặc chọn tên GV..." autocomplete="off">
+                            <input type="text" id="addGvhd1" list="advisorList" placeholder="Nhập tên GV (VD: TS. Nguyễn Văn A)..." autocomplete="off">
                         </div>
                         <div style="flex: 1; min-width: 200px;">
                             <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">Giảng viên hướng dẫn 2 (nếu có)</label>
-                            <input type="text" id="addGvhd2" list="advisorList" placeholder="Nhập hoặc chọn tên GV..." autocomplete="off">
+                            <input type="text" id="addGvhd2" list="advisorList" placeholder="Nhập tên GV (VD: ThS. Trần Thị B)..." autocomplete="off">
                         </div>
                     </div>
                 </div>
@@ -297,11 +290,10 @@
                     <tr>
                         <th style="text-align: center; width: 50px;">STT</th>
                         <th style="width: auto;">Thông tin đề tài</th>
-                        <th id="thAction" class="hidden" style="text-align: center; width: 90px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody id="dataTableBody">
-                    <tr><td colspan="3" style="text-align: center; padding: 40px; color: var(--text-body);"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>
+                    <tr><td colspan="2" style="text-align: center; padding: 40px; color: var(--text-body);"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -313,36 +305,6 @@
             <button id="btnNextPage" class="btn-page" onclick="changePage(1)">Sau</button>
         </div>
     </main>
-
-    <!-- MODAL CHI TIẾT ĐỀ TÀI TRÊN MOBILE -->
-    <div id="thesisDetailModal" class="modal-overlay hidden">
-        <div class="modal-content" style="max-width: 500px; text-align: left; position: relative;">
-            <button class="modal-close" onclick="closeThesisDetailModal()"><i class="fas fa-times"></i></button>
-            <h3 style="color: var(--primary); margin-top: 0; border-bottom: 2px solid var(--primary-light); padding-bottom: 15px; margin-bottom: 20px;">Thông tin Đề tài</h3>
-            <div style="margin-bottom: 12px; font-size: 0.95rem;">
-                <span style="color: var(--text-body); font-size: 0.85rem; display: block; margin-bottom: 3px;">Tên đề tài:</span>
-                <strong id="detailTitle" style="color: var(--text-dark); font-size: 1.05rem; line-height: 1.4;"></strong>
-            </div>
-            <div style="margin-bottom: 12px; font-size: 0.95rem;">
-                <span style="color: var(--text-body); font-size: 0.85rem; display: block; margin-bottom: 3px;">Tác giả:</span>
-                <strong id="detailAuthor" style="color: var(--text-dark);"></strong>
-            </div>
-            <div style="display: flex; gap: 30px; margin-bottom: 12px; font-size: 0.95rem;">
-                <div>
-                    <span style="color: var(--text-body); font-size: 0.85rem; display: block; margin-bottom: 3px;">Lớp:</span>
-                    <strong id="detailClass" style="color: var(--text-dark);"></strong>
-                </div>
-                <div>
-                    <span style="color: var(--text-body); font-size: 0.85rem; display: block; margin-bottom: 3px;">Chuyên ngành:</span>
-                    <strong id="detailMajor"></strong>
-                </div>
-            </div>
-            <div style="margin-bottom: 10px; font-size: 0.95rem; background: var(--bg-page); padding: 12px; border-radius: 8px;">
-                <span style="color: var(--text-body); font-size: 0.85rem; display: block; margin-bottom: 5px;">Giảng viên hướng dẫn:</span>
-                <div id="detailAdvisor" style="line-height: 1.6;"></div>
-            </div>
-        </div>
-    </div>
 
     <!-- MODAL THÔNG TIN GIẢNG VIÊN -->
     <div id="advisorModal" class="modal-overlay hidden">
@@ -372,8 +334,8 @@
                 <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: auto;">
                     <thead>
                         <tr>
-                            <th style="background: var(--bg-page); padding: 10px; width: 140px;" class="td-nowrap">Thời gian</th>
-                            <th style="background: var(--bg-page); padding: 10px; width: 90px;" class="td-nowrap">Thao tác</th>
+                            <th style="background: var(--bg-page); padding: 10px; width: 140px;">Thời gian</th>
+                            <th style="background: var(--bg-page); padding: 10px; width: 90px;">Thao tác</th>
                             <th style="background: var(--bg-page); padding: 10px; width: 140px;">Tài khoản</th>
                             <th style="background: var(--bg-page); padding: 10px;">Chi tiết thay đổi</th>
                         </tr>
@@ -433,7 +395,6 @@
         let currentSelectedAdvisorId = "";
 
         const tableBody = document.getElementById('dataTableBody');
-        const thAction = document.getElementById('thAction');
         const thesisFormModal = document.getElementById('thesisFormModal');
         const btnOpenAdd = document.getElementById('btnOpenAdd');
         const filterClass = document.getElementById('filterClass'); 
@@ -455,6 +416,22 @@
                 setTimeout(() => toast.remove(), 400); 
             }, 3000);
         }
+
+        // Toggle dropdown Sửa/Xóa
+        window.toggleDropdown = (id) => {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if(menu.id !== `dropdown-${id}`) menu.classList.remove('show');
+            });
+            const menu = document.getElementById(`dropdown-${id}`);
+            if(menu) menu.classList.toggle('show');
+        };
+
+        // Đóng dropdown khi click ra ngoài
+        document.addEventListener('click', (e) => {
+            if(!e.target.closest('.action-menu-container')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('show'));
+            }
+        });
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -482,20 +459,25 @@
         document.getElementById('addLevel').addEventListener('change', (e) => populateYears(e.target.value));
         populateYears('CN');
 
-        // Hàm cập nhật danh sách gợi ý GVHD động
+        // Lấy danh sách GVHD có học hàm/học vị (PGS, TS, ThS, BS)
         function updateAdvisorDatalist() {
-            // Khởi tạo Set với các GV từ userMap (giảng viên trên hệ thống)
-            const uniqueAdvisors = new Set(Object.keys(usersMap));
+            const uniqueAdvisors = new Set();
             
-            // Bổ sung tất cả các tên GVHD1 và GVHD2 đang có trong de-tai
+            // Check học vị bằng regex
+            const validTitleRegex = /(TS|ThS|PGS|GS|BS)\./i;
+
+            Object.keys(usersMap).forEach(name => {
+                if (validTitleRegex.test(name)) uniqueAdvisors.add(name.trim());
+            });
+            
             allTheses.forEach(t => {
-                if (t['gvhd1']) uniqueAdvisors.add(t['gvhd1'].trim());
-                if (t['gvhd2']) uniqueAdvisors.add(t['gvhd2'].trim());
+                if (t['gvhd1'] && validTitleRegex.test(t['gvhd1'])) uniqueAdvisors.add(t['gvhd1'].trim());
+                if (t['gvhd2'] && validTitleRegex.test(t['gvhd2'])) uniqueAdvisors.add(t['gvhd2'].trim());
             });
 
             advisorDatalist.innerHTML = '';
             Array.from(uniqueAdvisors).sort().forEach(name => {
-                if (name) advisorDatalist.innerHTML += `<option value="${name}">`;
+                advisorDatalist.innerHTML += `<option value="${name}">`;
             });
         }
 
@@ -531,7 +513,7 @@
             try {
                 const { data, error } = await window.supabaseClient.auth.getUser();
                 
-                // Lấy thông tin từ bảng giang-vien (dùng cho link thông tin & avatar)
+                // Nạp thông tin giảng viên cơ hữu từ bảng giang-vien
                 const { data: usersData } = await window.supabaseClient.from("giang-vien").select("*");
                 if (usersData) {
                     usersData.forEach(d => {
@@ -547,6 +529,7 @@
                 }
 
                 if (data && data.user) {
+                    currentUserEmail = data.user.email;
                     const { data: account } = await window.supabaseClient.from("tai-khoan-he-thong").select("role").eq("id", data.user.id).single();
                     const role = account ? account.role : 'user';
 
@@ -554,11 +537,9 @@
                         isAdmin = true;
                         btnOpenAdd.classList.remove('hidden');
                         document.getElementById('btnOpenHistory').classList.remove('hidden');
-                        thAction.classList.remove('hidden');
                     } else {
                         isAdmin = false;
                         thesisFormModal.classList.add('hidden');
-                        thAction.classList.add('hidden');
                         btnOpenAdd.classList.add('hidden');
                         document.getElementById('btnOpenHistory').classList.add('hidden');
                     }
@@ -567,7 +548,7 @@
         }
 
         async function loadData(silent = false) {
-            if(!silent) tableBody.innerHTML = '<tr><td colspan="3" align="center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>';
+            if(!silent) tableBody.innerHTML = '<tr><td colspan="2" align="center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>';
             try {
                 const { data, error } = await window.supabaseClient.from("de-tai").select("*");
                 if (error) throw error;
@@ -575,7 +556,7 @@
                 updateDatalistAndFilters();
                 renderTable();
             } catch(e) {
-                if(!silent) tableBody.innerHTML = `<tr><td colspan="3" align="center" style="color:red;">Lỗi: ${e.message}</td></tr>`;
+                if(!silent) tableBody.innerHTML = `<tr><td colspan="2" align="center" style="color:red;">Lỗi: ${e.message}</td></tr>`;
             }
         }
 
@@ -660,30 +641,35 @@
             const startIndex = (currentPage - 1) * itemsPerPage;
             const paginatedData = filtered.slice(startIndex, startIndex + itemsPerPage);
 
-            tableBody.innerHTML = paginatedData.length === 0 ? '<tr><td colspan="3" style="text-align:center;padding:30px">Không tìm thấy kết quả</td></tr>' : '';
+            tableBody.innerHTML = paginatedData.length === 0 ? '<tr><td colspan="2" style="text-align:center;padding:30px">Không tìm thấy kết quả</td></tr>' : '';
 
             paginatedData.forEach((t, i) => {
                 const actualIndex = startIndex + i + 1;
                 let actionHtml = '';
                 
                 const dataStrObj = encodeURIComponent(JSON.stringify(t)).replace(/'/g, "%27");
-                const rowId = String(t['ten-de-tai']||'').replace(/"/g, '&quot;');
+                // Chuyển title thành Id an toàn cho DOM
+                const rowId = 'row_' + (t.id || actualIndex) + '_' + Math.random().toString(36).substring(2, 7);
 
                 if (isAdmin) {
-                    actionHtml = `<td class="td-action" align="center" style="vertical-align: middle;">
-                        <div style="display:flex; flex-direction:column; gap:6px; align-items:center;">
-                            <button class="btn-sm btn-warning" onclick="triggerEdit('${dataStrObj}')" style="width:100%;">Sửa</button> 
-                            <button class="btn-sm btn-danger" onclick="triggerDeleteConfirm('${dataStrObj}')" style="width:100%;">Xóa</button>
+                    actionHtml = `
+                    <div style="position: absolute; top: 12px; right: 12px;" class="action-menu-container">
+                        <button class="btn-ellipsis" onclick="toggleDropdown('${rowId}')">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div id="dropdown-${rowId}" class="dropdown-menu">
+                            <button class="dropdown-item" onclick="triggerEdit('${dataStrObj}')"><i class="fas fa-edit" style="width: 20px;"></i> Sửa đề tài</button>
+                            <button class="dropdown-item text-danger" onclick="triggerDeleteConfirm('${dataStrObj}')"><i class="fas fa-trash-alt" style="width: 20px;"></i> Xóa đề tài</button>
                         </div>
-                    </td>`;
+                    </div>`;
                 }
 
                 // Xử lý html GVHD riêng biệt cho 2 dòng
                 const gv1 = t['gvhd1'] ? t['gvhd1'].trim() : '';
-                const adv1Html = gv1 ? (usersMap[gv1] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv1).replace(/'/g, "%27")}')">${gv1}</span>` : `<span style="font-weight:600;">${gv1}</span>`) : '—';
+                const adv1Html = gv1 ? (usersMap[gv1] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv1).replace(/'/g, "%27")}')">${gv1}</span>` : `<span style="font-weight:600; color:var(--text-dark);">${gv1}</span>`) : '—';
 
                 const gv2 = t['gvhd2'] ? t['gvhd2'].trim() : '';
-                const adv2Html = gv2 ? (usersMap[gv2] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv2).replace(/'/g, "%27")}')">${gv2}</span>` : `<span style="font-weight:600;">${gv2}</span>`) : '';
+                const adv2Html = gv2 ? (usersMap[gv2] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv2).replace(/'/g, "%27")}')">${gv2}</span>` : `<span style="font-weight:600; color:var(--text-dark);">${gv2}</span>`) : '';
 
                 let gvhdDisplay = `<div style="margin-bottom: 2px;">GVHD 1: ${adv1Html}</div>`;
                 if (gv2) {
@@ -699,26 +685,29 @@
 
                 // TRÌNH BÀY GỘP DỌC HIỆN ĐẠI (Font size đồng đều 0.95rem)
                 tableBody.innerHTML += `
-                    <tr data-thesis-id="${rowId}">
+                    <tr data-thesis-id="${t['ten-de-tai'].replace(/"/g, '&quot;')}">
                         <td align="center" style="color:#94a3b8; font-weight:bold; vertical-align: top; padding-top: 15px;">${actualIndex}</td>
-                        <td style="padding: 15px 12px; width: 100%;">
-                            <button type="button" class="thesis-title-link" onclick="openThesisDetailModal('${dataStrObj}')" aria-label="Xem thông tin đề tài: ${t['ten-de-tai']}">
-                                ${t['ten-de-tai']}
-                            </button>
+                        <td style="padding: 15px 12px; width: 100%; position: relative;">
+                            ${actionHtml}
                             
-                            <div class="metadata-line">
-                                <b>${t['tac-gia']}</b>
-                                <span style="color: var(--border); margin: 0 6px;">-</span>
-                                <span style="font-weight: 600; color: var(--text-dark);">${t['lop']||'—'}</span>
-                                <span style="color: var(--border); margin: 0 6px;">-</span>
-                                <span class="${majorClass}">${majorStr}</span>
-                            </div>
-                            
-                            <div class="metadata-line" style="color: var(--text-body); margin-bottom: 0;">
-                                ${gvhdDisplay}
+                            <div style="padding-right: 35px;">
+                                <div class="thesis-title-link">
+                                    ${t['ten-de-tai']}
+                                </div>
+                                
+                                <div class="metadata-line">
+                                    <b>${t['tac-gia']}</b>
+                                    <span style="color: var(--border); margin: 0 6px;">-</span>
+                                    <span style="font-weight: 600; color: var(--text-dark);">${t['lop']||'—'}</span>
+                                    <span style="color: var(--border); margin: 0 6px;">-</span>
+                                    <span class="${majorClass}">${majorStr}</span>
+                                </div>
+                                
+                                <div class="metadata-line" style="color: var(--text-body); margin-bottom: 0;">
+                                    ${gvhdDisplay}
+                                </div>
                             </div>
                         </td>
-                        ${actionHtml}
                     </tr>`;
             });
 
@@ -745,41 +734,6 @@
             renderTable();
         };
 
-        window.openThesisDetailModal = (encodedData) => {
-            const t = JSON.parse(decodeURIComponent(encodedData));
-            
-            document.getElementById('detailTitle').innerText = t['ten-de-tai'] || 'Chưa có tên';
-            document.getElementById('detailAuthor').innerText = t['tac-gia'] || 'Chưa rõ';
-            document.getElementById('detailClass').innerText = t['lop'] || '—';
-            
-            let majorStr = t['chuyen-nganh'] || '—';
-            let majorEl = document.getElementById('detailMajor');
-            majorEl.innerText = majorStr;
-            majorEl.className = '';
-            if(majorStr.includes('Vật lý')) majorEl.classList.add('major-vltl');
-            else if(majorStr.includes('Hoạt động')) majorEl.classList.add('major-hdtl');
-            else if(majorStr.includes('Ngôn ngữ')) majorEl.classList.add('major-nntl');
-            
-            let detailGvHtml = '';
-            if (t['gvhd1']) {
-                const gv1 = t['gvhd1'].trim();
-                const lnk = usersMap[gv1] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv1).replace(/'/g, "%27")}')">${gv1}</span>` : gv1;
-                detailGvHtml += `<div><b>GVHD 1:</b> ${lnk}</div>`;
-            }
-            if (t['gvhd2']) {
-                const gv2 = t['gvhd2'].trim();
-                const lnk = usersMap[gv2] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv2).replace(/'/g, "%27")}')">${gv2}</span>` : gv2;
-                detailGvHtml += `<div style="margin-top:4px;"><b>GVHD 2:</b> ${lnk}</div>`;
-            }
-            
-            document.getElementById('detailAdvisor').innerHTML = detailGvHtml || 'Chưa rõ';
-            document.getElementById('thesisDetailModal').classList.remove('hidden');
-        };
-
-        window.closeThesisDetailModal = () => {
-            document.getElementById('thesisDetailModal').classList.add('hidden');
-        };
-
         // ==========================================
         // MODAL GIẢNG VIÊN THÔNG MINH
         // ==========================================
@@ -803,7 +757,6 @@
             document.getElementById('modalDegree').innerText = userData.degree || 'Giảng viên';
             
             document.getElementById('advisorModal').classList.remove('hidden');
-            document.getElementById('thesisDetailModal').classList.add('hidden');
         };
 
         window.filterThesisByAdvisor = () => {
@@ -909,7 +862,6 @@
             if(!targetDeleteTitle) return;
             
             try {
-                // Xóa trực tiếp theo tên đề tài
                 const { error } = await window.supabaseClient.from('de-tai').delete().eq('ten-de-tai', targetDeleteTitle);
                 if (error) throw error;
 
@@ -982,7 +934,7 @@
             
             document.getElementById('editOriginalTitle').value = t['ten-de-tai'] || '';
             
-            // Đổ dữ liệu vào các thẻ
+            // Đổ dữ liệu vào Form
             const titleEl = document.getElementById('addTitle');
             titleEl.value = t['ten-de-tai']||'';
             document.getElementById('addAuthor').value = t['tac-gia']||'';
@@ -990,7 +942,6 @@
             document.getElementById('addGvhd2').value = t['gvhd2'] || '';
             document.getElementById('addMajor').value = t['chuyen-nganh']||'Vật lý trị liệu';
             
-            // Kích hoạt Textarea tự động co giãn chiều cao cho vừa text hiện có
             setTimeout(() => {
                 titleEl.style.height = 'auto';
                 titleEl.style.height = titleEl.scrollHeight + 'px';
