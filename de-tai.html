@@ -48,14 +48,10 @@
         button { cursor: pointer; transition: var(--transition); font-family: inherit; }
         .btn-primary { background-color: var(--primary); color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
         .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-warning { background-color: #f59e0b; color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
-        .btn-warning:hover { background-color: #d97706; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2); }
         .btn-danger { background-color: var(--accent); color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
         .btn-danger:hover { background-color: #be123c; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2); }
         .btn-success { background-color: #16a34a; color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
         .btn-success:hover { background-color: #15803d; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); }
-        .btn-secondary { background-color: var(--bg-page); color: var(--text-dark); padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: 1px solid var(--border); font-weight: 500; }
-        .btn-secondary:hover { background-color: #e2e8f0; }
         .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-page { background-color: var(--surface); color: var(--text-dark); border: 1px solid var(--border); padding: 5px 15px; border-radius: 6px; font-weight: 600; }
@@ -63,11 +59,11 @@
         .btn-outline { background-color: white; color: var(--primary); border: 1px solid var(--primary); padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-outline:hover { background-color: var(--primary-light); }
 
-        /* Bảng hiển thị - Đã cấu hình để bẻ dòng tự động */
+        /* Bảng hiển thị - Cấu hình cho phép ngắt dòng */
         .table-container { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); position: relative; }
         table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; word-wrap: break-word; }
-        th { background-color: var(--bg-page); font-weight: 600; color: var(--text-dark); text-transform: uppercase; font-size: 0.85rem; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px;}
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        th { background-color: var(--bg-page); font-weight: 600; color: var(--text-dark); text-transform: uppercase; font-size: 0.85rem; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px; white-space: nowrap;}
         tr:hover { background-color: var(--primary-light); }
         tr.recently-updated td { background-color: #ecfdf5; }
         
@@ -80,7 +76,7 @@
         .advisor-link { color: var(--primary); font-weight: 600; cursor: pointer; text-decoration: none; border-bottom: 1px dashed var(--primary); }
         .advisor-link:hover { color: var(--primary-hover); border-bottom-style: solid; }
         
-        .thesis-title-link { width: 100%; padding: 6px 8px; margin: -6px -8px; cursor: pointer; color: var(--text-dark); transition: color 0.2s, background-color 0.2s; font: inherit; font-weight: 600; line-height: 1.5; text-align: left; background: transparent; border: 0; border-radius: 6px; }
+        .thesis-title-link { width: 100%; padding: 6px 8px; margin: -6px -8px; cursor: pointer; color: var(--text-dark); transition: color 0.2s, background-color 0.2s; font: inherit; font-weight: 600; line-height: 1.5; text-align: left; background: transparent; border: 0; border-radius: 6px; white-space: normal; }
         .thesis-title-link:hover, .thesis-title-link:focus-visible { color: var(--primary); background: var(--primary-light); outline: 2px solid var(--primary); outline-offset: 2px; }
 
         /* =========================================
@@ -132,7 +128,7 @@
     <!-- Khung chứa thông báo nổi -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <!-- Danh sách gợi ý giảng viên -->
+    <!-- Danh sách gợi ý giảng viên (Sẽ tự động nạp từ DB) -->
     <datalist id="advisorList"></datalist>
 
     <main style="flex: 1; padding-top: 2rem;">
@@ -155,7 +151,7 @@
                 <i class="fas fa-edit"></i> <span id="formTitle">Thêm đề tài mới</span>
                 <span id="editModeBadge" class="hidden" style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 10px;">Đang sửa</span>
             </h3>
-            <!-- KHÔNG dùng ID nội bộ nữa, dùng trực tiếp giá trị Tên đề tài làm mốc -->
+            
             <input type="hidden" id="editOriginalTitle"> 
             
             <div class="form-grid">
@@ -182,14 +178,21 @@
                         <select id="addYear" style="flex: 1;"></select>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Giảng viên hướng dẫn 1 *</label>
-                    <input type="text" id="addGvhd1" list="advisorList" placeholder="Nhập hoặc chọn tên GV..." autocomplete="off">
+
+                <!-- GVHD 1 và 2 được gom vào 1 hàng (cùng 1 bên) -->
+                <div class="form-group" style="grid-column: span 2;">
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">Giảng viên hướng dẫn 1 *</label>
+                            <input type="text" id="addGvhd1" list="advisorList" placeholder="Nhập hoặc chọn tên GV..." autocomplete="off">
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">Giảng viên hướng dẫn 2 (nếu có)</label>
+                            <input type="text" id="addGvhd2" list="advisorList" placeholder="Nhập hoặc chọn tên GV..." autocomplete="off">
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Giảng viên hướng dẫn 2 (nếu có)</label>
-                    <input type="text" id="addGvhd2" list="advisorList" placeholder="Nhập hoặc chọn tên GV..." autocomplete="off">
-                </div>
+
                 <div class="form-group">
                     <label>&nbsp;</label>
                     <button id="btnSaveData" class="btn-primary" style="border: none;">Lưu dữ liệu</button>
@@ -239,10 +242,10 @@
                 <thead>
                     <tr>
                         <th class="td-nowrap" style="text-align: center; width: 60px;">STT</th>
-                        <th style="width: 180px;">Tác Giả</th>
+                        <th style="width: 150px;">Tác Giả</th>
                         <th style="min-width: 350px;">Tên Đề Tài</th>
-                        <th class="td-nowrap" style="width: 120px;">LỚP</th>
-                        <th style="width: 250px;">Giảng Viên Hướng Dẫn</th>
+                        <th class="td-nowrap" style="width: 100px;">LỚP</th>
+                        <th style="width: 220px;">Giảng Viên Hướng Dẫn</th>
                         <th id="thAction" class="td-nowrap hidden" style="text-align: center; width: 120px;"></th>
                     </tr>
                 </thead>
@@ -260,7 +263,7 @@
         </div>
     </main>
 
-    <!-- MODAL 1: CHI TIẾT ĐỀ TÀI TRÊN MOBILE -->
+    <!-- MODAL CHI TIẾT ĐỀ TÀI TRÊN MOBILE -->
     <div id="thesisDetailModal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 500px; text-align: left; position: relative;">
             <button class="modal-close" onclick="closeThesisDetailModal()"><i class="fas fa-times"></i></button>
@@ -290,7 +293,7 @@
         </div>
     </div>
 
-    <!-- MODAL 2: THÔNG TIN GIẢNG VIÊN -->
+    <!-- MODAL THÔNG TIN GIẢNG VIÊN -->
     <div id="advisorModal" class="modal-overlay hidden">
         <div class="modal-content" style="text-align: center; max-width: 420px;">
             <button class="modal-close" onclick="closeAdvisorModal()"><i class="fas fa-times"></i></button>
@@ -309,18 +312,18 @@
         </div>
     </div>
 
-    <!-- MODAL LỊCH SỬ TỰ ĐỘNG TỪ LICH-SU-DE-TAI -->
+    <!-- MODAL LỊCH SỬ -->
     <div id="historyModal" class="modal-overlay hidden">
-        <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-content" style="max-width: 950px;">
             <button class="modal-close" onclick="closeHistoryModal()"><i class="fas fa-times"></i></button>
             <h2 style="color: var(--text-dark); margin-bottom: 10px;">Lịch sử hoạt động</h2>
-            <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm);">
+            <div style="max-height: 450px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm);">
                 <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
                     <thead>
                         <tr>
                             <th style="background: var(--bg-page); padding: 10px; width: 140px;" class="td-nowrap">Thời gian</th>
                             <th style="background: var(--bg-page); padding: 10px; width: 90px;" class="td-nowrap">Thao tác</th>
-                            <th style="background: var(--bg-page); padding: 10px; width: 150px;">Tài khoản</th>
+                            <th style="background: var(--bg-page); padding: 10px; width: 140px;">Tài khoản</th>
                             <th style="background: var(--bg-page); padding: 10px;">Chi tiết thay đổi</th>
                         </tr>
                     </thead>
@@ -336,7 +339,7 @@
             <button class="modal-close" onclick="closeDeleteModal()"><i class="fas fa-times"></i></button>
             <h3 style="color: var(--accent); margin-bottom: 15px;"><i class="fas fa-exclamation-triangle"></i> Xác nhận xóa</h3>
             <p style="font-size: 0.9rem; color: var(--text-body);">Đề tài:</p>
-            <p id="deleteThesisTitlePreview" style="font-weight: 700; color: var(--text-dark); margin-bottom: 20px;"></p>
+            <p id="deleteThesisTitlePreview" style="font-weight: 700; color: var(--text-dark); margin-bottom: 20px; line-height: 1.5;"></p>
             <p style="font-size: 0.85rem;">Mã xác nhận:</p>
             <div id="randomDeleteCodeDisplay" style="background: var(--bg-page); padding: 10px; border-radius: 6px; font-size: 1.5rem; font-weight: bold; color: var(--accent); letter-spacing: 5px; margin-bottom: 15px;">0000</div>
             <input type="text" id="inputDeleteCodeConfirm" placeholder="Nhập mã xác nhận..." style="text-align: center; letter-spacing: 2px; width: 100%; box-sizing: border-box; padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
@@ -353,30 +356,6 @@
 
     <!-- JS TÍCH HỢP SUPABASE -->
     <script>
-        // Data giảng viên gợi ý
-        const internalAdvisors = {
-            "TS. Lê Thanh Vân": { degree: "Tiến sĩ / Trưởng Bộ môn", bio: "Lê Thanh Vân" },
-            "TS. Nguyễn Thanh Duy": { degree: "Tiến sĩ / Giảng viên", bio: "Nguyễn Thanh Duy" },
-            "ThS. Phan Thế Nguyên": { degree: "Thạc sĩ / Giáo vụ", bio: "Phan Thế Nguyên" },
-            "ThS. Cao Minh Hạnh": { degree: "Thạc sĩ / Giảng viên", bio: "Cao Minh Hạnh" },
-            "ThS. Huỳnh Chung": { degree: "Thạc sĩ / Giảng viên", bio: "Huỳnh Chung" },
-            "ThS. Nguyễn Minh Sang": { degree: "Thạc sĩ / Giảng viên", bio: "Nguyễn Minh Sang" },
-            "ThS. Trần Thị Bích Hạnh": { degree: "Thạc sĩ / Giảng viên", bio: "Trần Thị Bích Hạnh" },
-            "TS. Nguyễn Ngọc Minh": { degree: "Tiến sĩ / Giảng viên", bio: "Nguyễn Ngọc Minh" },
-            "ThS. Phạm Ngọc Đạt": { degree: "Thạc sĩ / Giảng viên", bio: "Phạm Ngọc Đạt" },
-            "ThS. Nguyễn Huỳnh Ngọc Mai Trâm": { degree: "Thạc sĩ / Giảng viên", bio: "Nguyễn Huỳnh Ngọc Mai Trâm" },
-            "ThS. Nguyễn Đức Sinh": { degree: "Thạc sĩ / Giảng viên", bio: "Nguyễn Đức Sinh" },
-            "ThS. Trần Long Biên": { degree: "Thạc sĩ / Giảng viên", bio: "Trần Long Biên" },
-            "ThS. Trần Hữu Đức": { degree: "Thạc sĩ / Giảng viên", bio: "Trần Hữu Đức" },
-            "ThS. Nguyễn Mai Ngọc Đoan": { degree: "Thạc sĩ / Giảng viên", bio: "Nguyễn Mai Ngọc Đoan" }
-        };
-
-        // Gắn danh sách gợi ý vào datalist
-        const advisorDatalist = document.getElementById('advisorList');
-        Object.keys(internalAdvisors).forEach(name => {
-            advisorDatalist.innerHTML += `<option value="${name}">`;
-        });
-
         // Xử lý Textarea tự co giãn chiều cao
         const addTitleInput = document.getElementById('addTitle');
         function autoResizeTextarea() {
@@ -389,10 +368,9 @@
         let isAdmin = false;
         let isEditing = false; 
         let currentTab = 'CN'; 
-        let targetDeleteObj = null;
         let targetDeleteTitle = "";
         let generatedSecurityCode = "";
-        let lastEditedId = null; 
+        let lastEditedTitle = null; 
         let originalEditData = null; 
         let currentPage = 1;
         const itemsPerPage = 30;
@@ -409,6 +387,7 @@
         const btnOpenAdd = document.getElementById('btnOpenAdd');
         const filterClass = document.getElementById('filterClass'); 
         const sortSelect = document.getElementById('sortSelect'); 
+        const advisorDatalist = document.getElementById('advisorList');
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toastContainer');
@@ -471,7 +450,7 @@
             await checkAuth();
             await loadData();
             
-            // Channel lắng nghe thay đổi realtime
+            // Lắng nghe realtime trên bảng de-tai
             window.supabaseClient
                 .channel('de-tai-changes')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'de-tai' }, payload => {
@@ -486,12 +465,19 @@
                 if (data && data.user) {
                     currentUserEmail = data.user.email;
                     
-                    // Lấy thông tin giảng viên để hiển thị avatar
+                    // Lấy tất cả thông tin giảng viên để tạo danh sách gợi ý GVHD
                     const { data: usersData } = await window.supabaseClient.from("giang-vien").select("*");
                     if (usersData) {
+                        advisorDatalist.innerHTML = '';
                         usersData.forEach(d => {
                             if (d['ho-ten']) {
-                                usersMap[d['ho-ten'].trim()] = { id: d['ma-giang-vien'], avatar: d.avatar || '', ...d };
+                                const name = d['ho-ten'].trim();
+                                usersMap[name] = { 
+                                    id: d['ma-giang-vien'], 
+                                    avatar: d.avatar || '', 
+                                    degree: d['hoc-ham-hoc-vi'] || 'Giảng viên' 
+                                };
+                                advisorDatalist.innerHTML += `<option value="${name}">`;
                             }
                         });
                     }
@@ -565,9 +551,9 @@
             document.getElementById('totalCountText').innerText = allTheses.filter(t => String(t['lop'] || '').startsWith(currentTab)).length;
             document.getElementById('filteredCountText').innerText = filtered.length;
 
-            const editedIdForReturn = lastEditedId;
-            if (editedIdForReturn) {
-                const editedThesis = allTheses.find(t => t['ten-de-tai'] === editedIdForReturn);
+            const editedTitleForReturn = lastEditedTitle;
+            if (editedTitleForReturn) {
+                const editedThesis = allTheses.find(t => t['ten-de-tai'] === editedTitleForReturn);
                 const editedTab = String(editedThesis?.['lop'] || '').startsWith('THS') ? 'THS' : 'CN';
                 if (editedThesis && currentTab !== editedTab) {
                     currentTab = editedTab;
@@ -578,10 +564,10 @@
                     updateDynamicFilters();
                     return renderTable();
                 }
-                const editedIndex = filtered.findIndex(t => t['ten-de-tai'] === editedIdForReturn);
+                const editedIndex = filtered.findIndex(t => t['ten-de-tai'] === editedTitleForReturn);
                 if (editedIndex !== -1) {
                     currentPage = Math.floor(editedIndex / itemsPerPage) + 1;
-                    lastEditedId = null;
+                    lastEditedTitle = null;
                 } else {
                     document.getElementById('searchInput').value = '';
                     filterClass.value = 'Tất cả';
@@ -615,13 +601,13 @@
 
                 const advHtml = [t['gvhd1'], t['gvhd2']].filter(Boolean).map(a => {
                     let n = a.trim();
-                    return internalAdvisors[n] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(n).replace(/'/g, "%27")}')">${n}</span>` : n;
+                    return usersMap[n] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(n).replace(/'/g, "%27")}')">${n}</span>` : n;
                 }).join('<br>');
 
                 tableBody.innerHTML += `
                     <tr data-thesis-id="${rowId}">
                         <td align="center" class="td-nowrap" style="color:#94a3b8;font-weight:bold">${actualIndex}</td>
-                        <td><b>${t['tac-gia']}</b></td>
+                        <td style="white-space: normal;"><b>${t['tac-gia']}</b></td>
                         
                         <td>
                             <button type="button" class="thesis-title-link" onclick="openThesisDetailModal('${dataStrObj}')" aria-label="Xem thông tin đề tài: ${t['ten-de-tai']}">${t['ten-de-tai']}</button>
@@ -631,15 +617,15 @@
                             <div style="font-weight: 600; color: var(--text-dark);">${t['lop']||'—'}</div>
                             <div style="font-size: 0.85rem; color: var(--primary); margin-top: 2px;">${t['chuyen-nganh']||'—'}</div>
                         </td>
-                        <td>${advHtml}</td>
+                        <td style="white-space: normal;">${advHtml}</td>
                         ${actionHtml}
                     </tr>`;
             });
 
-            if (editedIdForReturn) {
+            if (editedTitleForReturn) {
                 requestAnimationFrame(() => {
-                    const cleanEditedIdForReturn = editedIdForReturn.replace(/"/g, '&quot;');
-                    const editedRow = Array.from(tableBody.rows).find(row => row.dataset.thesisId === cleanEditedIdForReturn);
+                    const cleanEditedTitle = editedTitleForReturn.replace(/"/g, '&quot;');
+                    const editedRow = Array.from(tableBody.rows).find(row => row.dataset.thesisId === cleanEditedTitle);
                     if (!editedRow) return;
                     editedRow.classList.add('recently-updated');
                     editedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -669,7 +655,7 @@
             
             const advHtml = [t['gvhd1'], t['gvhd2']].filter(Boolean).map(a => {
                 let n = a.trim();
-                return internalAdvisors[n] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(n).replace(/'/g, "%27")}')">${n}</span>` : n;
+                return usersMap[n] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(n).replace(/'/g, "%27")}')">${n}</span>` : n;
             }).join('<br>');
             
             document.getElementById('detailAdvisor').innerHTML = advHtml || 'Chưa rõ';
@@ -685,27 +671,22 @@
         // ==========================================
         window.openAdvisorModal = (enN) => {
             const n = decodeURIComponent(enN);
-            const inf = internalAdvisors[n];
-            if(!inf) return;
+            const userData = usersMap[n];
+            
+            if(!userData) {
+                showToast("Không tìm thấy hồ sơ chi tiết của giảng viên này.", "warning");
+                return;
+            }
 
             currentSelectedAdvisor = n;
-            
-            const rawName = inf.bio; 
-            const userData = usersMap[rawName];
-            currentSelectedAdvisorId = userData ? userData.id : '';
+            currentSelectedAdvisorId = userData.id || '';
 
             const avatarImg = document.getElementById('modalAvatar');
-            if (userData && userData.avatar) {
-                avatarImg.src = userData.avatar;
-            } else {
-                avatarImg.src = `images/${n}.jpg`;
-            }
-            avatarImg.onerror = function() {
-                this.src = 'images/logo_Bộ môn.png';
-            };
+            avatarImg.src = userData.avatar || `images/${n}.jpg`;
+            avatarImg.onerror = function() { this.src = 'images/logo_Bộ môn.png'; };
 
             document.getElementById('modalName').innerText = n;
-            document.getElementById('modalDegree').innerText = inf.degree;
+            document.getElementById('modalDegree').innerText = userData.degree || 'Giảng viên';
             
             document.getElementById('advisorModal').classList.remove('hidden');
             document.getElementById('thesisDetailModal').classList.add('hidden');
@@ -770,9 +751,9 @@
                         
                         detailsHtml = changes.length > 0 ? changes.join('<br>') : 'Không có thay đổi dữ liệu thực tế';
                     } else if (log['hanh-dong'] === 'INSERT' && log['du-lieu-moi']) {
-                         detailsHtml = `<b>Tên đề tài:</b> ${log['du-lieu-moi']['ten-de-tai']}`;
+                         detailsHtml = `<b>Tên đề tài:</b> ${log['du-lieu-moi']['ten-de-tai'] || log['ten-de-tai']}`;
                     } else if (log['hanh-dong'] === 'DELETE' && log['du-lieu-cu']) {
-                         detailsHtml = `<b>Tên đề tài:</b> ${log['du-lieu-cu']['ten-de-tai']}`;
+                         detailsHtml = `<b>Tên đề tài:</b> ${log['du-lieu-cu']['ten-de-tai'] || log['ten-de-tai']}`;
                     }
 
                     historyBody.innerHTML += `<tr>
@@ -790,11 +771,10 @@
 
 
         // ==========================================
-        // XÓA ĐỀ TÀI TRỰC TIẾP QUA TÊN ĐỀ TÀI
+        // XÓA ĐỀ TÀI TRỰC TIẾP BẰNG TÊN ĐỀ TÀI
         // ==========================================
         window.triggerDeleteConfirm = (enD) => {
             const t = JSON.parse(decodeURIComponent(enD));
-            targetDeleteObj = t;
             targetDeleteTitle = t['ten-de-tai'] || 'Chưa có tên';
             
             generatedSecurityCode = Math.floor(1000 + Math.random() * 9000).toString();
@@ -812,9 +792,10 @@
         document.getElementById('inputDeleteCodeConfirm').oninput = (e) => { document.getElementById('btnExecuteFinalDelete').disabled = (e.target.value.trim() !== generatedSecurityCode); };
         
         document.getElementById('btnExecuteFinalDelete').onclick = async () => {
-            if(!targetDeleteObj) return;
+            if(!targetDeleteTitle) return;
             
             try {
+                // Xóa trực tiếp theo tên đề tài
                 const { error } = await window.supabaseClient.from('de-tai').delete().eq('ten-de-tai', targetDeleteTitle);
                 if (error) throw error;
 
@@ -851,10 +832,11 @@
             
             try {
                 if(isEditing && originalEditData) {
+                    // Update trực tiếp theo tên đề tài gốc
                     const { error } = await window.supabaseClient.from("de-tai").update(obj).eq('ten-de-tai', originalEditData['ten-de-tai']);
                     if (error) throw error;
                     
-                    lastEditedId = obj['ten-de-tai']; 
+                    lastEditedTitle = obj['ten-de-tai']; 
                     showToast("Đã cập nhật thay đổi thành công!", "success");
                 } else {
                     const { error } = await window.supabaseClient.from("de-tai").insert([obj]);
