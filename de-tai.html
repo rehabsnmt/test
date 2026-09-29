@@ -70,10 +70,9 @@
             table-layout: fixed; 
         }
         th, td { 
-            padding: 10px 12px; 
+            padding: 12px; 
             text-align: left; 
             border-bottom: 1px solid var(--border); 
-            vertical-align: top;
         }
         th { 
             background-color: var(--bg-page); 
@@ -87,11 +86,11 @@
         tr.recently-updated td { background-color: #ecfdf5; }
 
         /* Menu Hành động Dropdown (...) */
-        .action-menu-container { position: relative; }
+        .action-menu-container { position: absolute; top: 12px; right: 12px; z-index: 10; }
         .dropdown-menu { 
-            display: none; position: absolute; right: 15px; top: 30px; 
+            display: none; position: absolute; right: 0; top: 32px; 
             background: white; border: 1px solid var(--border); 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; 
             z-index: 100; min-width: 130px; flex-direction: column; overflow: hidden;
         }
         .dropdown-menu.show { display: flex; }
@@ -200,7 +199,7 @@
             /* Điều chỉnh lại padding cho gọn */
             table { font-size: 0.8rem; }
             th, td { padding: 10px 8px; }
-            th:first-child, td:first-child { width: 35px !important; padding: 10px 4px; }
+            th:first-child, td:first-child { width: 40px !important; padding: 10px 4px; }
             
             .author-dot { display: none; }
             .author-block { display: block; width: 100%; margin-top: 2px; }
@@ -270,7 +269,6 @@
                     </div>
                 </div>
 
-                <!-- GVHD 1 và 2 được gom vào 1 hàng (cùng 1 bên) -->
                 <div class="form-group" style="grid-column: span 2;">
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 200px;">
@@ -296,6 +294,7 @@
         </div>
         </div>
 
+        <!-- Bộ lọc -->
         <div class="section-box" style="padding: 15px; margin-bottom: 15px;">
             <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr 1fr;">
                 <div class="form-group">
@@ -311,7 +310,6 @@
                         <option value="author_desc">Tác giả (Z → A)</option>
                     </select>
                 </div>
-                <!-- BỘ LỌC HỆ ĐÀO TẠO MỚI -->
                 <div class="form-group">
                     <label>Hệ đào tạo</label>
                     <select id="filterLevel">
@@ -331,11 +329,12 @@
             Hiển thị <strong id="filteredCountText" style="color: var(--primary);">0</strong> / <strong id="totalCountText">0</strong> đề tài
         </div>
 
+        <!-- BẢNG DỮ LIỆU CHÍNH -->
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
-                        <th style="text-align: center; vertical-align: middle; width: 50px;">STT</th>
+                        <th style="text-align: center; width: 60px;">STT</th>
                         <th style="width: auto;">Thông tin đề tài</th>
                     </tr>
                 </thead>
@@ -427,7 +426,6 @@
         let allTheses = [];
         let isAdmin = false;
         let isEditing = false; 
-        let currentTab = 'CN'; 
         let targetDeleteTitle = "";
         let generatedSecurityCode = "";
         let lastEditedTitle = null; 
@@ -695,7 +693,7 @@
 
                 if (isAdmin) {
                     actionHtml = `
-                    <div style="position: absolute; top: 12px; right: 12px;" class="action-menu-container">
+                    <div class="action-menu-container">
                         <button class="btn-ellipsis" onclick="toggleDropdown('${rowId}')" aria-label="Thao tác">
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
@@ -705,6 +703,9 @@
                         </div>
                     </div>`;
                 }
+
+                // Cập nhật khoảng cách padding-right linh hoạt nếu có nút menu thao tác
+                const padRight = isAdmin ? '40px' : '0px';
 
                 // Xử lý html GVHD riêng biệt cho 2 dòng
                 const gv1 = t['gvhd1'] ? t['gvhd1'].trim() : '';
@@ -728,11 +729,11 @@
                 // BỐ CỤC: Tên đề tài -> Lớp (Nhãn Xám) - Chuyên ngành - Tác giả
                 tableBody.innerHTML += `
                     <tr data-thesis-id="${t['ten-de-tai'].replace(/"/g, '&quot;')}">
-                        <td style="text-align: center; vertical-align: middle; color:#94a3b8; font-weight:bold;">${actualIndex}</td>
-                        <td style="padding: 12px 12px; width: 100%; position: relative;">
+                        <td style="text-align: center; vertical-align: middle; color:#94a3b8; font-weight:bold; font-size: 1rem;">${actualIndex}</td>
+                        <td style="padding: 15px 12px; width: 100%; position: relative; vertical-align: middle;">
                             ${actionHtml}
                             
-                            <div style="padding-right: 35px;">
+                            <div style="padding-right: ${padRight};">
                                 <div class="thesis-title-link">
                                     ${t['ten-de-tai']}
                                 </div>
@@ -740,7 +741,6 @@
                                 <div class="metadata-line" style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
                                     <span class="class-badge">${t['lop']||'—'}</span>
                                     <span class="${majorClass}">${majorStr}</span>
-                                    <span class="meta-dot author-dot" style="margin: 0 2px;">•</span>
                                     <div class="author-block">
                                         ${t['tac-gia']}
                                     </div>
