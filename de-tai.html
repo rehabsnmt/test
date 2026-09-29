@@ -17,9 +17,9 @@
         ========================================= */
         main { max-width: 1200px; padding: 2rem 3%; margin: 0 auto; }
 
-        .header-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 25px; }
+        .header-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
         
-        .section-box { background: var(--surface); padding: 25px; border-radius: var(--radius-md); margin-bottom: 20px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .section-box { background: var(--surface); padding: 20px; border-radius: var(--radius-md); margin-bottom: 20px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
         .hidden { display: none !important; }
         .thesis-form-modal { max-width: 900px; text-align: left; position: relative; max-height: 90vh; overflow-y: auto; }
 
@@ -29,33 +29,33 @@
         .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-dark); margin-bottom: 5px; }
         
         select, input[type="text"], textarea {
-            width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; background-color: var(--bg-page); color: var(--text-dark); outline: none; transition: var(--transition); box-sizing: border-box; font-family: inherit;
+            width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem; background-color: var(--bg-page); color: var(--text-dark); outline: none; transition: var(--transition); box-sizing: border-box; font-family: inherit;
         }
         select:focus, input[type="text"]:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); background-color: var(--surface); }
         textarea { resize: none; overflow: hidden; line-height: 1.5; }
 
         /* Tabs Chuyển hệ */
-        .tabs-header { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 20px; gap: 10px; }
-        .tab-btn { flex: 1; min-height: 48px; padding: 12px; text-align: center; font-size: 1rem; font-weight: 600; color: var(--text-body); background: transparent; border: none; cursor: pointer; transition: var(--transition); border-bottom: 3px solid transparent; }
+        .tabs-header { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 15px; gap: 10px; }
+        .tab-btn { flex: 1; min-height: 44px; padding: 10px; text-align: center; font-size: 0.95rem; font-weight: 600; color: var(--text-body); background: transparent; border: none; cursor: pointer; transition: var(--transition); border-bottom: 3px solid transparent; }
         .tab-btn:hover { color: var(--text-dark); }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
 
         /* Nút phụ đặc thù */
         button { cursor: pointer; transition: var(--transition); font-family: inherit; }
-        .btn-primary { background-color: var(--primary); color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
+        .btn-primary { background-color: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: var(--radius-pill); border: none; font-weight: 500; font-size: 0.9rem;}
         .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-danger { background-color: var(--accent); color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
+        .btn-danger { background-color: var(--accent); color: white; padding: 0.5rem 1rem; border-radius: var(--radius-pill); border: none; font-weight: 500; font-size: 0.9rem;}
         .btn-danger:hover { background-color: #be123c; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2); }
-        .btn-success { background-color: #16a34a; color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
+        .btn-success { background-color: #16a34a; color: white; padding: 0.5rem 1rem; border-radius: var(--radius-pill); border: none; font-weight: 500; font-size: 0.9rem;}
         .btn-success:hover { background-color: #15803d; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); }
-        .btn-sm { padding: 5px 10px; font-size: 0.85rem; border-radius: 6px; }
+        .btn-sm { padding: 4px 10px; font-size: 0.8rem; border-radius: 6px; }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn-page { background-color: var(--surface); color: var(--text-dark); border: 1px solid var(--border); padding: 5px 15px; border-radius: 6px; font-weight: 600; }
+        .btn-page { background-color: var(--surface); color: var(--text-dark); border: 1px solid var(--border); padding: 5px 15px; border-radius: 6px; font-weight: 600; font-size: 0.85rem;}
         .btn-page:hover:not(:disabled) { background-color: var(--primary-light); color: var(--primary); border-color: var(--primary); }
-        .btn-outline { background-color: white; color: var(--primary); border: 1px solid var(--primary); padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-outline { background-color: white; color: var(--primary); border: 1px solid var(--primary); padding: 0.5rem 1rem; border-radius: var(--radius-pill); font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.9rem;}
         .btn-outline:hover { background-color: var(--primary-light); }
 
-        /* Bảng hiển thị MỚI (Cố định khung, chống kéo ngang) */
+        /* Bảng hiển thị MỚI (Cố định khung, chống kéo ngang, Font nhỏ lại) */
         .table-container { 
             width: 100%;
             border-radius: var(--radius-md); 
@@ -66,11 +66,11 @@
         table { 
             width: 100%; 
             border-collapse: collapse; 
-            font-size: 0.95rem; 
+            font-size: 0.85rem; /* Giảm cỡ chữ toàn bảng */
             table-layout: fixed; 
         }
         th, td { 
-            padding: 15px 12px; 
+            padding: 10px 12px; /* Giảm padding để xem được nhiều hàng hơn */
             text-align: left; 
             border-bottom: 1px solid var(--border); 
             vertical-align: top;
@@ -80,7 +80,7 @@
             font-weight: 600; 
             color: var(--text-dark); 
             text-transform: uppercase; 
-            font-size: 0.85rem; 
+            font-size: 0.8rem; 
             letter-spacing: 0.5px;
         }
         tr:hover { background-color: var(--primary-light); }
@@ -89,7 +89,7 @@
         /* Menu Hành động Dropdown (...) */
         .action-menu-container { position: relative; }
         .dropdown-menu { 
-            display: none; position: absolute; right: 15px; top: 35px; 
+            display: none; position: absolute; right: 15px; top: 30px; 
             background: white; border: 1px solid var(--border); 
             box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 8px; 
             z-index: 100; min-width: 130px; flex-direction: column; overflow: hidden;
@@ -97,38 +97,44 @@
         .dropdown-menu.show { display: flex; }
         .dropdown-item { 
             padding: 10px 15px; cursor: pointer; text-align: left; 
-            font-size: 0.9rem; color: var(--text-dark); border: none; 
+            font-size: 0.85rem; color: var(--text-dark); border: none; 
             background: transparent; width: 100%; display: flex; align-items: center; gap: 8px;
             font-family: inherit; font-weight: 500; transition: background 0.2s;
         }
         .dropdown-item:hover { background: var(--bg-page); color: var(--primary); }
         .dropdown-item.text-danger { color: var(--accent); }
         .dropdown-item.text-danger:hover { color: var(--accent); background: #fef2f2; }
-        .btn-ellipsis { background: transparent; border: none; font-size: 1.2rem; color: var(--text-muted); padding: 5px 10px; border-radius: 4px; }
+        .btn-ellipsis { background: transparent; border: none; font-size: 1.1rem; color: var(--text-muted); padding: 4px 8px; border-radius: 4px; }
         .btn-ellipsis:hover { color: var(--primary); background: var(--bg-page); }
 
-        /* Tương tác tên GVHD */
-        .advisor-link { color: var(--primary); font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
-        .advisor-link:hover { color: var(--primary-hover); text-decoration: underline; }
+        /* Tương tác tên GVHD (Màu xám nhạt đồng bộ) */
+        .advisor-link { color: var(--text-body); font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block; transition: 0.2s; }
+        .advisor-link:hover { color: var(--primary); text-decoration: underline; }
         
-        /* Màu sắc chuyên ngành (Chỉ màu chữ) */
-        .major-vltl { color: #0284c7 !important; font-weight: 600; }
-        .major-hdtl { color: #ea580c !important; font-weight: 600; }
-        .major-nntl { color: #16a34a !important; font-weight: 600; }
+        /* Màu sắc chuyên ngành (Có ô chữ nhật nền nhạt & khoảng trống padding) */
+        .major-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .major-vltl { color: #0284c7 !important; background-color: #e0f2fe; border: 1px solid #bae6fd; }
+        .major-hdtl { color: #ea580c !important; background-color: #ffedd5; border: 1px solid #fed7aa; }
+        .major-nntl { color: #16a34a !important; background-color: #dcfce7; border: 1px solid #bbf7d0; }
 
         /* Tên đề tài format tự động ngắt dòng */
         .thesis-title-link { 
-            cursor: default; /* Bỏ cursor pointer vì không còn click */
+            cursor: default; 
             color: var(--text-dark); 
             font-weight: 700; 
-            line-height: 1.5; 
+            line-height: 1.4; 
             text-align: left; 
             background: transparent; 
             border: 0; 
             padding: 0;
             display: block; 
-            margin-bottom: 8px;
-            font-size: 1.15rem; 
+            margin-bottom: 6px;
+            font-size: 1rem; /* Giảm cỡ chữ để gọn hơn */
             width: 100%;
             white-space: normal !important; 
             word-wrap: break-word; 
@@ -136,19 +142,22 @@
             overflow-wrap: break-word;
         }
 
-        /* Dòng thông tin tác giả, lớp, chuyên ngành, GVHD - Được phép ngắt dòng thoải mái */
+        /* Dòng thông tin tác giả, lớp, chuyên ngành, GVHD */
         .metadata-line {
-            font-size: 0.95rem; 
-            color: var(--text-body); /* Màu xám nhạt đồng bộ */
-            margin-bottom: 6px; 
+            font-size: 0.85rem; 
+            color: var(--text-body); 
+            margin-bottom: 5px; 
             white-space: normal; 
             width: 100%;
-            display: block;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
             word-wrap: break-word; 
             overflow-wrap: break-word;
-            line-height: 1.6;
+            line-height: 1.5;
         }
-        .meta-dot { color: var(--border); margin: 0 6px; }
+        .meta-dot { color: var(--border); font-size: 0.75rem;}
         .author-block { display: inline-block; color: var(--text-body); font-weight: 500; }
 
         /* =========================================
@@ -161,9 +170,6 @@
         .toast.warning { border-left-color: #f59e0b; }
         .toast.danger { border-left-color: #ef4444; }
         .toast-icon { font-size: 1.2rem; }
-        .toast.success .toast-icon { color: #22c55e; }
-        .toast.warning .toast-icon { color: #f59e0b; }
-        .toast.danger .toast-icon { color: #ef4444; }
 
         /* =========================================
            RESPONSIVE DÀNH RIÊNG CHO ĐIỆN THOẠI
@@ -173,20 +179,22 @@
             .thesis-form-modal { margin: 12px; max-height: calc(100vh - 24px); }
             .thesis-form-modal .form-group[style*="grid-column"] { grid-column: auto !important; }
             .tabs-header { margin-top: 10px; gap: 4px; }
-            .tab-btn { font-size: 0.9rem; }
-            .section-box:has(#searchInput) { padding: 12px; }
-            .section-box:has(#searchInput) .form-grid { grid-template-columns: 1fr !important; gap: 12px; }
+            .tab-btn { font-size: 0.85rem; }
+            .section-box { padding: 12px; }
+            .section-box .form-grid { grid-template-columns: 1fr !important; gap: 12px; }
             .toast-container { bottom: 10px; right: 10px; left: 10px; }
             .toast { min-width: unset; width: 100%; box-sizing: border-box; }
 
             /* Điều chỉnh lại padding cho gọn */
-            table { font-size: 0.9rem; }
-            th, td { padding: 15px 10px; }
-            th:first-child, td:first-child { width: 45px !important; padding: 15px 5px; }
+            table { font-size: 0.8rem; }
+            th, td { padding: 10px 8px; }
+            th:first-child, td:first-child { width: 35px !important; padding: 10px 4px; }
             
             .author-dot { display: none; }
-            .author-block { display: block; margin-top: 4px; }
-            .thesis-title-link { font-size: 1.05rem; }
+            .author-block { display: block; width: 100%; margin-top: 2px; }
+            .thesis-title-link { font-size: 0.95rem; margin-bottom: 4px;}
+            .metadata-line { font-size: 0.8rem; margin-bottom: 4px; gap: 4px; }
+            .major-badge { padding: 1px 6px; font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -198,7 +206,7 @@
     <!-- Khung chứa thông báo nổi -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <!-- Danh sách gợi ý giảng viên (Sẽ tự động nạp từ DB) -->
+    <!-- Danh sách gợi ý giảng viên -->
     <datalist id="advisorList"></datalist>
 
     <main style="flex: 1; padding-top: 2rem;">
@@ -250,7 +258,6 @@
                     </div>
                 </div>
 
-                <!-- GVHD 1 và 2 được gom vào 1 hàng (cùng 1 bên) -->
                 <div class="form-group" style="grid-column: span 2;">
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 200px;">
@@ -304,7 +311,7 @@
             </div>
         </div>
 
-        <div style="margin-bottom: 15px; font-size: 0.95rem; color: var(--text-body);">
+        <div style="margin-bottom: 15px; font-size: 0.9rem; color: var(--text-body);">
             Hiển thị <strong id="filteredCountText" style="color: var(--primary);">0</strong> / <strong id="totalCountText">0</strong> đề tài
         </div>
 
@@ -325,7 +332,7 @@
         <!-- Phân trang -->
         <div id="paginationContainer" style="display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 15px;">
             <button id="btnPrevPage" class="btn-page" onclick="changePage(-1)">Trước</button>
-            <span id="pageInfo" style="font-size: 0.95rem; color: var(--text-body); font-weight: 600;">Trang 1 / 1</span>
+            <span id="pageInfo" style="font-size: 0.9rem; color: var(--text-body); font-weight: 600;">Trang 1 / 1</span>
             <button id="btnNextPage" class="btn-page" onclick="changePage(1)">Sau</button>
         </div>
     </main>
@@ -536,7 +543,7 @@
             try {
                 const { data, error } = await window.supabaseClient.auth.getUser();
                 
-                // Nạp thông tin giảng viên cơ hữu từ bảng giang-vien
+                // Nạp thông tin giảng viên từ bảng giang-vien
                 const { data: usersData } = await window.supabaseClient.from("giang-vien").select("*");
                 if (usersData) {
                     usersData.forEach(d => {
@@ -675,7 +682,7 @@
 
                 if (isAdmin) {
                     actionHtml = `
-                    <div style="position: absolute; top: 15px; right: 15px;" class="action-menu-container">
+                    <div style="position: absolute; top: 12px; right: 12px;" class="action-menu-container">
                         <button class="btn-ellipsis" onclick="toggleDropdown('${rowId}')" aria-label="Thao tác">
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
@@ -688,10 +695,10 @@
 
                 // Xử lý html GVHD riêng biệt cho 2 dòng
                 const gv1 = t['gvhd1'] ? t['gvhd1'].trim() : '';
-                const adv1Html = gv1 ? (usersMap[gv1] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv1).replace(/'/g, "%27")}')">${gv1}</span>` : `<span style="font-weight:600; color:var(--text-dark);">${gv1}</span>`) : '—';
+                const adv1Html = gv1 ? (usersMap[gv1] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv1).replace(/'/g, "%27")}')">${gv1}</span>` : `<span style="font-weight:500; color:var(--text-body);">${gv1}</span>`) : '—';
 
                 const gv2 = t['gvhd2'] ? t['gvhd2'].trim() : '';
-                const adv2Html = gv2 ? (usersMap[gv2] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv2).replace(/'/g, "%27")}')">${gv2}</span>` : `<span style="font-weight:600; color:var(--text-dark);">${gv2}</span>`) : '';
+                const adv2Html = gv2 ? (usersMap[gv2] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv2).replace(/'/g, "%27")}')">${gv2}</span>` : `<span style="font-weight:500; color:var(--text-body);">${gv2}</span>`) : '';
 
                 let gvhdDisplay = `<div style="margin-bottom: 2px;">GVHD 1: ${adv1Html}</div>`;
                 if (gv2) {
@@ -700,16 +707,16 @@
 
                 // Chuyên ngành màu sắc
                 let majorStr = t['chuyen-nganh'] || '—';
-                let majorClass = '';
-                if(majorStr.includes('Vật lý')) majorClass = 'major-vltl';
-                else if(majorStr.includes('Hoạt động')) majorClass = 'major-hdtl';
-                else if(majorStr.includes('Ngôn ngữ')) majorClass = 'major-nntl';
+                let majorClass = 'major-badge ';
+                if(majorStr.includes('Vật lý')) majorClass += 'major-vltl';
+                else if(majorStr.includes('Hoạt động')) majorClass += 'major-hdtl';
+                else if(majorStr.includes('Ngôn ngữ')) majorClass += 'major-nntl';
 
                 // BỐ CỤC: Tên đề tài -> Lớp - Chuyên ngành - Tác giả
                 tableBody.innerHTML += `
                     <tr data-thesis-id="${t['ten-de-tai'].replace(/"/g, '&quot;')}">
-                        <td align="center" style="color:#94a3b8; font-weight:bold; font-size: 1.1rem; vertical-align: top; padding-top: 15px;">${actualIndex}</td>
-                        <td style="padding: 15px 12px; width: 100%; position: relative;">
+                        <td align="center" style="color:#94a3b8; font-weight:bold; font-size: 1rem; vertical-align: top; padding-top: 15px;">${actualIndex}</td>
+                        <td style="padding: 12px 12px; width: 100%; position: relative;">
                             ${actionHtml}
                             
                             <div style="padding-right: 35px;">
@@ -718,7 +725,7 @@
                                 </div>
                                 
                                 <div class="metadata-line">
-                                    <span style="color: var(--text-body); font-weight: 500;">${t['lop']||'—'}</span>
+                                    <span style="font-weight: 600; color: var(--text-dark);">${t['lop']||'—'}</span>
                                     <span class="meta-dot"> • </span>
                                     <span class="${majorClass}">${majorStr}</span>
                                     <span class="meta-dot author-dot"> • </span>
