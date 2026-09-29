@@ -7,7 +7,6 @@
     
     <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
     
-    <!-- Link CSS gốc để đồng bộ giao diện -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -48,39 +47,40 @@
         button { cursor: pointer; transition: var(--transition); font-family: inherit; }
         .btn-primary { background-color: var(--primary); color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
         .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-warning { background-color: #f59e0b; color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
+        .btn-warning:hover { background-color: #d97706; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2); }
         .btn-danger { background-color: var(--accent); color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
         .btn-danger:hover { background-color: #be123c; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2); }
         .btn-success { background-color: #16a34a; color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
         .btn-success:hover { background-color: #15803d; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); }
-        .btn-sm { padding: 6px 12px; font-size: 0.85rem; border-radius: 6px; }
+        .btn-secondary { background-color: var(--bg-page); color: var(--text-dark); padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: 1px solid var(--border); font-weight: 500; }
+        .btn-secondary:hover { background-color: #e2e8f0; }
+        .btn-sm { padding: 5px 10px; font-size: 0.85rem; border-radius: 6px; }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-page { background-color: var(--surface); color: var(--text-dark); border: 1px solid var(--border); padding: 5px 15px; border-radius: 6px; font-weight: 600; }
         .btn-page:hover:not(:disabled) { background-color: var(--primary-light); color: var(--primary); border-color: var(--primary); }
         .btn-outline { background-color: white; color: var(--primary); border: 1px solid var(--primary); padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-outline:hover { background-color: var(--primary-light); }
 
-        /* Bảng hiển thị MỚI (Gộp dọc) */
+        /* Bảng hiển thị MỚI (Cố định khung, chống kéo ngang) */
         .table-container { 
             width: 100%;
             border-radius: var(--radius-md); 
             border: 1px solid var(--border); 
             background: var(--surface); 
             box-shadow: var(--shadow-sm); 
-            overflow-x: auto; 
         }
         table { 
             width: 100%; 
             border-collapse: collapse; 
             font-size: 0.95rem; 
-            table-layout: auto; 
+            table-layout: fixed; /* Bắt buộc để không tràn bảng ngang */
         }
         th, td { 
             padding: 15px 12px; 
             text-align: left; 
             border-bottom: 1px solid var(--border); 
             vertical-align: top;
-            word-wrap: break-word; 
-            overflow-wrap: break-word;
         }
         th { 
             background-color: var(--bg-page); 
@@ -88,24 +88,19 @@
             color: var(--text-dark); 
             text-transform: uppercase; 
             font-size: 0.85rem; 
-            position: sticky; 
-            top: 0; 
-            z-index: 10; 
             letter-spacing: 0.5px;
         }
         tr:hover { background-color: var(--primary-light); }
         tr.recently-updated td { background-color: #ecfdf5; }
-        
-        .td-nowrap { white-space: nowrap !important; }
 
-        #thAction, .td-action { position: sticky; right: 0; background-color: var(--surface); z-index: 5; box-shadow: -4px 0 8px rgba(0,0,0,0.02); border-left: 1px solid var(--border); vertical-align: middle; }
-        tr:hover .td-action { background-color: var(--primary-light); }
+        /* Nút tác vụ (Sửa/Xóa) */
+        .td-action { vertical-align: middle; }
 
-        /* Tương tác tên đề tài & GVHD */
+        /* Tương tác tên GVHD */
         .advisor-link { color: var(--primary); font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
         .advisor-link:hover { color: var(--primary-hover); text-decoration: underline; }
         
-        /* Tên đề tài format mới */
+        /* CHỈ Tên đề tài được phép ngắt dòng */
         .thesis-title-link { 
             cursor: pointer; 
             color: var(--primary); 
@@ -117,11 +112,27 @@
             background: transparent; 
             border: 0; 
             padding: 0;
-            display: inline-block; 
-            margin-bottom: 6px;
-            font-size: 1.1rem;
+            display: block; 
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+            width: 100%;
+            white-space: normal !important; /* Ép buộc cho phép xuống dòng */
+            word-wrap: break-word; 
+            overflow-wrap: break-word;
         }
         .thesis-title-link:hover, .thesis-title-link:focus-visible { color: var(--primary-hover); text-decoration: underline; outline: none; }
+
+        /* Các dòng metadata Tác giả, GVHD KHÔNG được xuống dòng, tự cắt mượt mà bằng dấu 3 chấm */
+        .metadata-line {
+            font-size: 0.9rem; 
+            color: var(--text-dark); 
+            margin-bottom: 6px; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            width: 100%;
+            display: block;
+        }
 
         /* =========================================
            CSS THÔNG BÁO TOAST
@@ -152,9 +163,10 @@
             .toast-container { bottom: 10px; right: 10px; left: 10px; }
             .toast { min-width: unset; width: 100%; box-sizing: border-box; }
 
-            /* Điều chỉnh lại font size trên điện thoại */
+            /* Điều chỉnh lại font size trên điện thoại để các cột vẫn hiển thị đầy đủ */
             table { font-size: 0.85rem; }
-            th, td { padding: 12px 10px; }
+            th, td { padding: 12px 8px; }
+            th:first-child, td:first-child { width: 40px !important; padding: 12px 4px; }
             .thesis-title-link { font-size: 1rem; }
         }
     </style>
@@ -218,7 +230,7 @@
                     </div>
                 </div>
 
-                <!-- GVHD 1 và 2 -->
+                <!-- GVHD 1 và 2 được gom vào 1 hàng -->
                 <div class="form-group" style="grid-column: span 2;">
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 200px;">
@@ -280,9 +292,9 @@
             <table>
                 <thead>
                     <tr>
-                        <th class="td-nowrap" style="text-align: center; width: 50px;">STT</th>
-                        <th>Thông Tin Luận Văn / Khóa Luận</th>
-                        <th id="thAction" class="td-nowrap hidden" style="text-align: center; width: 90px;">Thao tác</th>
+                        <th style="text-align: center; width: 50px;">STT</th>
+                        <th style="width: auto;">Thông Tin Luận Văn / Khóa Luận</th>
+                        <th id="thAction" class="hidden" style="text-align: center; width: 90px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody id="dataTableBody">
@@ -354,11 +366,11 @@
             <button class="modal-close" onclick="closeHistoryModal()"><i class="fas fa-times"></i></button>
             <h2 style="color: var(--text-dark); margin-bottom: 10px;">Lịch sử hoạt động</h2>
             <div style="max-height: 450px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm);">
-                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: auto;">
                     <thead>
                         <tr>
-                            <th style="background: var(--bg-page); padding: 10px; width: 140px;" class="td-nowrap">Thời gian</th>
-                            <th style="background: var(--bg-page); padding: 10px; width: 90px;" class="td-nowrap">Thao tác</th>
+                            <th style="background: var(--bg-page); padding: 10px; width: 140px;">Thời gian</th>
+                            <th style="background: var(--bg-page); padding: 10px; width: 90px;">Thao tác</th>
                             <th style="background: var(--bg-page); padding: 10px; width: 140px;">Tài khoản</th>
                             <th style="background: var(--bg-page); padding: 10px;">Chi tiết thay đổi</th>
                         </tr>
@@ -411,7 +423,6 @@
         let currentPage = 1;
         const itemsPerPage = 30;
         let totalPages = 1;
-        let currentUserEmail = "";
         
         let usersMap = {}; 
         let currentSelectedAdvisor = "";
@@ -498,27 +509,25 @@
         async function checkAuth() {
             try {
                 const { data, error } = await window.supabaseClient.auth.getUser();
-                if (data && data.user) {
-                    currentUserEmail = data.user.email;
-                    
-                    // Lấy tất cả thông tin giảng viên để tạo danh sách gợi ý GVHD
-                    const { data: usersData } = await window.supabaseClient.from("giang-vien").select("*");
-                    if (usersData) {
-                        advisorDatalist.innerHTML = '';
-                        usersData.forEach(d => {
-                            if (d['ho-ten']) {
-                                const name = d['ho-ten'].trim();
-                                usersMap[name] = { 
-                                    id: d['ma-giang-vien'], 
-                                    avatar: d.avatar || '', 
-                                    degree: d['hoc-ham-hoc-vi'] || 'Giảng viên' 
-                                };
-                                advisorDatalist.innerHTML += `<option value="${name}">`;
-                            }
-                        });
-                    }
+                
+                // Nạp tất cả giảng viên làm danh sách gợi ý bất kể có đăng nhập hay không
+                const { data: usersData } = await window.supabaseClient.from("giang-vien").select("*");
+                if (usersData) {
+                    advisorDatalist.innerHTML = '';
+                    usersData.forEach(d => {
+                        if (d['ho-ten']) {
+                            const name = d['ho-ten'].trim();
+                            usersMap[name] = { 
+                                id: d['ma-giang-vien'], 
+                                avatar: d.avatar || '', 
+                                degree: d['hoc-ham-hoc-vi'] || 'Giảng viên' 
+                            };
+                            advisorDatalist.innerHTML += `<option value="${name}">`;
+                        }
+                    });
+                }
 
-                    // Phân quyền
+                if (data && data.user) {
                     const { data: account } = await window.supabaseClient.from("tai-khoan-he-thong").select("role").eq("id", data.user.id).single();
                     const role = account ? account.role : 'user';
 
@@ -632,7 +641,7 @@
                 const rowId = String(t['ten-de-tai']||'').replace(/"/g, '&quot;');
 
                 if (isAdmin) {
-                    actionHtml = `<td class="td-action td-nowrap" align="center" style="vertical-align: middle;">
+                    actionHtml = `<td class="td-action" align="center" style="vertical-align: middle;">
                         <div style="display:flex; flex-direction:column; gap:6px; align-items:center;">
                             <button class="btn-sm btn-warning" onclick="triggerEdit('${dataStrObj}')" style="width:100%;">Sửa</button> 
                             <button class="btn-sm btn-danger" onclick="triggerDeleteConfirm('${dataStrObj}')" style="width:100%;">Xóa</button>
@@ -645,24 +654,24 @@
                     return usersMap[n] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(n).replace(/'/g, "%27")}')">${n}</span>` : `<span style="font-weight:600;">${n}</span>`;
                 }).join(' <span style="margin:0 5px;color:#cbd5e1;">/</span> ');
 
-                // TRÌNH BÀY GỘP DỌC HIỆN ĐẠI
+                // TRÌNH BÀY GỘP DỌC HIỆN ĐẠI (Tác giả, Lớp được bảo vệ ellipsis, Tên đề tài ngắt dòng thoải mái)
                 tableBody.innerHTML += `
                     <tr data-thesis-id="${rowId}">
                         <td align="center" style="color:#94a3b8; font-weight:bold; font-size: 1.1rem; vertical-align: top; padding-top: 18px;">${actualIndex}</td>
-                        <td style="padding: 16px 12px;">
+                        <td style="padding: 16px 12px; max-width: 0; width: 100%; overflow: hidden;">
                             <button type="button" class="thesis-title-link" onclick="openThesisDetailModal('${dataStrObj}')" aria-label="Xem thông tin đề tài: ${t['ten-de-tai']}">
                                 ${t['ten-de-tai']}
                             </button>
                             
-                            <div style="font-size: 0.9rem; color: var(--text-dark); margin-bottom: 6px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+                            <div class="metadata-line">
                                 <b>${t['tac-gia']}</b> 
-                                <span style="color: var(--border); font-size: 0.8rem;">•</span> 
+                                <span style="color: var(--border); font-size: 0.8rem; margin: 0 4px;">•</span> 
                                 <span style="font-weight: 700; color: var(--accent);">${t['lop']||'—'}</span> 
-                                <span style="color: var(--border); font-size: 0.8rem;">•</span> 
+                                <span style="color: var(--border); font-size: 0.8rem; margin: 0 4px;">•</span> 
                                 <span>${t['chuyen-nganh']||'—'}</span>
                             </div>
                             
-                            <div style="font-size: 0.9rem; color: var(--text-body); display: flex; align-items: center; flex-wrap: wrap;">
+                            <div class="metadata-line" style="color: var(--text-body);">
                                 <i class="fas fa-chalkboard-teacher" style="color: var(--text-muted); margin-right: 6px;"></i> GVHD:&nbsp; ${advHtml}
                             </div>
                         </td>
@@ -819,7 +828,7 @@
 
 
         // ==========================================
-        // XÓA ĐỀ TÀI TRỰC TIẾP QUA TÊN ĐỀ TÀI
+        // XÓA ĐỀ TÀI TRỰC TIẾP QUANG TÊN ĐỀ TÀI
         // ==========================================
         window.triggerDeleteConfirm = (enD) => {
             const t = JSON.parse(decodeURIComponent(enD));
