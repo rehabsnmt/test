@@ -7,7 +7,6 @@
     
     <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
     
-    <!-- Link CSS gốc để đồng bộ giao diện -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -32,6 +31,7 @@
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-dark); margin-bottom: 5px; }
         
+        /* Input & Textarea */
         select, input[type="text"], textarea {
             width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; background-color: var(--bg-page); color: var(--text-dark); outline: none; transition: var(--transition); box-sizing: border-box; font-family: inherit;
         }
@@ -48,37 +48,72 @@
         button { cursor: pointer; transition: var(--transition); font-family: inherit; }
         .btn-primary { background-color: var(--primary); color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
         .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-warning { background-color: #f59e0b; color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
+        .btn-warning:hover { background-color: #d97706; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2); }
         .btn-danger { background-color: var(--accent); color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
         .btn-danger:hover { background-color: #be123c; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2); }
         .btn-success { background-color: #16a34a; color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
         .btn-success:hover { background-color: #15803d; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); }
-        .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; border-radius: 6px; }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-page { background-color: var(--surface); color: var(--text-dark); border: 1px solid var(--border); padding: 5px 15px; border-radius: 6px; font-weight: 600; }
         .btn-page:hover:not(:disabled) { background-color: var(--primary-light); color: var(--primary); border-color: var(--primary); }
         .btn-outline { background-color: white; color: var(--primary); border: 1px solid var(--primary); padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-outline:hover { background-color: var(--primary-light); }
 
-        /* Bảng hiển thị (Sử dụng đúng cấu trúc nowrap mặc định) */
-        .table-container { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); position: relative; }
-        table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 0.95rem; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        th { background-color: var(--bg-page); font-weight: 600; color: var(--text-dark); text-transform: uppercase; font-size: 0.85rem; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px;}
+        /* Bảng hiển thị - ÉP XUỐNG DÒNG TOÀN BỘ CỘT */
+        .table-container { 
+            width: 100%;
+            border-radius: var(--radius-md); 
+            border: 1px solid var(--border); 
+            background: var(--surface); 
+            box-shadow: var(--shadow-sm); 
+            overflow-x: auto; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 0.95rem; 
+            table-layout: auto; 
+        }
+        th, td { 
+            padding: 12px 10px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--border); 
+            vertical-align: top; /* Căn trên cùng để text dễ đọc khi xuống dòng */
+            white-space: normal !important; /* KHÔNG BAO GIỜ CẤM XUỐNG DÒNG */
+            word-wrap: break-word; 
+            overflow-wrap: break-word;
+        }
+        th { 
+            background-color: var(--bg-page); 
+            font-weight: 600; 
+            color: var(--text-dark); 
+            text-transform: uppercase; 
+            font-size: 0.85rem; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10; 
+            letter-spacing: 0.5px;
+        }
         tr:hover { background-color: var(--primary-light); }
         tr.recently-updated td { background-color: #ecfdf5; }
-        
-        #thAction, .td-action { position: sticky; right: 0; background-color: var(--surface); z-index: 5; box-shadow: -4px 0 8px rgba(0,0,0,0.02); border-left: 1px solid var(--border); }
-        tr:hover .td-action { background-color: var(--primary-light); }
 
         /* Tương tác tên đề tài & GVHD */
-        .advisor-link { color: var(--primary); font-weight: 600; cursor: pointer; text-decoration: none; border-bottom: 1px dashed var(--primary); }
+        .advisor-link { color: var(--primary); font-weight: 600; cursor: pointer; text-decoration: none; border-bottom: 1px dashed var(--primary); display: inline-block; margin-bottom: 4px; }
         .advisor-link:hover { color: var(--primary-hover); border-bottom-style: solid; }
         
-        .thesis-title-link { width: 100%; padding: 6px 8px; margin: -6px -8px; cursor: pointer; color: var(--text-dark); transition: color 0.2s, background-color 0.2s; font: inherit; font-weight: 600; line-height: 1.5; text-align: left; background: transparent; border: 0; border-radius: 6px; }
-        .thesis-title-link:hover, .thesis-title-link:focus-visible { color: var(--primary); background: var(--primary-light); outline: 2px solid var(--primary); outline-offset: 2px; }
+        .thesis-title-link { 
+            width: 100%; padding: 0; margin: 0; cursor: pointer; 
+            color: var(--text-dark); transition: color 0.2s; 
+            font: inherit; font-weight: 600; line-height: 1.5; text-align: left; 
+            background: transparent; border: 0; 
+            display: block; white-space: normal !important;
+        }
+        .thesis-title-link:hover, .thesis-title-link:focus-visible { color: var(--primary); text-decoration: underline; outline: none; }
 
         /* =========================================
-           CSS THÔNG BÁO TOAST (POPUP GÓC DƯỚI)
+           CSS THÔNG BÁO TOAST
         ========================================= */
         .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .toast { min-width: 250px; background-color: var(--surface); color: var(--text-dark); padding: 15px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px; transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s; font-weight: 600; border-left: 5px solid; opacity: 0; font-size: 0.95rem; }
@@ -106,13 +141,11 @@
             .toast-container { bottom: 10px; right: 10px; left: 10px; }
             .toast { min-width: unset; width: 100%; box-sizing: border-box; }
 
-            .table-container th:nth-child(2), .table-container td:nth-child(2), 
-            .table-container th:nth-child(4), .table-container td:nth-child(4), 
-            .table-container th:nth-child(5), .table-container td:nth-child(5)  
-            { display: none; }
-
-            .table-container th:nth-child(3), .table-container td:nth-child(3) { width: 100% !important; min-width: unset !important; }
-            .thesis-title-link { color: var(--primary); font-size: 0.95rem; }
+            /* Điều chỉnh lại font size trên điện thoại để các cột vẫn hiển thị đầy đủ */
+            table { font-size: 0.8rem; }
+            th, td { padding: 10px 5px; }
+            .btn-sm { font-size: 0.75rem; padding: 6px; }
+            .thesis-title-link { font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -175,7 +208,7 @@
                     </div>
                 </div>
 
-                <!-- GVHD 1 và 2 được gom vào 1 hàng -->
+                <!-- GVHD 1 và 2 được gom vào 1 hàng (cùng 1 bên) -->
                 <div class="form-group" style="grid-column: span 2;">
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 200px;">
@@ -237,12 +270,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="text-align: center; width: 60px;">STT</th>
-                        <th style="width: 180px;">Tác Giả</th>
-                        <th style="min-width: 300px;">Tên Đề Tài</th>
-                        <th style="width: 160px;">LỚP</th>
-                        <th style="min-width: 200px;">Giảng Viên Hướng Dẫn</th>
-                        <th id="thAction" class="hidden" style="text-align: center; width: 120px;"></th>
+                        <th style="text-align: center; width: 40px;">STT</th>
+                        <th style="width: 16%;">Tác Giả</th>
+                        <th style="width: auto;">Tên Đề Tài</th>
+                        <th style="width: 12%;">Lớp</th>
+                        <th style="width: 20%;">Giảng Viên Hướng Dẫn</th>
+                        <th id="thAction" class="hidden" style="text-align: center; width: 90px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody id="dataTableBody">
@@ -590,7 +623,12 @@
                 const rowId = String(t['ten-de-tai']||'').replace(/"/g, '&quot;');
 
                 if (isAdmin) {
-                    actionHtml = `<td class="td-action" align="center"><button class="btn-sm btn-warning" onclick="triggerEdit('${dataStrObj}')">Sửa</button> <button class="btn-sm btn-danger" onclick="triggerDeleteConfirm('${dataStrObj}')">Xóa</button></td>`;
+                    actionHtml = `<td class="td-action" align="center">
+                        <div style="display:flex; flex-direction:column; gap:5px; align-items:center;">
+                            <button class="btn-sm btn-warning" onclick="triggerEdit('${dataStrObj}')" style="width:100%;">Sửa</button> 
+                            <button class="btn-sm btn-danger" onclick="triggerDeleteConfirm('${dataStrObj}')" style="width:100%;">Xóa</button>
+                        </div>
+                    </td>`;
                 }
 
                 const advHtml = [t['gvhd1'], t['gvhd2']].filter(Boolean).map(a => {
@@ -603,13 +641,13 @@
                         <td align="center" style="color:#94a3b8;font-weight:bold">${actualIndex}</td>
                         <td><b>${t['tac-gia']}</b></td>
                         
-                        <td style="white-space:normal;">
+                        <td>
                             <button type="button" class="thesis-title-link" onclick="openThesisDetailModal('${dataStrObj}')" aria-label="Xem thông tin đề tài: ${t['ten-de-tai']}">${t['ten-de-tai']}</button>
                         </td>
 
                         <td>
                             <div style="font-weight: 600; color: var(--text-dark);">${t['lop']||'—'}</div>
-                            <div style="font-size: 0.85rem; color: var(--primary); margin-top: 2px;">${t['chuyen-nganh']||'—'}</div>
+                            <div style="font-size: 0.85rem; color: var(--primary); margin-top: 4px;">${t['chuyen-nganh']||'—'}</div>
                         </td>
                         <td>${advHtml}</td>
                         ${actionHtml}
@@ -751,8 +789,8 @@
                     }
 
                     historyBody.innerHTML += `<tr>
-                        <td style="color:#64748b; white-space:nowrap;">${timeStr}</td>
-                        <td style="color:${actionColor};font-weight:bold; white-space:nowrap;">${actionText}</td>
+                        <td style="color:#64748b" >${timeStr}</td>
+                        <td style="color:${actionColor};font-weight:bold" >${actionText}</td>
                         <td style="word-break: break-all;">${userStr}</td>
                         <td style="white-space: normal; line-height: 1.5;">${detailsHtml}</td>
                     </tr>`;
@@ -762,6 +800,7 @@
             }
         };
         window.closeHistoryModal = () => document.getElementById('historyModal').classList.add('hidden');
+
 
         // ==========================================
         // XÓA ĐỀ TÀI TRỰC TIẾP QUA TÊN ĐỀ TÀI
