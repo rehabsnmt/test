@@ -34,6 +34,12 @@
         select:focus, input[type="text"]:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); background-color: var(--surface); }
         textarea { resize: none; overflow: hidden; line-height: 1.5; }
 
+        /* Tabs Chuyển hệ */
+        .tabs-header { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 15px; gap: 10px; }
+        .tab-btn { flex: 1; min-height: 44px; padding: 10px; text-align: center; font-size: 0.95rem; font-weight: 600; color: var(--text-body); background: transparent; border: none; cursor: pointer; transition: var(--transition); border-bottom: 3px solid transparent; }
+        .tab-btn:hover { color: var(--text-dark); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
         /* Nút phụ đặc thù */
         button { cursor: pointer; transition: var(--transition); font-family: inherit; }
         .btn-primary { background-color: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: var(--radius-pill); border: none; font-weight: 500; font-size: 0.9rem;}
@@ -49,7 +55,7 @@
         .btn-outline { background-color: white; color: var(--primary); border: 1px solid var(--primary); padding: 0.5rem 1rem; border-radius: var(--radius-pill); font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.9rem;}
         .btn-outline:hover { background-color: var(--primary-light); }
 
-        /* Bảng hiển thị MỚI (Cố định khung, chống kéo ngang, Font nhỏ lại) */
+        /* Bảng hiển thị MỚI */
         .table-container { 
             width: 100%;
             border-radius: var(--radius-md); 
@@ -101,11 +107,11 @@
         .btn-ellipsis { background: transparent; border: none; font-size: 1.1rem; color: var(--text-muted); padding: 4px 8px; border-radius: 4px; }
         .btn-ellipsis:hover { color: var(--primary); background: var(--bg-page); }
 
-        /* Tương tác tên GVHD (Màu xám nhạt đồng bộ) */
+        /* Tương tác tên GVHD */
         .advisor-link { color: var(--text-body); font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block; transition: 0.2s; }
         .advisor-link:hover { color: var(--primary); text-decoration: underline; }
         
-        /* Màu sắc chuyên ngành */
+        /* Nhãn dán Lớp & Chuyên ngành */
         .class-badge {
             background-color: #f1f5f9;
             color: #64748b;
@@ -184,6 +190,8 @@
             .header-buttons { width: 100%; justify-content: center; margin-top: 10px; }
             .thesis-form-modal { margin: 12px; max-height: calc(100vh - 24px); }
             .thesis-form-modal .form-group[style*="grid-column"] { grid-column: auto !important; }
+            .tabs-header { margin-top: 10px; gap: 4px; }
+            .tab-btn { font-size: 0.85rem; }
             .section-box { padding: 12px; }
             .section-box .form-grid { grid-template-columns: 1fr !important; gap: 12px; }
             .toast-container { bottom: 10px; right: 10px; left: 10px; }
@@ -262,6 +270,7 @@
                     </div>
                 </div>
 
+                <!-- GVHD 1 và 2 được gom vào 1 hàng (cùng 1 bên) -->
                 <div class="form-group" style="grid-column: span 2;">
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 200px;">
@@ -288,7 +297,6 @@
         </div>
 
         <div class="section-box" style="padding: 15px; margin-bottom: 15px;">
-            <!-- CẬP NHẬT FORM GRID LÀ 4 CỘT -->
             <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr 1fr;">
                 <div class="form-group">
                     <label>Tìm kiếm</label>
@@ -327,7 +335,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="text-align: center; width: 50px;">STT</th>
+                        <th style="text-align: center; vertical-align: middle; width: 50px;">STT</th>
                         <th style="width: auto;">Thông tin đề tài</th>
                     </tr>
                 </thead>
@@ -344,6 +352,25 @@
             <button id="btnNextPage" class="btn-page" onclick="changePage(1)">Sau</button>
         </div>
     </main>
+
+    <!-- MODAL THÔNG TIN GIẢNG VIÊN -->
+    <div id="advisorModal" class="modal-overlay hidden">
+        <div class="modal-content" style="text-align: center; max-width: 420px;">
+            <button class="modal-close" onclick="closeAdvisorModal()"><i class="fas fa-times"></i></button>
+            <img id="modalAvatar" src="" alt="Avatar GV" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 15px auto; border: 3px solid var(--primary); display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <h2 id="modalName" style="color: var(--text-dark); margin-bottom: 5px; font-size: 1.3rem;">Tên GV</h2>
+            <p id="modalDegree" style="color: var(--text-body); font-size: 0.95rem; margin-bottom: 25px;">Học hàm / Học vị</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button class="btn-primary" onclick="filterThesisByAdvisor()" style="width: 100%; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; box-shadow: 0 4px 6px rgba(2, 132, 199, 0.2);">
+                    <i class="fas fa-filter"></i> Xem các đề tài đang hướng dẫn
+                </button>
+                <button class="btn-outline" onclick="goToAdvisorProfile()" style="width: 100%; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem;">
+                    <i class="fas fa-external-link-alt"></i> Xem hồ sơ & Nghiên cứu khoa học
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL LỊCH SỬ TỪ BẢNG LICH-SU-DE-TAI -->
     <div id="historyModal" class="modal-overlay hidden">
@@ -400,6 +427,7 @@
         let allTheses = [];
         let isAdmin = false;
         let isEditing = false; 
+        let currentTab = 'CN'; 
         let targetDeleteTitle = "";
         let generatedSecurityCode = "";
         let lastEditedTitle = null; 
@@ -700,7 +728,7 @@
                 // BỐ CỤC: Tên đề tài -> Lớp (Nhãn Xám) - Chuyên ngành - Tác giả
                 tableBody.innerHTML += `
                     <tr data-thesis-id="${t['ten-de-tai'].replace(/"/g, '&quot;')}">
-                        <td align="center" style="color:#94a3b8; font-weight:bold; font-size: 1.1rem; vertical-align: top; padding-top: 15px;">${actualIndex}</td>
+                        <td style="text-align: center; vertical-align: middle; color:#94a3b8; font-weight:bold;">${actualIndex}</td>
                         <td style="padding: 12px 12px; width: 100%; position: relative;">
                             ${actionHtml}
                             
@@ -749,6 +777,49 @@
             if (currentPage > totalPages) currentPage = totalPages;
             renderTable();
         };
+
+        // ==========================================
+        // MODAL GIẢNG VIÊN THÔNG MINH
+        // ==========================================
+        window.openAdvisorModal = (enN) => {
+            const n = decodeURIComponent(enN);
+            const userData = usersMap[n];
+            
+            if(!userData) {
+                showToast("Không tìm thấy hồ sơ chi tiết của giảng viên này.", "warning");
+                return;
+            }
+
+            currentSelectedAdvisor = n;
+            currentSelectedAdvisorId = userData.id || '';
+
+            const avatarImg = document.getElementById('modalAvatar');
+            avatarImg.src = userData.avatar || `images/${n}.jpg`;
+            avatarImg.onerror = function() { this.src = 'images/logo_Bộ môn.png'; };
+
+            document.getElementById('modalName').innerText = n;
+            document.getElementById('modalDegree').innerText = userData.degree || 'Giảng viên';
+            
+            document.getElementById('advisorModal').classList.remove('hidden');
+        };
+
+        window.filterThesisByAdvisor = () => {
+            document.getElementById('searchInput').value = currentSelectedAdvisor;
+            currentPage = 1;
+            renderTable();
+            closeAdvisorModal();
+            showToast(`Đã lọc đề tài của ${currentSelectedAdvisor}`, "success");
+        };
+
+        window.goToAdvisorProfile = () => {
+            if (currentSelectedAdvisorId) {
+                window.open(`thong-tin-giang-vien.html?id=${currentSelectedAdvisorId}&tab=research`, '_blank');
+            } else {
+                showToast("Giảng viên này chưa có trang hồ sơ chuyên sâu trên hệ thống!", "warning");
+            }
+        };
+        
+        window.closeAdvisorModal = () => document.getElementById('advisorModal').classList.add('hidden');
 
         // ==========================================
         // LỊCH SỬ HOẠT ĐỘNG (XEM TỪ BẢNG LICH-SU-DE-TAI)
