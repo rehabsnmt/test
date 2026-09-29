@@ -68,8 +68,7 @@
                     <a href="./gioi-thieu.html" class="nav-item">Giới thiệu</a>
                     <a href="./tuyen-sinh.html" class="nav-item">Tuyển sinh</a>
                     <a href="./de-tai.html" class="nav-item">Đề tài</a>
-                    <a href="./tai-nguyen.html" class="nav-item">Tài nguyên</a>
-                    <a href="./thong-bao.html" class="nav-item">Thông báo</a>
+                    
                     
                     <!-- Nhóm nút Xác thực (Auth) -->
                     <div style="display: flex; gap: 10px; align-items: center;">
@@ -139,8 +138,8 @@
        5. QUẢN LÝ TRUY CẬP 
        ===================================================== */
     const PROTECTED_PAGES = [
-        "dashboard.html", "quan-ly-giang-vien.html", "quan-ly-sinh-vien.html",
-        "quan-ly-hoc-phan.html", "phan-cong.html", "thoi-khoa-bieu.html", "quan-ly-diem.html"
+        "chi-tiet-ke-hoach.html", "dashboard.html", "de-tai.html", "de-xuat.html",
+        "phan-cong.html", "quan-ly-cong-viec.html", "thoi-khoa-bieu.html"
     ];
 
     function getCurrentPage() {
