@@ -7,6 +7,7 @@
     
     <link rel="icon" href="images/logo_Bộ môn.png" type="image/png">
     
+    <!-- Link CSS gốc để đồng bộ giao diện -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -74,7 +75,7 @@
             width: 100%; 
             border-collapse: collapse; 
             font-size: 0.95rem; 
-            table-layout: fixed; /* Bắt buộc để không tràn bảng ngang */
+            table-layout: fixed; 
         }
         th, td { 
             padding: 15px 12px; 
@@ -100,7 +101,7 @@
         .advisor-link { color: var(--primary); font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
         .advisor-link:hover { color: var(--primary-hover); text-decoration: underline; }
         
-        /* CHỈ Tên đề tài được phép ngắt dòng */
+        /* Tên đề tài format */
         .thesis-title-link { 
             cursor: pointer; 
             color: var(--primary); 
@@ -116,22 +117,23 @@
             margin-bottom: 8px;
             font-size: 1.05rem;
             width: 100%;
-            white-space: normal !important; /* Ép buộc cho phép xuống dòng */
+            white-space: normal !important; 
             word-wrap: break-word; 
             overflow-wrap: break-word;
         }
         .thesis-title-link:hover, .thesis-title-link:focus-visible { color: var(--primary-hover); text-decoration: underline; outline: none; }
 
-        /* Các dòng metadata Tác giả, GVHD KHÔNG được xuống dòng, tự cắt mượt mà bằng dấu 3 chấm */
+        /* Dòng thông tin tác giả, lớp, chuyên ngành, GVHD - Được phép ngắt dòng thoải mái */
         .metadata-line {
             font-size: 0.9rem; 
             color: var(--text-dark); 
             margin-bottom: 6px; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
+            white-space: normal; 
             width: 100%;
             display: block;
+            word-wrap: break-word; 
+            overflow-wrap: break-word;
+            line-height: 1.5;
         }
 
         /* =========================================
@@ -163,7 +165,7 @@
             .toast-container { bottom: 10px; right: 10px; left: 10px; }
             .toast { min-width: unset; width: 100%; box-sizing: border-box; }
 
-            /* Điều chỉnh lại font size trên điện thoại để các cột vẫn hiển thị đầy đủ */
+            /* Điều chỉnh lại font size trên điện thoại */
             table { font-size: 0.85rem; }
             th, td { padding: 12px 8px; }
             th:first-child, td:first-child { width: 40px !important; padding: 12px 4px; }
@@ -230,7 +232,7 @@
                     </div>
                 </div>
 
-                <!-- GVHD 1 và 2 được gom vào 1 hàng -->
+                <!-- GVHD 1 và 2 được gom vào 1 hàng (cùng 1 bên) -->
                 <div class="form-group" style="grid-column: span 2;">
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 200px;">
@@ -423,6 +425,7 @@
         let currentPage = 1;
         const itemsPerPage = 30;
         let totalPages = 1;
+        let currentUserEmail = "";
         
         let usersMap = {}; 
         let currentSelectedAdvisor = "";
@@ -478,6 +481,23 @@
         document.getElementById('addLevel').addEventListener('change', (e) => populateYears(e.target.value));
         populateYears('CN');
 
+        // Hàm cập nhật danh sách gợi ý GVHD
+        function updateAdvisorDatalist() {
+            // Lấy tất cả GV từ userMap (giảng viên cơ hữu)
+            const uniqueAdvisors = new Set(Object.keys(usersMap));
+            
+            // Lấy thêm tất cả các tên GVHD1 và GVHD2 đang có trong de-tai
+            allTheses.forEach(t => {
+                if (t['gvhd1']) uniqueAdvisors.add(t['gvhd1'].trim());
+                if (t['gvhd2']) uniqueAdvisors.add(t['gvhd2'].trim());
+            });
+
+            advisorDatalist.innerHTML = '';
+            Array.from(uniqueAdvisors).sort().forEach(name => {
+                if (name) advisorDatalist.innerHTML += `<option value="${name}">`;
+            });
+        }
+
         // KHỞI TẠO ỨNG DỤNG BẰNG SUPABASE
         document.addEventListener("DOMContentLoaded", () => {
             let attempts = 0;
@@ -510,10 +530,9 @@
             try {
                 const { data, error } = await window.supabaseClient.auth.getUser();
                 
-                // Nạp tất cả giảng viên làm danh sách gợi ý bất kể có đăng nhập hay không
+                // Nạp thông tin giảng viên cơ hữu từ bảng giang-vien
                 const { data: usersData } = await window.supabaseClient.from("giang-vien").select("*");
                 if (usersData) {
-                    advisorDatalist.innerHTML = '';
                     usersData.forEach(d => {
                         if (d['ho-ten']) {
                             const name = d['ho-ten'].trim();
@@ -522,7 +541,6 @@
                                 avatar: d.avatar || '', 
                                 degree: d['hoc-ham-hoc-vi'] || 'Giảng viên' 
                             };
-                            advisorDatalist.innerHTML += `<option value="${name}">`;
                         }
                     });
                 }
@@ -553,11 +571,21 @@
                 const { data, error } = await window.supabaseClient.from("de-tai").select("*");
                 if (error) throw error;
                 allTheses = data || [];
-                updateDynamicFilters(); 
+                updateDatalistAndFilters();
                 renderTable();
             } catch(e) {
                 if(!silent) tableBody.innerHTML = `<tr><td colspan="3" align="center" style="color:red;">Lỗi: ${e.message}</td></tr>`;
             }
+        }
+
+        function updateDatalistAndFilters() {
+            updateAdvisorDatalist();
+            
+            const currClass = filterClass.value;
+            const tabClasses = [...new Set(allTheses.map(t => String(t['lop'] || '').trim()).filter(c => c.startsWith(currentTab)))].sort();
+            filterClass.innerHTML = '<option value="Tất cả">Tất cả lớp</option>';
+            tabClasses.forEach(c => filterClass.innerHTML += `<option value="${c}">${c}</option>`);
+            filterClass.value = tabClasses.includes(currClass) ? currClass : 'Tất cả';
         }
 
         function updateDynamicFilters() {
@@ -649,30 +677,38 @@
                     </td>`;
                 }
 
-                const advHtml = [t['gvhd1'], t['gvhd2']].filter(Boolean).map(a => {
-                    let n = a.trim();
-                    return usersMap[n] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(n).replace(/'/g, "%27")}')">${n}</span>` : `<span style="font-weight:600;">${n}</span>`;
-                }).join(' <span style="margin:0 5px;color:#cbd5e1;">/</span> ');
+                // Xử lý html GVHD riêng biệt cho 2 dòng
+                const gv1 = t['gvhd1'] ? t['gvhd1'].trim() : '';
+                const adv1Html = gv1 ? (usersMap[gv1] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv1).replace(/'/g, "%27")}')">${gv1}</span>` : `<span style="font-weight:600;">${gv1}</span>`) : '—';
 
-                // TRÌNH BÀY GỘP DỌC HIỆN ĐẠI (Tác giả, Lớp được bảo vệ ellipsis, Tên đề tài ngắt dòng thoải mái)
+                const gv2 = t['gvhd2'] ? t['gvhd2'].trim() : '';
+                const adv2Html = gv2 ? (usersMap[gv2] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv2).replace(/'/g, "%27")}')">${gv2}</span>` : `<span style="font-weight:600;">${gv2}</span>`) : '';
+
+                let gvhdDisplay = `<div><b>GVHD 1:</b> ${adv1Html}</div>`;
+                if (gv2) {
+                    gvhdDisplay += `<div style="margin-top:2px;"><b>GVHD 2:</b> ${adv2Html}</div>`;
+                }
+
                 tableBody.innerHTML += `
                     <tr data-thesis-id="${rowId}">
                         <td align="center" style="color:#94a3b8; font-weight:bold; font-size: 1.1rem; vertical-align: top; padding-top: 18px;">${actualIndex}</td>
-                        <td style="padding: 16px 12px; max-width: 0; width: 100%; overflow: hidden;">
+                        <td style="padding: 16px 12px; width: 100%;">
                             <button type="button" class="thesis-title-link" onclick="openThesisDetailModal('${dataStrObj}')" aria-label="Xem thông tin đề tài: ${t['ten-de-tai']}">
                                 ${t['ten-de-tai']}
                             </button>
                             
                             <div class="metadata-line">
-                                <b>${t['tac-gia']}</b> 
-                                <span style="color: var(--border); font-size: 0.8rem; margin: 0 4px;">•</span> 
-                                <span style="font-weight: 700; color: var(--accent);">${t['lop']||'—'}</span> 
-                                <span style="color: var(--border); font-size: 0.8rem; margin: 0 4px;">•</span> 
+                                <b>${t['tac-gia']}</b>
+                            </div>
+                            
+                            <div class="metadata-line">
+                                <span style="font-weight: 700; color: var(--accent);">${t['lop']||'—'}</span>
+                                <span style="color: var(--border); font-size: 0.8rem; margin: 0 4px;">-</span>
                                 <span>${t['chuyen-nganh']||'—'}</span>
                             </div>
                             
-                            <div class="metadata-line" style="color: var(--text-body);">
-                                <i class="fas fa-chalkboard-teacher" style="color: var(--text-muted); margin-right: 6px;"></i> GVHD:&nbsp; ${advHtml}
+                            <div class="metadata-line" style="color: var(--text-body); margin-bottom: 0;">
+                                ${gvhdDisplay}
                             </div>
                         </td>
                         ${actionHtml}
@@ -710,12 +746,19 @@
             document.getElementById('detailClass').innerText = t['lop'] || '—';
             document.getElementById('detailMajor').innerText = t['chuyen-nganh'] || '—';
             
-            const advHtml = [t['gvhd1'], t['gvhd2']].filter(Boolean).map(a => {
-                let n = a.trim();
-                return usersMap[n] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(n).replace(/'/g, "%27")}')">${n}</span>` : n;
-            }).join('<br>');
+            let detailGvHtml = '';
+            if (t['gvhd1']) {
+                const gv1 = t['gvhd1'].trim();
+                const lnk = usersMap[gv1] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv1).replace(/'/g, "%27")}')">${gv1}</span>` : gv1;
+                detailGvHtml += `<div><b>GVHD 1:</b> ${lnk}</div>`;
+            }
+            if (t['gvhd2']) {
+                const gv2 = t['gvhd2'].trim();
+                const lnk = usersMap[gv2] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv2).replace(/'/g, "%27")}')">${gv2}</span>` : gv2;
+                detailGvHtml += `<div style="margin-top:4px;"><b>GVHD 2:</b> ${lnk}</div>`;
+            }
             
-            document.getElementById('detailAdvisor').innerHTML = advHtml || 'Chưa rõ';
+            document.getElementById('detailAdvisor').innerHTML = detailGvHtml || 'Chưa rõ';
             document.getElementById('thesisDetailModal').classList.remove('hidden');
         };
 
@@ -768,7 +811,7 @@
         window.closeAdvisorModal = () => document.getElementById('advisorModal').classList.add('hidden');
 
         // ==========================================
-        // LỊCH SỬ HOẠT ĐỘNG (XEM TỪ BẢNG LICH-SU-DE-TAI)
+        // LỊCH SỬ HOẠT ĐỘNG
         // ==========================================
         window.openHistoryModal = async () => {
             document.getElementById('historyModal').classList.remove('hidden');
@@ -828,7 +871,7 @@
 
 
         // ==========================================
-        // XÓA ĐỀ TÀI TRỰC TIẾP QUANG TÊN ĐỀ TÀI
+        // XÓA ĐỀ TÀI TRỰC TIẾP QUA TÊN ĐỀ TÀI
         // ==========================================
         window.triggerDeleteConfirm = (enD) => {
             const t = JSON.parse(decodeURIComponent(enD));
@@ -852,7 +895,6 @@
             if(!targetDeleteTitle) return;
             
             try {
-                // Xóa trực tiếp theo tên đề tài
                 const { error } = await window.supabaseClient.from('de-tai').delete().eq('ten-de-tai', targetDeleteTitle);
                 if (error) throw error;
 
@@ -889,7 +931,6 @@
             
             try {
                 if(isEditing && originalEditData) {
-                    // Update trực tiếp theo tên đề tài gốc
                     const { error } = await window.supabaseClient.from("de-tai").update(obj).eq('ten-de-tai', originalEditData['ten-de-tai']);
                     if (error) throw error;
                     
@@ -925,7 +966,7 @@
             
             document.getElementById('editOriginalTitle').value = t['ten-de-tai'] || '';
             
-            // Đổ dữ liệu vào các thẻ
+            // Đổ dữ liệu vào Form
             const titleEl = document.getElementById('addTitle');
             titleEl.value = t['ten-de-tai']||'';
             document.getElementById('addAuthor').value = t['tac-gia']||'';
@@ -933,7 +974,6 @@
             document.getElementById('addGvhd2').value = t['gvhd2'] || '';
             document.getElementById('addMajor').value = t['chuyen-nganh']||'Vật lý trị liệu';
             
-            // Kích hoạt Textarea tự động co giãn chiều cao cho vừa text hiện có
             setTimeout(() => {
                 titleEl.style.height = 'auto';
                 titleEl.style.height = titleEl.scrollHeight + 'px';
