@@ -34,12 +34,6 @@
         select:focus, input[type="text"]:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); background-color: var(--surface); }
         textarea { resize: none; overflow: hidden; line-height: 1.5; }
 
-        /* Tabs Chuyển hệ */
-        .tabs-header { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 15px; gap: 10px; }
-        .tab-btn { flex: 1; min-height: 44px; padding: 10px; text-align: center; font-size: 0.95rem; font-weight: 600; color: var(--text-body); background: transparent; border: none; cursor: pointer; transition: var(--transition); border-bottom: 3px solid transparent; }
-        .tab-btn:hover { color: var(--text-dark); }
-        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-
         /* Nút phụ đặc thù */
         button { cursor: pointer; transition: var(--transition); font-family: inherit; }
         .btn-primary { background-color: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: var(--radius-pill); border: none; font-weight: 500; font-size: 0.9rem;}
@@ -55,7 +49,7 @@
         .btn-outline { background-color: white; color: var(--primary); border: 1px solid var(--primary); padding: 0.5rem 1rem; border-radius: var(--radius-pill); font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.9rem;}
         .btn-outline:hover { background-color: var(--primary-light); }
 
-        /* Bảng hiển thị MỚI */
+        /* Bảng hiển thị MỚI (Cố định khung, chống kéo ngang, Font nhỏ lại) */
         .table-container { 
             width: 100%;
             border-radius: var(--radius-md); 
@@ -107,11 +101,11 @@
         .btn-ellipsis { background: transparent; border: none; font-size: 1.1rem; color: var(--text-muted); padding: 4px 8px; border-radius: 4px; }
         .btn-ellipsis:hover { color: var(--primary); background: var(--bg-page); }
 
-        /* Tương tác tên GVHD */
+        /* Tương tác tên GVHD (Màu xám nhạt đồng bộ) */
         .advisor-link { color: var(--text-body); font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block; transition: 0.2s; }
         .advisor-link:hover { color: var(--primary); text-decoration: underline; }
         
-        /* Nhãn dán Lớp & Chuyên ngành */
+        /* Màu sắc chuyên ngành */
         .class-badge {
             background-color: #f1f5f9;
             color: #64748b;
@@ -190,8 +184,6 @@
             .header-buttons { width: 100%; justify-content: center; margin-top: 10px; }
             .thesis-form-modal { margin: 12px; max-height: calc(100vh - 24px); }
             .thesis-form-modal .form-group[style*="grid-column"] { grid-column: auto !important; }
-            .tabs-header { margin-top: 10px; gap: 4px; }
-            .tab-btn { font-size: 0.85rem; }
             .section-box { padding: 12px; }
             .section-box .form-grid { grid-template-columns: 1fr !important; gap: 12px; }
             .toast-container { bottom: 10px; right: 10px; left: 10px; }
@@ -270,7 +262,6 @@
                     </div>
                 </div>
 
-                <!-- GVHD 1 và 2 được gom vào 1 hàng (cùng 1 bên) -->
                 <div class="form-group" style="grid-column: span 2;">
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 200px;">
@@ -296,14 +287,9 @@
         </div>
         </div>
 
-        <!-- Giao diện hiển thị chung -->
-        <div class="tabs-header">
-            <button class="tab-btn active" data-tab="CN">Cử nhân (CN)</button>
-            <button class="tab-btn" data-tab="THS">Thạc sĩ (THS)</button>
-        </div>
-
         <div class="section-box" style="padding: 15px; margin-bottom: 15px;">
-            <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr;">
+            <!-- CẬP NHẬT FORM GRID LÀ 4 CỘT -->
+            <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr 1fr;">
                 <div class="form-group">
                     <label>Tìm kiếm</label>
                     <input type="text" id="searchInput" placeholder="Tìm theo tác giả, đề tài, GV...">
@@ -315,6 +301,15 @@
                         <option value="title_desc">Tên đề tài (Z → A)</option>
                         <option value="author_asc">Tác giả (A → Z)</option>
                         <option value="author_desc">Tác giả (Z → A)</option>
+                    </select>
+                </div>
+                <!-- BỘ LỌC HỆ ĐÀO TẠO MỚI -->
+                <div class="form-group">
+                    <label>Hệ đào tạo</label>
+                    <select id="filterLevel">
+                        <option value="Tất cả">Tất cả hệ</option>
+                        <option value="CN">Cử nhân (CN)</option>
+                        <option value="THS">Thạc sĩ (THS)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -349,25 +344,6 @@
             <button id="btnNextPage" class="btn-page" onclick="changePage(1)">Sau</button>
         </div>
     </main>
-
-    <!-- MODAL THÔNG TIN GIẢNG VIÊN -->
-    <div id="advisorModal" class="modal-overlay hidden">
-        <div class="modal-content" style="text-align: center; max-width: 420px;">
-            <button class="modal-close" onclick="closeAdvisorModal()"><i class="fas fa-times"></i></button>
-            <img id="modalAvatar" src="" alt="Avatar GV" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 15px auto; border: 3px solid var(--primary); display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-            <h2 id="modalName" style="color: var(--text-dark); margin-bottom: 5px; font-size: 1.3rem;">Tên GV</h2>
-            <p id="modalDegree" style="color: var(--text-body); font-size: 0.95rem; margin-bottom: 25px;">Học hàm / Học vị</p>
-            
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <button class="btn-primary" onclick="filterThesisByAdvisor()" style="width: 100%; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; box-shadow: 0 4px 6px rgba(2, 132, 199, 0.2);">
-                    <i class="fas fa-filter"></i> Xem các đề tài đang hướng dẫn
-                </button>
-                <button class="btn-outline" onclick="goToAdvisorProfile()" style="width: 100%; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem;">
-                    <i class="fas fa-external-link-alt"></i> Xem hồ sơ & Nghiên cứu khoa học
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- MODAL LỊCH SỬ TỪ BẢNG LICH-SU-DE-TAI -->
     <div id="historyModal" class="modal-overlay hidden">
@@ -424,7 +400,6 @@
         let allTheses = [];
         let isAdmin = false;
         let isEditing = false; 
-        let currentTab = 'CN'; 
         let targetDeleteTitle = "";
         let generatedSecurityCode = "";
         let lastEditedTitle = null; 
@@ -441,6 +416,7 @@
         const tableBody = document.getElementById('dataTableBody');
         const thesisFormModal = document.getElementById('thesisFormModal');
         const btnOpenAdd = document.getElementById('btnOpenAdd');
+        const filterLevel = document.getElementById('filterLevel');
         const filterClass = document.getElementById('filterClass'); 
         const sortSelect = document.getElementById('sortSelect'); 
         const advisorDatalist = document.getElementById('advisorList');
@@ -476,18 +452,6 @@
             }
         });
 
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentTab = btn.getAttribute('data-tab'); 
-                filterClass.value = 'Tất cả';
-                currentPage = 1; 
-                updateDynamicFilters(); 
-                renderTable();
-            });
-        });
-
         function populateYears(levelType) {
             const addYear = document.getElementById('addYear');
             addYear.innerHTML = '';
@@ -507,12 +471,10 @@
             const uniqueAdvisors = new Set();
             const validTitleRegex = /(TS|ThS|PGS|GS|BS)\./i;
             
-            // Lấy từ UsersMap (giảng viên hệ thống)
             Object.keys(usersMap).forEach(name => {
                 if (validTitleRegex.test(name)) uniqueAdvisors.add(name.trim());
             });
 
-            // Lấy từ danh sách đề tài đang có
             allTheses.forEach(t => {
                 if (t['gvhd1'] && validTitleRegex.test(t['gvhd1'])) uniqueAdvisors.add(t['gvhd1'].trim());
                 if (t['gvhd2'] && validTitleRegex.test(t['gvhd2'])) uniqueAdvisors.add(t['gvhd2'].trim());
@@ -543,7 +505,6 @@
             await checkAuth();
             await loadData();
             
-            // Lắng nghe realtime trên bảng de-tai
             window.supabaseClient
                 .channel('de-tai-changes')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'de-tai' }, payload => {
@@ -556,7 +517,6 @@
             try {
                 const { data, error } = await window.supabaseClient.auth.getUser();
                 
-                // Nạp thông tin giảng viên từ bảng giang-vien
                 const { data: usersData } = await window.supabaseClient.from("giang-vien").select("*");
                 if (usersData) {
                     usersData.forEach(d => {
@@ -605,9 +565,18 @@
 
         function updateDatalistAndFilters() {
             updateAdvisorDatalist();
-            
+            updateDynamicFilters();
+        }
+
+        function updateDynamicFilters() {
+            const levelVal = filterLevel.value;
             const currClass = filterClass.value;
-            const tabClasses = [...new Set(allTheses.map(t => String(t['lop'] || '').trim()).filter(c => c.startsWith(currentTab)))].sort();
+            
+            const tabClasses = [...new Set(allTheses.map(t => String(t['lop'] || '').trim()).filter(c => {
+                if(levelVal === 'Tất cả') return true;
+                return c.startsWith(levelVal);
+            }))].sort();
+            
             filterClass.innerHTML = '<option value="Tất cả">Tất cả lớp</option>';
             tabClasses.forEach(c => filterClass.innerHTML += `<option value="${c}">${c}</option>`);
             filterClass.value = tabClasses.includes(currClass) ? currClass : 'Tất cả';
@@ -615,19 +584,24 @@
 
         function renderTable() {
             const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const levelVal = filterLevel.value;
             const filterCls = filterClass.value; 
             const sortType = sortSelect.value; 
 
             let filtered = allTheses.filter(t => {
                 const classStr = String(t['lop'] || '').trim();
-                if (!classStr.startsWith(currentTab)) return false;
                 
+                let matchLevel = true;
+                if(levelVal !== 'Tất cả') {
+                    matchLevel = classStr.startsWith(levelVal);
+                }
+
                 const combinedAdvisor = [t['gvhd1'], t['gvhd2']].filter(Boolean).join(' / ');
                 const txtMatch = String(t['ten-de-tai']||'').toLowerCase().includes(searchText) 
                               || String(t['tac-gia']||'').toLowerCase().includes(searchText) 
                               || combinedAdvisor.toLowerCase().includes(searchText);
                               
-                return txtMatch && (filterCls === 'Tất cả' || classStr === filterCls);
+                return txtMatch && matchLevel && (filterCls === 'Tất cả' || classStr === filterCls);
             });
 
             filtered.sort((a, b) => {
@@ -638,22 +612,28 @@
                 return String(a['tac-gia']||'').localeCompare(String(b['tac-gia']||''), 'vi');
             });
 
-            document.getElementById('totalCountText').innerText = allTheses.filter(t => String(t['lop'] || '').startsWith(currentTab)).length;
+            document.getElementById('totalCountText').innerText = allTheses.filter(t => {
+                const classStr = String(t['lop'] || '').trim();
+                return levelVal === 'Tất cả' ? true : classStr.startsWith(levelVal);
+            }).length;
+            
             document.getElementById('filteredCountText').innerText = filtered.length;
 
             const editedTitleForReturn = lastEditedTitle;
             if (editedTitleForReturn) {
                 const editedThesis = allTheses.find(t => t['ten-de-tai'] === editedTitleForReturn);
-                const editedTab = String(editedThesis?.['lop'] || '').startsWith('THS') ? 'THS' : 'CN';
-                if (editedThesis && currentTab !== editedTab) {
-                    currentTab = editedTab;
-                    document.querySelectorAll('.tab-btn').forEach(button => {
-                        button.classList.toggle('active', button.getAttribute('data-tab') === editedTab);
-                    });
-                    filterClass.value = 'Tất cả';
-                    updateDynamicFilters();
-                    return renderTable();
+                if (editedThesis) {
+                    const editedClass = String(editedThesis['lop'] || '').trim();
+                    const editedLevel = editedClass.startsWith('THS') ? 'THS' : 'CN';
+                    
+                    if (filterLevel.value !== 'Tất cả' && filterLevel.value !== editedLevel) {
+                        filterLevel.value = editedLevel;
+                        filterClass.value = 'Tất cả';
+                        updateDynamicFilters();
+                        return renderTable();
+                    }
                 }
+                
                 const editedIndex = filtered.findIndex(t => t['ten-de-tai'] === editedTitleForReturn);
                 if (editedIndex !== -1) {
                     currentPage = Math.floor(editedIndex / itemsPerPage) + 1;
@@ -759,6 +739,7 @@
         }
 
         document.getElementById('searchInput').addEventListener('input', () => { currentPage = 1; renderTable(); });
+        filterLevel.addEventListener('change', () => { filterClass.value = 'Tất cả'; currentPage = 1; updateDynamicFilters(); renderTable(); });
         filterClass.addEventListener('change', () => { currentPage = 1; renderTable(); });
         sortSelect.addEventListener('change', () => { currentPage = 1; renderTable(); });
 
@@ -768,49 +749,6 @@
             if (currentPage > totalPages) currentPage = totalPages;
             renderTable();
         };
-
-        // ==========================================
-        // MODAL GIẢNG VIÊN THÔNG MINH
-        // ==========================================
-        window.openAdvisorModal = (enN) => {
-            const n = decodeURIComponent(enN);
-            const userData = usersMap[n];
-            
-            if(!userData) {
-                showToast("Không tìm thấy hồ sơ chi tiết của giảng viên này.", "warning");
-                return;
-            }
-
-            currentSelectedAdvisor = n;
-            currentSelectedAdvisorId = userData.id || '';
-
-            const avatarImg = document.getElementById('modalAvatar');
-            avatarImg.src = userData.avatar || `images/${n}.jpg`;
-            avatarImg.onerror = function() { this.src = 'images/logo_Bộ môn.png'; };
-
-            document.getElementById('modalName').innerText = n;
-            document.getElementById('modalDegree').innerText = userData.degree || 'Giảng viên';
-            
-            document.getElementById('advisorModal').classList.remove('hidden');
-        };
-
-        window.filterThesisByAdvisor = () => {
-            document.getElementById('searchInput').value = currentSelectedAdvisor;
-            currentPage = 1;
-            renderTable();
-            closeAdvisorModal();
-            showToast(`Đã lọc đề tài của ${currentSelectedAdvisor}`, "success");
-        };
-
-        window.goToAdvisorProfile = () => {
-            if (currentSelectedAdvisorId) {
-                window.open(`thong-tin-giang-vien.html?id=${currentSelectedAdvisorId}&tab=research`, '_blank');
-            } else {
-                showToast("Giảng viên này chưa có trang hồ sơ chuyên sâu trên hệ thống!", "warning");
-            }
-        };
-        
-        window.closeAdvisorModal = () => document.getElementById('advisorModal').classList.add('hidden');
 
         // ==========================================
         // LỊCH SỬ HOẠT ĐỘNG (XEM TỪ BẢNG LICH-SU-DE-TAI)
@@ -993,12 +931,9 @@
             
             if (t['lop']) {
                 const targetLvl = String(t['lop']).startsWith('THS') ? 'THS' : 'CN';
-                if (currentTab !== targetLvl) {
-                    document.querySelectorAll('.tab-btn').forEach(b => {
-                        b.classList.remove('active');
-                        if(b.getAttribute('data-tab') === targetLvl) b.classList.add('active');
-                    });
-                    currentTab = targetLvl;
+                const filterLevelEl = document.getElementById('filterLevel');
+                if (filterLevelEl.value !== 'Tất cả' && filterLevelEl.value !== targetLvl) {
+                    filterLevelEl.value = targetLvl;
                     filterClass.value = 'Tất cả';
                     currentPage = 1;
                     updateDynamicFilters();
