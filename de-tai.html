@@ -155,7 +155,9 @@
                 <i class="fas fa-edit"></i> <span id="formTitle">Thêm đề tài mới</span>
                 <span id="editModeBadge" class="hidden" style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 10px;">Đang sửa</span>
             </h3>
-            <input type="hidden" id="editId">
+            <!-- KHÔNG dùng ID nội bộ nữa, dùng trực tiếp giá trị Tên đề tài làm mốc -->
+            <input type="hidden" id="editOriginalTitle"> 
+            
             <div class="form-grid">
                 <div class="form-group" style="grid-column: span 2;">
                     <label>Tên đề tài *</label>
@@ -307,7 +309,7 @@
         </div>
     </div>
 
-    <!-- MODAL LỊCH SỬ -->
+    <!-- MODAL LỊCH SỬ TỰ ĐỘNG TỪ LICH-SU-DE-TAI -->
     <div id="historyModal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 900px;">
             <button class="modal-close" onclick="closeHistoryModal()"><i class="fas fa-times"></i></button>
@@ -319,7 +321,7 @@
                             <th style="background: var(--bg-page); padding: 10px; width: 140px;" class="td-nowrap">Thời gian</th>
                             <th style="background: var(--bg-page); padding: 10px; width: 90px;" class="td-nowrap">Thao tác</th>
                             <th style="background: var(--bg-page); padding: 10px; width: 150px;">Tài khoản</th>
-                            <th style="background: var(--bg-page); padding: 10px;">Chi tiết cập nhật</th>
+                            <th style="background: var(--bg-page); padding: 10px;">Chi tiết thay đổi</th>
                         </tr>
                     </thead>
                     <tbody id="historyTableBody"></tbody>
@@ -422,17 +424,6 @@
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 400); 
             }, 3000);
-        }
-
-        async function logAction(actionType, detailString) {
-            if (!currentUserEmail) return;
-            try {
-                await window.supabaseClient.from('nhat-ky-hoat-dong').insert([{ 
-                    action: actionType, 
-                    user: currentUserEmail, 
-                    details: detailString 
-                }]);
-            } catch (error) { console.warn("Lỗi ghi log:", error); }
         }
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -576,7 +567,7 @@
 
             const editedIdForReturn = lastEditedId;
             if (editedIdForReturn) {
-                const editedThesis = allTheses.find(t => t.id === editedIdForReturn || t['ten-de-tai'] === editedIdForReturn);
+                const editedThesis = allTheses.find(t => t['ten-de-tai'] === editedIdForReturn);
                 const editedTab = String(editedThesis?.['lop'] || '').startsWith('THS') ? 'THS' : 'CN';
                 if (editedThesis && currentTab !== editedTab) {
                     currentTab = editedTab;
@@ -587,7 +578,7 @@
                     updateDynamicFilters();
                     return renderTable();
                 }
-                const editedIndex = filtered.findIndex(t => t.id === editedIdForReturn || t['ten-de-tai'] === editedIdForReturn);
+                const editedIndex = filtered.findIndex(t => t['ten-de-tai'] === editedIdForReturn);
                 if (editedIndex !== -1) {
                     currentPage = Math.floor(editedIndex / itemsPerPage) + 1;
                     lastEditedId = null;
@@ -616,7 +607,7 @@
                 let actionHtml = '';
                 
                 const dataStrObj = encodeURIComponent(JSON.stringify(t)).replace(/'/g, "%27");
-                const rowId = t.id || String(t['ten-de-tai']||'').replace(/"/g, '&quot;');
+                const rowId = String(t['ten-de-tai']||'').replace(/"/g, '&quot;');
 
                 if (isAdmin) {
                     actionHtml = `<td class="td-action td-nowrap" align="center"><button class="btn-sm btn-warning" onclick="triggerEdit('${dataStrObj}')">Sửa</button> <button class="btn-sm btn-danger" onclick="triggerDeleteConfirm('${dataStrObj}')">Xóa</button></td>`;
@@ -647,7 +638,8 @@
 
             if (editedIdForReturn) {
                 requestAnimationFrame(() => {
-                    const editedRow = Array.from(tableBody.rows).find(row => row.dataset.thesisId === editedIdForReturn);
+                    const cleanEditedIdForReturn = editedIdForReturn.replace(/"/g, '&quot;');
+                    const editedRow = Array.from(tableBody.rows).find(row => row.dataset.thesisId === cleanEditedIdForReturn);
                     if (!editedRow) return;
                     editedRow.classList.add('recently-updated');
                     editedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -689,7 +681,7 @@
         };
 
         // ==========================================
-        // CẬP NHẬT MODAL GIẢNG VIÊN THÔNG MINH
+        // MODAL GIẢNG VIÊN THÔNG MINH
         // ==========================================
         window.openAdvisorModal = (enN) => {
             const n = decodeURIComponent(enN);
@@ -738,37 +730,67 @@
         window.closeAdvisorModal = () => document.getElementById('advisorModal').classList.add('hidden');
 
         // ==========================================
-        // LỊCH SỬ HOẠT ĐỘNG
+        // LỊCH SỬ HOẠT ĐỘNG (XEM TỪ BẢNG LICH-SU-DE-TAI)
         // ==========================================
         window.openHistoryModal = async () => {
             document.getElementById('historyModal').classList.remove('hidden');
             const historyBody = document.getElementById('historyTableBody');
-            historyBody.innerHTML = '<tr><td colspan="4" align="center"><i class="fas fa-spinner fa-spin"></i> Đang tải...</td></tr>';
+            historyBody.innerHTML = '<tr><td colspan="4" align="center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu từ máy chủ...</td></tr>';
             
             try {
-                const { data, error } = await window.supabaseClient.from('nhat-ky-hoat-dong').select('*').order('created_at', { ascending: false }).limit(50);
+                const { data, error } = await window.supabaseClient.from('lich-su-de-tai').select('*').order('thuc-hien-luc', { ascending: false }).limit(50);
                 if (error) throw error;
                 
-                historyBody.innerHTML = data.length === 0 ? '<tr><td colspan="4" align="center">Chưa có</td></tr>' : '';
+                historyBody.innerHTML = data.length === 0 ? '<tr><td colspan="4" align="center">Chưa có bản ghi lịch sử nào</td></tr>' : '';
+                
                 data.forEach(log => {
-                    const c = log.action==='THÊM' ? '#16a34a' : log.action==='SỬA' ? '#d97706' : log.action==='XÓA' ? '#dc2626' : '#2563eb';
-                    const timeStr = new Date(log.created_at).toLocaleString('vi-VN');
+                    let actionText = '';
+                    let actionColor = '';
+                    
+                    if (log['hanh-dong'] === 'INSERT') { actionText = 'THÊM MỚI'; actionColor = '#16a34a'; }
+                    else if (log['hanh-dong'] === 'UPDATE') { actionText = 'CẬP NHẬT'; actionColor = '#d97706'; }
+                    else if (log['hanh-dong'] === 'DELETE') { actionText = 'XÓA'; actionColor = '#dc2626'; }
+                    else { actionText = log['hanh-dong']; actionColor = '#2563eb'; }
+
+                    const timeStr = new Date(log['thuc-hien-luc']).toLocaleString('vi-VN');
+                    const userStr = log['ma-giang-vien'] || log['thuc-hien-boi'] || 'Hệ thống';
+                    
+                    let detailsHtml = '';
+                    if (log['hanh-dong'] === 'UPDATE' && log['du-lieu-cu'] && log['du-lieu-moi']) {
+                        const oldD = log['du-lieu-cu'];
+                        const newD = log['du-lieu-moi'];
+                        let changes = [];
+                        
+                        if (oldD['ten-de-tai'] !== newD['ten-de-tai']) changes.push(`- <b>Tên đề tài:</b> ${oldD['ten-de-tai']} ➔ <span style="color:#d97706">${newD['ten-de-tai']}</span>`);
+                        if (oldD['tac-gia'] !== newD['tac-gia']) changes.push(`- <b>Tác giả:</b> ${oldD['tac-gia']} ➔ <span style="color:#d97706">${newD['tac-gia']}</span>`);
+                        if (oldD['lop'] !== newD['lop']) changes.push(`- <b>Lớp:</b> ${oldD['lop']} ➔ <span style="color:#d97706">${newD['lop']}</span>`);
+                        if (oldD['chuyen-nganh'] !== newD['chuyen-nganh']) changes.push(`- <b>Chuyên ngành:</b> ${oldD['chuyen-nganh']} ➔ <span style="color:#d97706">${newD['chuyen-nganh']}</span>`);
+                        if (oldD['gvhd1'] !== newD['gvhd1']) changes.push(`- <b>GVHD 1:</b> ${oldD['gvhd1'] || 'Trống'} ➔ <span style="color:#d97706">${newD['gvhd1'] || 'Trống'}</span>`);
+                        if (oldD['gvhd2'] !== newD['gvhd2']) changes.push(`- <b>GVHD 2:</b> ${oldD['gvhd2'] || 'Trống'} ➔ <span style="color:#d97706">${newD['gvhd2'] || 'Trống'}</span>`);
+                        
+                        detailsHtml = changes.length > 0 ? changes.join('<br>') : 'Không có thay đổi dữ liệu thực tế';
+                    } else if (log['hanh-dong'] === 'INSERT' && log['du-lieu-moi']) {
+                         detailsHtml = `<b>Tên đề tài:</b> ${log['du-lieu-moi']['ten-de-tai']}`;
+                    } else if (log['hanh-dong'] === 'DELETE' && log['du-lieu-cu']) {
+                         detailsHtml = `<b>Tên đề tài:</b> ${log['du-lieu-cu']['ten-de-tai']}`;
+                    }
+
                     historyBody.innerHTML += `<tr>
                         <td style="color:#64748b" class="td-nowrap">${timeStr}</td>
-                        <td style="color:${c};font-weight:bold" class="td-nowrap">${log.action}</td>
-                        <td style="word-break: break-all;">${log.user || ''}</td>
-                        <td style="white-space: normal; line-height: 1.5;">${log.details}</td>
+                        <td style="color:${actionColor};font-weight:bold" class="td-nowrap">${actionText}</td>
+                        <td style="word-break: break-all;">${userStr}</td>
+                        <td style="white-space: normal; line-height: 1.5;">${detailsHtml}</td>
                     </tr>`;
                 });
             } catch(e) {
-                historyBody.innerHTML = `<tr><td colspan="4" align="center" style="color:red">Lỗi tải dữ liệu</td></tr>`;
+                historyBody.innerHTML = `<tr><td colspan="4" align="center" style="color:red">Lỗi tải dữ liệu: ${e.message}</td></tr>`;
             }
         };
         window.closeHistoryModal = () => document.getElementById('historyModal').classList.add('hidden');
 
 
         // ==========================================
-        // XÓA ĐỀ TÀI TRỰC TIẾP (FIXED LỖI 400 ID UNDEFINED)
+        // XÓA ĐỀ TÀI TRỰC TIẾP QUA TÊN ĐỀ TÀI
         // ==========================================
         window.triggerDeleteConfirm = (enD) => {
             const t = JSON.parse(decodeURIComponent(enD));
@@ -793,19 +815,9 @@
             if(!targetDeleteObj) return;
             
             try {
-                // Xây dựng câu truy vấn tự động nhận diện có cột id hay không
-                let query = window.supabaseClient.from('de-tai').delete();
-                
-                if (targetDeleteObj.id) {
-                    query = query.eq('id', targetDeleteObj.id);
-                } else {
-                    query = query.eq('ten-de-tai', targetDeleteObj['ten-de-tai']).eq('tac-gia', targetDeleteObj['tac-gia']);
-                }
-
-                const { error } = await query;
+                const { error } = await window.supabaseClient.from('de-tai').delete().eq('ten-de-tai', targetDeleteTitle);
                 if (error) throw error;
 
-                logAction("XÓA", `<strong>Đề tài:</strong> ${targetDeleteTitle}`);
                 closeDeleteModal();
                 showToast("Đã xóa đề tài thành công!", "danger");
                 loadData(true);
@@ -839,31 +851,15 @@
             
             try {
                 if(isEditing && originalEditData) {
-                    let query = window.supabaseClient.from("de-tai").update(obj);
-                    
-                    if (originalEditData.id) {
-                        query = query.eq("id", originalEditData.id);
-                    } else {
-                        query = query.eq('ten-de-tai', originalEditData['ten-de-tai']).eq('tac-gia', originalEditData['tac-gia']);
-                    }
-                    
-                    const { error } = await query;
+                    const { error } = await window.supabaseClient.from("de-tai").update(obj).eq('ten-de-tai', originalEditData['ten-de-tai']);
                     if (error) throw error;
                     
-                    let changes = [];
-                    if(originalEditData['ten-de-tai'] !== obj['ten-de-tai']) changes.push(`- <b>Tên đề tài:</b> ${originalEditData['ten-de-tai']} ➔ <span style="color:#d97706">${obj['ten-de-tai']}</span>`);
-                    if(originalEditData['tac-gia'] !== obj['tac-gia']) changes.push(`- <b>Tác giả:</b> ${originalEditData['tac-gia']} ➔ <span style="color:#d97706">${obj['tac-gia']}</span>`);
-                    if(originalEditData['lop'] !== obj['lop']) changes.push(`- <b>Lớp:</b> ${originalEditData['lop']} ➔ <span style="color:#d97706">${obj['lop']}</span>`);
-                    if(originalEditData['chuyen-nganh'] !== obj['chuyen-nganh']) changes.push(`- <b>Chuyên ngành:</b> ${originalEditData['chuyen-nganh']} ➔ <span style="color:#d97706">${obj['chuyen-nganh']}</span>`);
-                    
-                    let historyString = changes.length > 0 ? changes.join('<br>') : "<i>Cập nhật dữ liệu Giảng viên Hướng dẫn.</i>";
-                    
-                    logAction("SỬA", historyString);
-                    lastEditedId = originalEditData.id || obj['ten-de-tai']; 
+                    lastEditedId = obj['ten-de-tai']; 
                     showToast("Đã cập nhật thay đổi thành công!", "success");
                 } else {
-                    await window.supabaseClient.from("de-tai").insert([obj]);
-                    logAction("THÊM", `<strong>Đề tài:</strong> ${title}<br><strong>Lớp:</strong> ${obj['lop']} | <strong>Tác giả:</strong> ${author}`);
+                    const { error } = await window.supabaseClient.from("de-tai").insert([obj]);
+                    if (error) throw error;
+
                     showToast("Đã thêm đề tài mới!", "success");
                 }
                 window.closeThesisFormModal();
@@ -888,17 +884,17 @@
             const t = JSON.parse(decodeURIComponent(enD));
             originalEditData = t;
             
-            document.getElementById('editId').value = t.id || '';
+            document.getElementById('editOriginalTitle').value = t['ten-de-tai'] || '';
             
-            // Set values
+            // Đổ dữ liệu vào các thẻ
             const titleEl = document.getElementById('addTitle');
             titleEl.value = t['ten-de-tai']||'';
             document.getElementById('addAuthor').value = t['tac-gia']||'';
-            document.getElementById('addGvhd1').value = t.gvhd1 || '';
-            document.getElementById('addGvhd2').value = t.gvhd2 || '';
+            document.getElementById('addGvhd1').value = t['gvhd1'] || '';
+            document.getElementById('addGvhd2').value = t['gvhd2'] || '';
             document.getElementById('addMajor').value = t['chuyen-nganh']||'Vật lý trị liệu';
             
-            // Adjust textarea height
+            // Kích hoạt Textarea tự động co giãn chiều cao cho vừa text hiện có
             setTimeout(() => {
                 titleEl.style.height = 'auto';
                 titleEl.style.height = titleEl.scrollHeight + 'px';
@@ -939,11 +935,11 @@
         function resetForm() {
             isEditing = false; 
             originalEditData = null; 
-            document.getElementById('editId').value = '';
+            document.getElementById('editOriginalTitle').value = '';
             
             const titleEl = document.getElementById('addTitle');
             titleEl.value = ''; 
-            titleEl.style.height = 'auto'; // Reset height
+            titleEl.style.height = 'auto'; 
             
             document.getElementById('addAuthor').value = ''; 
             document.getElementById('addGvhd1').value = '';
