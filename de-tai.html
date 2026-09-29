@@ -61,13 +61,13 @@
 
         /* Bảng hiển thị - Cấu hình cho phép ngắt dòng */
         .table-container { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); position: relative; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; table-layout: auto; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        th { background-color: var(--bg-page); font-weight: 600; color: var(--text-dark); text-transform: uppercase; font-size: 0.85rem; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px; white-space: nowrap;}
+        th { background-color: var(--bg-page); font-weight: 600; color: var(--text-dark); text-transform: uppercase; font-size: 0.85rem; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px; }
         tr:hover { background-color: var(--primary-light); }
         tr.recently-updated td { background-color: #ecfdf5; }
         
-        .td-nowrap { white-space: nowrap; }
+        .td-nowrap { white-space: nowrap !important; }
 
         #thAction, .td-action { position: sticky; right: 0; background-color: var(--surface); z-index: 5; box-shadow: -4px 0 8px rgba(0,0,0,0.02); border-left: 1px solid var(--border); }
         tr:hover .td-action { background-color: var(--primary-light); }
@@ -76,7 +76,14 @@
         .advisor-link { color: var(--primary); font-weight: 600; cursor: pointer; text-decoration: none; border-bottom: 1px dashed var(--primary); }
         .advisor-link:hover { color: var(--primary-hover); border-bottom-style: solid; }
         
-        .thesis-title-link { width: 100%; padding: 6px 8px; margin: -6px -8px; cursor: pointer; color: var(--text-dark); transition: color 0.2s, background-color 0.2s; font: inherit; font-weight: 600; line-height: 1.5; text-align: left; background: transparent; border: 0; border-radius: 6px; white-space: normal; }
+        /* Cấu hình bắt buộc button tên đề tài biến thành dạng khối và được phép xuống hàng */
+        .thesis-title-link { 
+            width: 100%; padding: 6px 8px; margin: -6px -8px; cursor: pointer; 
+            color: var(--text-dark); transition: color 0.2s, background-color 0.2s; 
+            font: inherit; font-weight: 600; line-height: 1.5; text-align: left; 
+            background: transparent; border: 0; border-radius: 6px; 
+            display: block; white-space: normal !important; word-wrap: break-word; overflow-wrap: break-word;
+        }
         .thesis-title-link:hover, .thesis-title-link:focus-visible { color: var(--primary); background: var(--primary-light); outline: 2px solid var(--primary); outline-offset: 2px; }
 
         /* =========================================
@@ -115,7 +122,7 @@
             { display: none; }
 
             /* Mở rộng cột tên đề tài */
-            .table-container th:nth-child(3), .table-container td:nth-child(3) { width: 100% !important; min-width: unset !important; }
+            .table-container th:nth-child(3), .table-container td:nth-child(3) { width: 100% !important; min-width: unset !important; max-width: unset !important; }
             .thesis-title-link { color: var(--primary); font-size: 0.95rem; }
         }
     </style>
@@ -242,10 +249,11 @@
                 <thead>
                     <tr>
                         <th class="td-nowrap" style="text-align: center; width: 60px;">STT</th>
-                        <th style="width: 150px;">Tác Giả</th>
-                        <th style="min-width: 350px;">Tên Đề Tài</th>
-                        <th class="td-nowrap" style="width: 100px;">LỚP</th>
-                        <th style="width: 220px;">Giảng Viên Hướng Dẫn</th>
+                        <th class="td-nowrap" style="width: 160px;">Tác Giả</th>
+                        <!-- Cho phép cột Tên Đề Tài chiếm dụng 100% diện tích còn lại để tràn chiều ngang -->
+                        <th style="min-width: 300px; width: 100%;">Tên Đề Tài</th>
+                        <th class="td-nowrap" style="width: 120px;">LỚP</th>
+                        <th class="td-nowrap" style="width: 220px;">Giảng Viên Hướng Dẫn</th>
                         <th id="thAction" class="td-nowrap hidden" style="text-align: center; width: 120px;"></th>
                     </tr>
                 </thead>
@@ -312,7 +320,7 @@
         </div>
     </div>
 
-    <!-- MODAL LỊCH SỬ -->
+    <!-- MODAL LỊCH SỬ TỰ ĐỘNG TỪ LICH-SU-DE-TAI -->
     <div id="historyModal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 950px;">
             <button class="modal-close" onclick="closeHistoryModal()"><i class="fas fa-times"></i></button>
@@ -607,9 +615,9 @@
                 tableBody.innerHTML += `
                     <tr data-thesis-id="${rowId}">
                         <td align="center" class="td-nowrap" style="color:#94a3b8;font-weight:bold">${actualIndex}</td>
-                        <td style="white-space: normal;"><b>${t['tac-gia']}</b></td>
+                        <td class="td-nowrap"><b>${t['tac-gia']}</b></td>
                         
-                        <td>
+                        <td style="white-space: normal; min-width: 300px; max-width: 450px;">
                             <button type="button" class="thesis-title-link" onclick="openThesisDetailModal('${dataStrObj}')" aria-label="Xem thông tin đề tài: ${t['ten-de-tai']}">${t['ten-de-tai']}</button>
                         </td>
 
@@ -617,7 +625,7 @@
                             <div style="font-weight: 600; color: var(--text-dark);">${t['lop']||'—'}</div>
                             <div style="font-size: 0.85rem; color: var(--primary); margin-top: 2px;">${t['chuyen-nganh']||'—'}</div>
                         </td>
-                        <td style="white-space: normal;">${advHtml}</td>
+                        <td class="td-nowrap">${advHtml}</td>
                         ${actionHtml}
                     </tr>`;
             });
