@@ -48,15 +48,11 @@
         button { cursor: pointer; transition: var(--transition); font-family: inherit; }
         .btn-primary { background-color: var(--primary); color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
         .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-warning { background-color: #f59e0b; color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
-        .btn-warning:hover { background-color: #d97706; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2); }
         .btn-danger { background-color: var(--accent); color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
         .btn-danger:hover { background-color: #be123c; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2); }
         .btn-success { background-color: #16a34a; color: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: none; font-weight: 500; }
         .btn-success:hover { background-color: #15803d; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); }
-        .btn-secondary { background-color: var(--bg-page); color: var(--text-dark); padding: 0.6rem 1.2rem; border-radius: var(--radius-pill); border: 1px solid var(--border); font-weight: 500; }
-        .btn-secondary:hover { background-color: #e2e8f0; }
-        .btn-sm { padding: 5px 10px; font-size: 0.85rem; border-radius: 6px; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; border-radius: 6px; }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-page { background-color: var(--surface); color: var(--text-dark); border: 1px solid var(--border); padding: 5px 15px; border-radius: 6px; font-weight: 600; }
         .btn-page:hover:not(:disabled) { background-color: var(--primary-light); color: var(--primary); border-color: var(--primary); }
@@ -101,33 +97,38 @@
         .advisor-link { color: var(--primary); font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
         .advisor-link:hover { color: var(--primary-hover); text-decoration: underline; }
         
+        /* Màu sắc chuyên ngành */
+        .major-vltl { color: #0284c7; font-weight: 600; }
+        .major-hdtl { color: #ea580c; font-weight: 600; }
+        .major-nntl { color: #16a34a; font-weight: 600; }
+
         /* Tên đề tài format */
         .thesis-title-link { 
             cursor: pointer; 
-            color: var(--primary); 
+            color: var(--text-dark); 
             transition: color 0.2s; 
             font: inherit; 
-            font-weight: 700; 
-            line-height: 1.4; 
+            font-weight: 600; 
+            line-height: 1.5; 
             text-align: left; 
             background: transparent; 
             border: 0; 
             padding: 0;
             display: block; 
-            margin-bottom: 8px;
-            font-size: 1.05rem;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
             width: 100%;
             white-space: normal !important; 
             word-wrap: break-word; 
             overflow-wrap: break-word;
         }
-        .thesis-title-link:hover, .thesis-title-link:focus-visible { color: var(--primary-hover); text-decoration: underline; outline: none; }
+        .thesis-title-link:hover, .thesis-title-link:focus-visible { color: var(--primary); text-decoration: underline; outline: none; }
 
         /* Dòng thông tin tác giả, lớp, chuyên ngành, GVHD - Được phép ngắt dòng thoải mái */
         .metadata-line {
-            font-size: 0.9rem; 
-            color: var(--text-dark); 
-            margin-bottom: 6px; 
+            font-size: 0.95rem; 
+            color: var(--text-body); 
+            margin-bottom: 4px; 
             white-space: normal; 
             width: 100%;
             display: block;
@@ -165,11 +166,11 @@
             .toast-container { bottom: 10px; right: 10px; left: 10px; }
             .toast { min-width: unset; width: 100%; box-sizing: border-box; }
 
-            /* Điều chỉnh lại font size trên điện thoại */
-            table { font-size: 0.85rem; }
+            /* Điều chỉnh lại padding cho gọn */
+            table { font-size: 0.9rem; }
             th, td { padding: 12px 8px; }
             th:first-child, td:first-child { width: 40px !important; padding: 12px 4px; }
-            .thesis-title-link { font-size: 1rem; }
+            .thesis-title-link, .metadata-line { font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -295,7 +296,7 @@
                 <thead>
                     <tr>
                         <th style="text-align: center; width: 50px;">STT</th>
-                        <th style="width: auto;">Thông Tin Luận Văn / Khóa Luận</th>
+                        <th style="width: auto;">Thông tin đề tài</th>
                         <th id="thAction" class="hidden" style="text-align: center; width: 90px;">Thao tác</th>
                     </tr>
                 </thead>
@@ -320,7 +321,7 @@
             <h3 style="color: var(--primary); margin-top: 0; border-bottom: 2px solid var(--primary-light); padding-bottom: 15px; margin-bottom: 20px;">Thông tin Đề tài</h3>
             <div style="margin-bottom: 12px; font-size: 0.95rem;">
                 <span style="color: var(--text-body); font-size: 0.85rem; display: block; margin-bottom: 3px;">Tên đề tài:</span>
-                <strong id="detailTitle" style="color: var(--text-dark); font-size: 1.1rem; line-height: 1.4;"></strong>
+                <strong id="detailTitle" style="color: var(--text-dark); font-size: 1.05rem; line-height: 1.4;"></strong>
             </div>
             <div style="margin-bottom: 12px; font-size: 0.95rem;">
                 <span style="color: var(--text-body); font-size: 0.85rem; display: block; margin-bottom: 3px;">Tác giả:</span>
@@ -329,11 +330,11 @@
             <div style="display: flex; gap: 30px; margin-bottom: 12px; font-size: 0.95rem;">
                 <div>
                     <span style="color: var(--text-body); font-size: 0.85rem; display: block; margin-bottom: 3px;">Lớp:</span>
-                    <strong id="detailClass" style="color: var(--primary);"></strong>
+                    <strong id="detailClass" style="color: var(--text-dark);"></strong>
                 </div>
                 <div>
                     <span style="color: var(--text-body); font-size: 0.85rem; display: block; margin-bottom: 3px;">Chuyên ngành:</span>
-                    <strong id="detailMajor" style="color: var(--text-dark);"></strong>
+                    <strong id="detailMajor"></strong>
                 </div>
             </div>
             <div style="margin-bottom: 10px; font-size: 0.95rem; background: var(--bg-page); padding: 12px; border-radius: 8px;">
@@ -371,8 +372,8 @@
                 <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: auto;">
                     <thead>
                         <tr>
-                            <th style="background: var(--bg-page); padding: 10px; width: 140px;">Thời gian</th>
-                            <th style="background: var(--bg-page); padding: 10px; width: 90px;">Thao tác</th>
+                            <th style="background: var(--bg-page); padding: 10px; width: 140px;" class="td-nowrap">Thời gian</th>
+                            <th style="background: var(--bg-page); padding: 10px; width: 90px;" class="td-nowrap">Thao tác</th>
                             <th style="background: var(--bg-page); padding: 10px; width: 140px;">Tài khoản</th>
                             <th style="background: var(--bg-page); padding: 10px;">Chi tiết thay đổi</th>
                         </tr>
@@ -481,12 +482,12 @@
         document.getElementById('addLevel').addEventListener('change', (e) => populateYears(e.target.value));
         populateYears('CN');
 
-        // Hàm cập nhật danh sách gợi ý GVHD
+        // Hàm cập nhật danh sách gợi ý GVHD động
         function updateAdvisorDatalist() {
-            // Lấy tất cả GV từ userMap (giảng viên cơ hữu)
+            // Khởi tạo Set với các GV từ userMap (giảng viên trên hệ thống)
             const uniqueAdvisors = new Set(Object.keys(usersMap));
             
-            // Lấy thêm tất cả các tên GVHD1 và GVHD2 đang có trong de-tai
+            // Bổ sung tất cả các tên GVHD1 và GVHD2 đang có trong de-tai
             allTheses.forEach(t => {
                 if (t['gvhd1']) uniqueAdvisors.add(t['gvhd1'].trim());
                 if (t['gvhd2']) uniqueAdvisors.add(t['gvhd2'].trim());
@@ -530,7 +531,7 @@
             try {
                 const { data, error } = await window.supabaseClient.auth.getUser();
                 
-                // Nạp thông tin giảng viên cơ hữu từ bảng giang-vien
+                // Lấy thông tin từ bảng giang-vien (dùng cho link thông tin & avatar)
                 const { data: usersData } = await window.supabaseClient.from("giang-vien").select("*");
                 if (usersData) {
                     usersData.forEach(d => {
@@ -684,27 +685,33 @@
                 const gv2 = t['gvhd2'] ? t['gvhd2'].trim() : '';
                 const adv2Html = gv2 ? (usersMap[gv2] ? `<span class="advisor-link" onclick="openAdvisorModal('${encodeURIComponent(gv2).replace(/'/g, "%27")}')">${gv2}</span>` : `<span style="font-weight:600;">${gv2}</span>`) : '';
 
-                let gvhdDisplay = `<div><b>GVHD 1:</b> ${adv1Html}</div>`;
+                let gvhdDisplay = `<div style="margin-bottom: 2px;">GVHD 1: ${adv1Html}</div>`;
                 if (gv2) {
-                    gvhdDisplay += `<div style="margin-top:2px;"><b>GVHD 2:</b> ${adv2Html}</div>`;
+                    gvhdDisplay += `<div>GVHD 2: ${adv2Html}</div>`;
                 }
 
+                // Chuyên ngành màu sắc
+                let majorStr = t['chuyen-nganh'] || '—';
+                let majorClass = '';
+                if(majorStr.includes('Vật lý')) majorClass = 'major-vltl';
+                else if(majorStr.includes('Hoạt động')) majorClass = 'major-hdtl';
+                else if(majorStr.includes('Ngôn ngữ')) majorClass = 'major-nntl';
+
+                // TRÌNH BÀY GỘP DỌC HIỆN ĐẠI (Font size đồng đều 0.95rem)
                 tableBody.innerHTML += `
                     <tr data-thesis-id="${rowId}">
-                        <td align="center" style="color:#94a3b8; font-weight:bold; font-size: 1.1rem; vertical-align: top; padding-top: 18px;">${actualIndex}</td>
-                        <td style="padding: 16px 12px; width: 100%;">
+                        <td align="center" style="color:#94a3b8; font-weight:bold; vertical-align: top; padding-top: 15px;">${actualIndex}</td>
+                        <td style="padding: 15px 12px; width: 100%;">
                             <button type="button" class="thesis-title-link" onclick="openThesisDetailModal('${dataStrObj}')" aria-label="Xem thông tin đề tài: ${t['ten-de-tai']}">
                                 ${t['ten-de-tai']}
                             </button>
                             
                             <div class="metadata-line">
                                 <b>${t['tac-gia']}</b>
-                            </div>
-                            
-                            <div class="metadata-line">
-                                <span style="font-weight: 700; color: var(--accent);">${t['lop']||'—'}</span>
-                                <span style="color: var(--border); font-size: 0.8rem; margin: 0 4px;">-</span>
-                                <span>${t['chuyen-nganh']||'—'}</span>
+                                <span style="color: var(--border); margin: 0 6px;">-</span>
+                                <span style="font-weight: 600; color: var(--text-dark);">${t['lop']||'—'}</span>
+                                <span style="color: var(--border); margin: 0 6px;">-</span>
+                                <span class="${majorClass}">${majorStr}</span>
                             </div>
                             
                             <div class="metadata-line" style="color: var(--text-body); margin-bottom: 0;">
@@ -744,7 +751,14 @@
             document.getElementById('detailTitle').innerText = t['ten-de-tai'] || 'Chưa có tên';
             document.getElementById('detailAuthor').innerText = t['tac-gia'] || 'Chưa rõ';
             document.getElementById('detailClass').innerText = t['lop'] || '—';
-            document.getElementById('detailMajor').innerText = t['chuyen-nganh'] || '—';
+            
+            let majorStr = t['chuyen-nganh'] || '—';
+            let majorEl = document.getElementById('detailMajor');
+            majorEl.innerText = majorStr;
+            majorEl.className = '';
+            if(majorStr.includes('Vật lý')) majorEl.classList.add('major-vltl');
+            else if(majorStr.includes('Hoạt động')) majorEl.classList.add('major-hdtl');
+            else if(majorStr.includes('Ngôn ngữ')) majorEl.classList.add('major-nntl');
             
             let detailGvHtml = '';
             if (t['gvhd1']) {
@@ -811,7 +825,7 @@
         window.closeAdvisorModal = () => document.getElementById('advisorModal').classList.add('hidden');
 
         // ==========================================
-        // LỊCH SỬ HOẠT ĐỘNG
+        // LỊCH SỬ HOẠT ĐỘNG (XEM TỪ BẢNG LICH-SU-DE-TAI)
         // ==========================================
         window.openHistoryModal = async () => {
             document.getElementById('historyModal').classList.remove('hidden');
@@ -895,6 +909,7 @@
             if(!targetDeleteTitle) return;
             
             try {
+                // Xóa trực tiếp theo tên đề tài
                 const { error } = await window.supabaseClient.from('de-tai').delete().eq('ten-de-tai', targetDeleteTitle);
                 if (error) throw error;
 
@@ -931,6 +946,7 @@
             
             try {
                 if(isEditing && originalEditData) {
+                    // Update trực tiếp theo tên đề tài gốc
                     const { error } = await window.supabaseClient.from("de-tai").update(obj).eq('ten-de-tai', originalEditData['ten-de-tai']);
                     if (error) throw error;
                     
@@ -966,7 +982,7 @@
             
             document.getElementById('editOriginalTitle').value = t['ten-de-tai'] || '';
             
-            // Đổ dữ liệu vào Form
+            // Đổ dữ liệu vào các thẻ
             const titleEl = document.getElementById('addTitle');
             titleEl.value = t['ten-de-tai']||'';
             document.getElementById('addAuthor').value = t['tac-gia']||'';
@@ -974,6 +990,7 @@
             document.getElementById('addGvhd2').value = t['gvhd2'] || '';
             document.getElementById('addMajor').value = t['chuyen-nganh']||'Vật lý trị liệu';
             
+            // Kích hoạt Textarea tự động co giãn chiều cao cho vừa text hiện có
             setTimeout(() => {
                 titleEl.style.height = 'auto';
                 titleEl.style.height = titleEl.scrollHeight + 'px';
